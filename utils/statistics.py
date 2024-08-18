@@ -1,5 +1,6 @@
 """A module for generating a message with statistics."""
 from aiogram.utils.markdown import hbold
+from sqlalchemy import Row
 
 
 async def generate_text(one, two, total) -> str:
@@ -34,7 +35,7 @@ async def generate_statistics(info: list):
     return info
 
 
-async def total_info(one: tuple, two: tuple, total: tuple) -> str:
+async def total_info(one: Row, two: Row, total: Row) -> str:
     """Запуск формирования сообщения со статистикой."""
     info_one: list = await generate_statistics(list(one))
     info_two: list = await generate_statistics(list(two))
