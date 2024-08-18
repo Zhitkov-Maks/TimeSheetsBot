@@ -64,3 +64,10 @@ month_list = [
 select_keyboard = [
     [KeyboardButton(text="Да"), KeyboardButton(text="Нет")]
 ]
+
+reset_to_zero = [
+    [KeyboardButton(text="Да"), KeyboardButton(text="Нет")]
+]
+
+
+success_text = "Супер!!!\n{} - вы заработали\n 💰💰💰💵💵💵 -> {}₽"

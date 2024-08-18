@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from sqlalchemy import select, func, update, Row
+from sqlalchemy import select, func, update, Row, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.db_conf import get_async_session
@@ -49,7 +49,7 @@ async def update_salary(
     await session.commit()
 
 
-async def check_record_salary(user_id: int, date: str) -> float:
+async def check_record_salary(user_id: int, date: str) -> Salary:
     """
     Функция для проверки существуют ли у нас запись для
     данного пользователя или нет, чтобы избежать ситуации
@@ -112,3 +112,15 @@ async def get_total_salary(
     data = await session.execute(stmt)
     await session.close()
     return period_one, period_two, data.one()
+
+
+async def delete_record(data):
+    session = await get_async_session()
+    stmt = (
+        delete(Salary)
+        .where(Salary.user_chat_id == data["user_id"])
+        .where(Salary.date == data["date"])
+    )
+    await session.execute(stmt)
+    await session.commit()
+    await session.close()
