@@ -1,0 +1,22 @@
+services:
+
+    telegram_bot:
+        container_name: SalaryBot
+        build: .
+
+        environment:
+            - BOT_TOKEN=${TOKEN}
+
+        env_file:
+            - .env
+
+        ports:
+            - "443:443"
+
+        volumes:
+          - ./logs:/usr/logs
+
+        restart: on-failure
+
+volumes:
+  logs:
