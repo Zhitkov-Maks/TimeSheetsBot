@@ -74,7 +74,7 @@ async def calc_input_data(
     )
 
 
-@dp.message(F.text == "/help")
+@dp.message(F.text == "/info")
 async def guide_information(
         message: types.Message, state: FSMContext
 ) -> None:
