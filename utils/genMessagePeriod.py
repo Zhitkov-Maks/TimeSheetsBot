@@ -20,14 +20,14 @@ async def generate_str(iterable, month: int, period) -> str:
             hbold("Итог за ", month_tuple[month])
         }\n{60*"-"}"
 
-    total_salary: int = 0
-    total_hours: int = 0
-    hours_overtime: int = 0
+    total_salary: float = 0
+    total_hours: float = 0
+    hours_overtime: float = 0
 
     for sal in iterable:
         if sal[0].period == period:
             total_salary += sal[0].earned
-            hours_all_day = int(sal[0].base_hours + sal[0].overtime)
+            hours_all_day = round(sal[0].base_hours + sal[0].overtime, 2)
             hours_overtime += sal[0].overtime
 
             total_hours += hours_all_day
@@ -36,20 +36,20 @@ async def generate_str(iterable, month: int, period) -> str:
             weekday = dt(int(year), int(month), int(day)).weekday()
             create_str += (
                 f"\n<b>Дата - {sal[0].date[:5]} ({weekdays[weekday]}) => "
-                f"{int(hours_all_day)} ч / "
+                f"{round(hours_all_day, 2)} ч / "
                 f"{sal[0].earned}₽</b>\n{'-' * 60}"
             )
 
         elif period == 0:
             total_salary += sal[0].earned
-            hours_all_day = int(sal[0].base_hours + sal[0].overtime)
+            hours_all_day = round(sal[0].base_hours + sal[0].overtime, 2)
             hours_overtime += sal[0].overtime
 
             total_hours += hours_all_day
 
     create_str += f"\n{hbold("Итого имеем")} 💵💴💶💶💷\n" if period else "\n"
     create_str += f"Заработано - {hbold(total_salary)}₽\n"
-    create_str += f"Отработано часов - {hbold(total_hours)}₽\n"
-    create_str += f"Из них доп часов {hbold(hours_overtime)}ч \n"
+    create_str += f"Отработано часов - {hbold(total_hours)} ч\n"
+    create_str += f"Из них доп часов {hbold(hours_overtime)} ч \n"
 
     return create_str
