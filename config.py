@@ -2,7 +2,6 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from decouple import config
 from datetime import datetime as dt
 
-
 import os
 
 from dotenv import load_dotenv
@@ -15,14 +14,12 @@ DB_PASS = os.environ.get("DB_PASS")
 
 BOT_TOKEN = config("TOKEN")
 
-
 month_tuple = (
     "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
     "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
 )
 
 weekdays = ("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
-
 
 menu_bot = [
     [
@@ -52,4 +49,30 @@ menu_bot = [
     ]
 ]
 
+confirm = [
+    [InlineKeyboardButton(
+        text="Отмена",
+        callback_data="help"
+    ),
+        InlineKeyboardButton(
+            text="Продолжить",
+            callback_data="continue"
+        )]
+]
+
+mail = [
+    [
+        InlineKeyboardButton(
+            text="Мой телеграм",
+            url='tg://resolve?domain=Maksim1Zhitkov'
+        ),
+        InlineKeyboardButton(
+            text="Закрыть",
+            callback_data="help"
+        )
+    ]
+]
+
+confirm_menu = InlineKeyboardMarkup(inline_keyboard=confirm)
+mail_menu = InlineKeyboardMarkup(inline_keyboard=mail)
 menu = InlineKeyboardMarkup(inline_keyboard=menu_bot)
