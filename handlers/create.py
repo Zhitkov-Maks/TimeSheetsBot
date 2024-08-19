@@ -1,4 +1,3 @@
-import re
 import datetime
 
 from aiogram.filters.callback_data import CallbackData
@@ -13,7 +12,7 @@ from aiogram_calendar import (
     DialogCalendarCallback
 )
 
-from config import menu
+from config import menu, confirm_menu
 from crud.create import write_salary, check_record_salary, update_salary, \
     delete_record
 from database.models import Salary
@@ -44,7 +43,7 @@ async def on_date_today(
     """
     date = datetime.datetime.now()
     await state.update_data(date=date.strftime("%d/%m/%Y"))
-    await state.set_state(CreateState.select_date)
+    await state.set_state(CreateState.check_data)
     await callback.message.answer(text=add_record_text)
 
 
@@ -60,29 +59,64 @@ async def process_simple_calendar(
     )
     if selected:
         await state.update_data(date=select_date.strftime("%d/%m/%Y"))
-        await state.set_state(CreateState.select_date)
+        await state.set_state(CreateState.check_data)
         await callback_query.message.answer(text=add_record_text)
 
 
-@create_router.message(CreateState.select_date)
-async def ask_count_hours(
-        message: types.Message, state: FSMContext
+@create_router.message(CreateState.check_data)
+async def check_data(
+        message: types.Message,
+        state: FSMContext
 ) -> None:
-    await state.update_data(user_id=message.from_user.id)
+    numbers: list = message.text.split("*")
+    try:
+        if len(numbers) == 1 or len(numbers) == 2:
+
+            if len(numbers) == 1:
+                time, overtime = float(numbers[0]), 0
+
+            else:
+                time, overtime = float(numbers[0]), float(numbers[1])
+
+            await state.set_state(CreateState.select_date)
+            await state.update_data(time=time)
+            await state.update_data(overtime=overtime)
+            await message.answer(
+                "Введены корректные данные.",
+                reply_markup=confirm_menu
+            )
+        else:
+            raise ValueError
+
+    except ValueError:
+        await state.set_state(CreateState.check_data)
+        await message.answer(
+            "Введенные данные не соответствуют требованиям. \n"
+            "Пример: 6.5*5. Попробуйте еще раз."
+        )
+
+
+@create_router.callback_query(F.data == "continue")
+# @create_router.message(F.text, CreateState.select_date)
+async def ask_count_hours(
+        callback: CallbackQuery, state: FSMContext
+) -> None:
+
+    await state.update_data(user_id=callback.from_user.id)
     data: dict = await state.get_data()
     check_record: Salary = await check_record_salary(
-        message.from_user.id, data["date"]
+        callback.from_user.id, data["date"]
     )
-    num_list = re.findall(r'\b\d+\b', message.text)
+
     if check_record is None:
         base, overtime, earned = await earned_salary(
-            num_list, message.from_user.id
+            data["time"], data["overtime"], callback.from_user.id
         )
 
         await state.update_data(earned=earned)
         await write_salary(base, overtime, earned, data)
 
-        await message.answer(
+        await callback.message.answer(
             text=success_text.format(data["date"], hbold(earned)),
             parse_mode="HTML",
             reply_markup=menu
@@ -95,8 +129,7 @@ async def ask_count_hours(
             one_time_keyboard=True
         )
         await state.set_state(CreateState.confirm)
-        await state.update_data(num_list=num_list)
-        await message.answer(
+        await callback.message.answer(
             text=f"В дате {data["date"]} уже есть данные\n"
                  f"-------------------------------------------------------\n"
                  f"База: {check_record.base_hours}\n"
@@ -125,7 +158,7 @@ async def confirm_update_record(
 
     else:
         data = await state.get_data()
-        if len(data["num_list"]) == 1 and int(data["num_list"][0]) == 0:
+        if data["time"] == float(0) and data["overtime"] == float(0):
             await state.set_state(CreateState.zero)
             keyword = ReplyKeyboardMarkup(
                 keyboard=reset_to_zero,
@@ -138,7 +171,7 @@ async def confirm_update_record(
             )
         else:
             base, overtime, earned = await earned_salary(
-                data["num_list"], message.from_user.id
+                data["time"], data["overtime"], message.from_user.id
             )
 
             await state.update_data(earned=earned)
