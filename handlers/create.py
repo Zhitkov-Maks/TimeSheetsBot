@@ -12,7 +12,7 @@ from aiogram_calendar import (
     DialogCalendarCallback
 )
 
-from config import menu, confirm_menu
+from config import menu, confirm_menu, cancel_button
 from crud.create import write_salary, check_record_salary, update_salary, \
     delete_record
 from database.models import Salary
@@ -44,7 +44,10 @@ async def on_date_today(
     date = datetime.datetime.now()
     await state.update_data(date=date.strftime("%d/%m/%Y"))
     await state.set_state(CreateState.check_data)
-    await callback.message.answer(text=add_record_text)
+    await callback.message.answer(
+        text=add_record_text,
+        reply_markup=cancel_button
+    )
 
 
 @create_router.callback_query(DialogCalendarCallback.filter())
@@ -60,7 +63,10 @@ async def process_simple_calendar(
     if selected:
         await state.update_data(date=select_date.strftime("%d/%m/%Y"))
         await state.set_state(CreateState.check_data)
-        await callback_query.message.answer(text=add_record_text)
+        await callback_query.message.answer(
+            text=add_record_text,
+            reply_markup=cancel_button
+        )
 
 
 @create_router.message(CreateState.check_data)
