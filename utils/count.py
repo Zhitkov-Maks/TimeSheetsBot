@@ -1,4 +1,3 @@
-from typing import List
 from crud.settings import get_settings_user_by_id
 from database import Settings
 
@@ -13,31 +12,29 @@ class Employee:
         self.overtime = overtime
 
 
-async def earned_per_shift(base: int, overtime: int, user_id: int) -> int:
+async def earned_per_shift(base: float, overtime: float, user_id: int) -> int:
     """Формируем сумму, заработанную за смену."""
     settings: Settings | Employee = await get_settings_user_by_id(user_id)
     if settings is None:
         settings = Employee(300, 100)
-    return (
-            int(base) * settings.price +
-            int(overtime) * (settings.price + settings.overtime)
+    return round(
+            base * settings.price +
+            overtime * (settings.price + settings.overtime), 2
     )
 
 
 async def earned_salary(
-        num_list: List[str],
+        time: float,
+        overtime: float,
         user_id: int
 ) -> tuple:
     """
     Промежуточная функция, для получения нужных нам данных
     для вывода сообщения.
     """
-    base = int(num_list[0])
-    overtime = int(num_list[1]) if len(num_list) > 1 else 0
-
     earned: int = await earned_per_shift(
-        base,
+        time,
         overtime,
         user_id
     )
-    return base, overtime, earned
+    return time, overtime, earned
