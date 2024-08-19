@@ -52,7 +52,7 @@ menu_bot = [
 confirm = [
     [InlineKeyboardButton(
         text="Отмена",
-        callback_data="help"
+        callback_data="main"
     ),
         InlineKeyboardButton(
             text="Продолжить",
@@ -68,11 +68,16 @@ mail = [
         ),
         InlineKeyboardButton(
             text="Закрыть",
-            callback_data="help"
+            callback_data="main"
         )
     ]
 ]
 
+cancel = [
+    [InlineKeyboardButton(text="Отмена", callback_data="main")]
+]
+
+cancel_button = InlineKeyboardMarkup(inline_keyboard=cancel)
 confirm_menu = InlineKeyboardMarkup(inline_keyboard=confirm)
 mail_menu = InlineKeyboardMarkup(inline_keyboard=mail)
 menu = InlineKeyboardMarkup(inline_keyboard=menu_bot)

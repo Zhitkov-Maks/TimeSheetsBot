@@ -6,7 +6,7 @@ from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 
-from config import BOT_TOKEN, menu
+from config import BOT_TOKEN, menu, mail_menu
 from handlers.month import month_router
 from handlers.period import period_router
 from handlers.settings import settings_router
@@ -34,7 +34,7 @@ async def handler_start(
     await message.answer(text=start_text)
 
 
-@dp.message(F.text == "/connection")
+@dp.message(F.text == "/contact")
 async def community_dev(
         message: types.Message,
         state: FSMContext
@@ -42,16 +42,24 @@ async def community_dev(
     """Обработчик команды связь connection."""
     await state.clear()
     await message.answer(
-        text="Если у вас есть жалобы и предложения пишите "
-             "на m-zhitkov@inbox.ru"
+        text="Связаться с разработчиком",
+        reply_markup=mail_menu
     )
 
 
-@dp.message(F.text == "/help")
+@dp.message(F.text == "/main")
 async def handle_help(message: types.Message, state: FSMContext) -> None:
     """Обработчик команды help."""
     await state.clear()
     await message.answer("Меню", reply_markup=menu)
+
+
+@dp.callback_query(F.data == "main")
+async def handle_help(callback: CallbackQuery, state: FSMContext) -> None:
+    """Обработчик команды help."""
+    await state.clear()
+    await callback.message.delete_reply_markup(inline_message_id=callback.id)
+    await callback.message.answer("Меню", reply_markup=menu)
 
 
 @dp.callback_query(F.data == "calc")
@@ -66,7 +74,7 @@ async def calc_input_data(
     )
 
 
-@dp.message(F.text == "/info")
+@dp.message(F.text == "/help")
 async def guide_information(
         message: types.Message, state: FSMContext
 ) -> None:
