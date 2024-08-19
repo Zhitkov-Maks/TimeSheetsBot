@@ -8,6 +8,7 @@ class SettingsState(StatesGroup):
 
 
 class CreateState(StatesGroup):
+    check_data = State()
     select_date = State()
     confirm = State()
     zero = State()
