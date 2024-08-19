@@ -28,7 +28,7 @@ async def ask_price(message: types.Message, state: FSMContext):
         await state.update_data(update=False)
         await state.set_state(SettingsState.price)
         await message.answer(
-            "Введите вашу почасовую ставку(по дефолту 300): ",
+            "Введите вашу почасовую ставку: ",
             reply_markup=ReplyKeyboardRemove(),
         )
 
@@ -71,7 +71,10 @@ async def change_settings(message: types.Message, state: FSMContext):
         await message.answer(text="Меню", reply_markup=menu)
 
 
-@settings_router.message(SettingsState.price)
+@settings_router.message(
+    F.text.isdigit(),
+    SettingsState.price
+)
 async def ask_chart(message: types.Message, state: FSMContext):
     """Обрабатывает введенную пользователем стоимость часа."""
     await state.update_data(price=int(message.text))
@@ -82,7 +85,10 @@ async def ask_chart(message: types.Message, state: FSMContext):
     )
 
 
-@settings_router.message(SettingsState.overtime_price)
+@settings_router.message(
+    F.text.isdigit(),
+    SettingsState.overtime_price
+)
 async def ask_price_over_time(
         message: types.Message, state: FSMContext
 ) -> None:
