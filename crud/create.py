@@ -8,9 +8,9 @@ from database.models import Salary
 
 
 async def write_salary(
-        base: int,
-        overtime: int,
-        earned: int,
+        base: float,
+        overtime: float,
+        earned: float,
         data_: dict
 ) -> None:
     """Функция для сохранения настроек пользователя."""
