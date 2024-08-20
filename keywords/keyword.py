@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime as dt
 
 from aiogram.types import KeyboardButton, InlineKeyboardMarkup, \
     InlineKeyboardButton
@@ -11,9 +11,9 @@ month_tuple = (
 
 year_list = [
     [
-        KeyboardButton(text=str(datetime.now().year - 2)),
-        KeyboardButton(text=str(datetime.now().year - 1)),
-        KeyboardButton(text=str(datetime.now().year)),
+        KeyboardButton(text=str(dt.now().year - 2)),
+        KeyboardButton(text=str(dt.now().year - 1)),
+        KeyboardButton(text=str(dt.now().year)),
     ]
 ]
 

@@ -12,12 +12,12 @@ from aiogram_calendar import (
     DialogCalendarCallback
 )
 
-from config import menu, confirm_menu, cancel_button
 from crud.create import write_salary, check_record_salary, update_salary, \
     delete_record
 from database.models import Salary
-from loader import select_keyboard, add_record_text, success_text, \
-    reset_to_zero
+from keywords.keyword import cancel_button, confirm_menu, menu, \
+    select_keyboard, reset_to_zero
+from loader import add_record_text, success_text
 from states.state import CreateState
 from utils.count import earned_salary
 

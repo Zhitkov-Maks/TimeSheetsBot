@@ -5,8 +5,8 @@ from aiogram import Router
 from aiogram import F
 from sqlalchemy import Sequence
 
-from config import menu
 from crud.statistics import get_information_for_month
+from keywords.keyword import menu
 from utils.genMessagePeriod import generate_str
 
 month_router = Router()

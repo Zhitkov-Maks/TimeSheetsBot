@@ -8,9 +8,9 @@ from aiogram.types import (
 )
 from aiogram.utils.markdown import hbold
 
-from config import menu
 from crud.settings import write_settings, get_settings_user_by_id
 from database import Settings
+from keywords.keyword import menu
 from states.state import SettingsState
 
 settings_router = Router()

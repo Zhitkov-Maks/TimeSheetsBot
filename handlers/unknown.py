@@ -2,7 +2,7 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram import types
 
-from config import menu
+from keywords.keyword import menu
 
 unknown_rout = Router()
 

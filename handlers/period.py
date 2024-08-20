@@ -3,9 +3,8 @@ from aiogram.types import CallbackQuery, ReplyKeyboardMarkup
 from aiogram import Router
 from aiogram import types, F
 
-from config import menu
 from crud.create import get_total_salary
-from loader import year_list, month_list
+from keywords.keyword import year_list, month_list, menu
 from states.state import PeriodState
 from utils.statistics import total_info
 

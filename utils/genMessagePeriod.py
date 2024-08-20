@@ -2,7 +2,8 @@ from datetime import datetime as dt
 
 from aiogram.utils.markdown import hbold
 
-from config import month_tuple, weekdays
+from config import weekdays
+from keywords.keyword import month_tuple
 
 
 async def generate_str(iterable, month: int, period) -> str:
