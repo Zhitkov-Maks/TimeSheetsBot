@@ -6,12 +6,13 @@ from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 
-from config import BOT_TOKEN, menu, mail_menu
+from config import BOT_TOKEN
 from handlers.month import month_router
 from handlers.period import period_router
 from handlers.settings import settings_router
 from handlers.create import create_router
 from handlers.unknown import unknown_rout
+from keywords.keyword import mail_menu, menu
 from loader import start_text, guide
 from states.state import CalcState
 
