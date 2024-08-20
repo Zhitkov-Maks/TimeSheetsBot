@@ -1,10 +1,13 @@
 import asyncio
 import logging
 
-from aiogram import Bot, Dispatcher, types, F
-from aiogram.filters import CommandStart
+import executor
+from aiogram import Bot, Dispatcher, types, F, BaseMiddleware
+from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from sqlalchemy import Sequence
 
 from config import BOT_TOKEN
 from handlers.month import month_router
@@ -15,6 +18,7 @@ from handlers.unknown import unknown_rout
 from keywords.keyword import mail_menu, menu
 from loader import start_text, guide
 from states.state import CalcState
+from utils.schedule import get_all_users
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
@@ -23,6 +27,17 @@ dp.include_router(create_router)
 dp.include_router(period_router)
 dp.include_router(month_router)
 dp.include_router(unknown_rout)
+
+
+class SchedulerMiddleware(BaseMiddleware):
+    def __init__(self, scheduler: AsyncIOScheduler):
+        super().__init__()
+        self._scheduler = scheduler
+
+    async def __call__(self, handler, event, data):
+        # прокидываем в словарь состояния scheduler
+        data["scheduler"] = self._scheduler
+        return await handler(event, data)
 
 
 @dp.message(CommandStart())
@@ -102,8 +117,28 @@ async def calculate_data(
             reply_markup=menu)
 
 
+async def send_message_cron():
+    users: Sequence = await get_all_users()
+    for user in users:
+        await bot.send_message(
+            user[0].user_chat_id,
+            "Добавьте запись об отработанном времени!"
+        )
+
+
 async def main():
     """Запуск бота."""
+    scheduler = AsyncIOScheduler(timezone='Europe/Moscow')
+    scheduler.start()
+    dp.update.middleware(
+        SchedulerMiddleware(scheduler=scheduler),
+    )
+    scheduler.add_job(
+        send_message_cron,
+        'cron',
+        hour=19,
+        minute=00,
+    )
     logging.basicConfig(level=logging.DEBUG)
     await dp.start_polling(bot)
 
