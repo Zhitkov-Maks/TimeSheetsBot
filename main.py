@@ -136,7 +136,7 @@ async def main():
     scheduler.add_job(
         send_message_cron,
         'cron',
-        hour=19,
+        hour=21,
         minute=00,
     )
     logging.basicConfig(level=logging.DEBUG)

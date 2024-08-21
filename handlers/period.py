@@ -1,20 +1,21 @@
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, ReplyKeyboardMarkup
 from aiogram import Router
 from aiogram import types, F
 
 from crud.create import get_total_salary
-from keywords.keyword import year_list, month_list, menu
+from keywords.keyword import year_list, menu, month_menu, \
+    month_data, year_menu, year_data
 from states.state import PeriodState
 from utils.statistics import total_info
 
 period_router = Router()
 
-
 month_dict = {
-    "январь": "01", "февраль": "02", "март": "03", "апрель": "04",
-    "май": "05", "июнь": "06", "июль": "07", "август": "08",
-    "сентябрь": "09", "октябрь": "10", "ноябрь": "11", "декабрь": "12"
+    "january": "01", "february": "02", "mart": "03", "april": "04",
+    "mai": "05", "june": "06", "july": "07", "august": "08",
+    "september": "09", "oktober": "10", "november": "11", "december": "12"
 }
 
 
@@ -24,51 +25,43 @@ async def on_year_selected(
 ) -> None:
     """Обрабатывает команду period. Запрашивает год."""
     await state.set_state(PeriodState.year)
-    keyword = ReplyKeyboardMarkup(
-        keyboard=year_list,
-        resize_keyboard=True,
-        one_time_keyboard=True
-    )
     await callback.message.answer(
         text="Укажите год",
-        reply_markup=keyword
+        reply_markup=year_menu
     )
 
 
-@period_router.message(F.text, PeriodState.year)
+@period_router.callback_query(F.data.in_(year_data), PeriodState.year)
 async def on_month_selected(
-        message: types.Message, state: FSMContext
+        callback: CallbackQuery, state: FSMContext
 ) -> None:
     """Показывает реплэй клавиатуру для выбора месяца."""
     await state.set_state(PeriodState.month)
-    await state.update_data(year=message.text)
-    keyword = ReplyKeyboardMarkup(
-        keyboard=month_list,
-        resize_keyboard=True,
-        one_time_keyboard=True
-    )
-    await message.answer(
+    await state.update_data(year=callback.data)
+    await callback.message.answer(
         text="Укажите месяц",
-        reply_markup=keyword
+        reply_markup=month_menu
     )
 
 
-@period_router.message(F.text, PeriodState.month)
+@period_router.callback_query(F.data.in_(month_data), PeriodState.month)
 async def on_date_selected(
-        message: types.Message, state: FSMContext
+        callback: CallbackQuery, state: FSMContext
 ) -> None:
     """
     Запрашивает данные в базе для введенных пользователем данных.
     """
-    await state.update_data(month=month_dict.get(message.text.lower()))
+    await state.update_data(
+        month=month_dict.get(callback.data)
+    )
     data = await state.get_data()
     one, two, total = await get_total_salary(
         data["year"],
         data["month"],
-        message.from_user.id
+        callback.from_user.id
     )
     text: str = await total_info(one, two, total)
-    await message.answer(
+    await callback.message.answer(
         text=text,
         parse_mode="HTML",
         reply_markup=menu

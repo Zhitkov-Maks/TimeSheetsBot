@@ -2,7 +2,7 @@ import datetime
 
 from aiogram.filters.callback_data import CallbackData
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, ReplyKeyboardMarkup
+from aiogram.types import CallbackQuery
 from aiogram import Router
 from aiogram import types, F
 from aiogram.utils.markdown import hbold
@@ -15,8 +15,12 @@ from aiogram_calendar import (
 from crud.create import write_salary, check_record_salary, update_salary, \
     delete_record
 from database.models import Salary
-from keywords.keyword import cancel_button, confirm_menu, menu, \
-    select_keyboard, reset_to_zero
+from keywords.keyword import (
+    cancel_button,
+    confirm_menu,
+    menu,
+    confirm_menu_two
+)
 from loader import add_record_text, success_text
 from states.state import CreateState
 from utils.count import earned_salary
@@ -102,8 +106,7 @@ async def check_data(
         )
 
 
-@create_router.callback_query(F.data == "continue")
-# @create_router.message(F.text, CreateState.select_date)
+@create_router.callback_query(F.data == "continue", CreateState.select_date)
 async def ask_count_hours(
         callback: CallbackQuery, state: FSMContext
 ) -> None:
@@ -129,11 +132,6 @@ async def ask_count_hours(
         )
 
     else:
-        keyword = ReplyKeyboardMarkup(
-            keyboard=select_keyboard,
-            resize_keyboard=True,
-            one_time_keyboard=True
-        )
         await state.set_state(CreateState.confirm)
         await callback.message.answer(
             text=f"В дате {data["date"]} уже есть данные\n"
@@ -143,21 +141,21 @@ async def ask_count_hours(
                  f"Итого заработано: {check_record.earned}\n"
                  f"--------------------------------------------------------\n"
                  f"Хотите обновить данные?",
-            reply_markup=keyword
+            reply_markup=confirm_menu_two
         )
 
 
-@create_router.message(
-    (F.text.lower() == "да") | (F.text.lower() == "нет"),
+@create_router.callback_query(
+    (F.data == "cancel") | (F.data == "continue"),
     CreateState.confirm
 )
 async def confirm_update_record(
-        message: types.Message, state: FSMContext
+        callback: CallbackQuery, state: FSMContext
 ) -> None:
     """Функция на обработку обновить данные или нет."""
-    if message.text.lower() == "нет":
+    if callback.data == "cancel":
         await state.clear()
-        await message.answer(
+        await callback.message.answer(
             text="Ок направляю вас в меню",
             reply_markup=menu
         )
@@ -166,44 +164,39 @@ async def confirm_update_record(
         data = await state.get_data()
         if data["time"] == float(0) and data["overtime"] == float(0):
             await state.set_state(CreateState.zero)
-            keyword = ReplyKeyboardMarkup(
-                keyboard=reset_to_zero,
-                resize_keyboard=True,
-                one_time_keyboard=True
-            )
-            await message.answer(
+            await callback.message.answer(
                 text="Вы хотите удалить запись?",
-                reply_markup=keyword
+                reply_markup=confirm_menu_two
             )
         else:
             base, overtime, earned = await earned_salary(
-                data["time"], data["overtime"], message.from_user.id
+                data["time"], data["overtime"], callback.from_user.id
             )
 
             await state.update_data(earned=earned)
             await update_salary(base, overtime, earned, data)
-            await message.answer(
+            await callback.message.answer(
                 text=success_text.format(data["date"], hbold(earned)),
                 parse_mode="HTML",
                 reply_markup=menu
             )
 
 
-@create_router.message(
-    (F.text.lower() == "да") | (F.text.lower() == "нет"),
+@create_router.callback_query(
+    (F.data == "cancel") | (F.data == "continue"),
     CreateState.zero
 )
-async def zero_record(message: types.Message, state: FSMContext) -> None:
+async def zero_record(callback: CallbackQuery, state: FSMContext) -> None:
     """Отправка на удаление записи."""
-    if message.text.lower() == "нет":
-        await message.answer(
+    if callback.data == "cancel":
+        await callback.message.answer(
             text="Ок, возвращаю вас в меню.",
             reply_markup=menu
         )
     else:
         data = await state.get_data()
         await delete_record(data)
-        await message.answer(
+        await callback.message.answer(
             text="Запись была удалена.",
             reply_markup=menu
         )

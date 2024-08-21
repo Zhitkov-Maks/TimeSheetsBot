@@ -1,7 +1,6 @@
 from datetime import datetime as dt
 
-from aiogram.types import KeyboardButton, InlineKeyboardMarkup, \
-    InlineKeyboardButton
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 month_tuple = (
@@ -9,41 +8,51 @@ month_tuple = (
     "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
 )
 
+month_data = (
+    "january", "february", "mart", "april", "mai", "june",
+    "july", "august", "september", "oktober", "november", "december",
+)
+
+year_data = (
+    str(dt.now().year - 2), str(dt.now().year - 1), str(dt.now().year)
+)
+
 year_list = [
     [
-        KeyboardButton(text=str(dt.now().year - 2)),
-        KeyboardButton(text=str(dt.now().year - 1)),
-        KeyboardButton(text=str(dt.now().year)),
+        InlineKeyboardButton(
+            text=str(dt.now().year - 2),
+            callback_data=str(dt.now().year - 2)
+        ),
+        InlineKeyboardButton(
+            text=str(dt.now().year - 1),
+            callback_data=str(dt.now().year - 1)
+        ),
+        InlineKeyboardButton(
+            text=str(dt.now().year),
+            callback_data=str(dt.now().year)
+        ),
     ]
 ]
 
 month_list = [
     [
-        KeyboardButton(text="Январь"),
-        KeyboardButton(text="Февраль"),
-        KeyboardButton(text="Март"),
-        KeyboardButton(text="Апрель"),
+        InlineKeyboardButton(text="Январь", callback_data="january"),
+        InlineKeyboardButton(text="Февраль", callback_data="february"),
+        InlineKeyboardButton(text="Март", callback_data="mart"),
+        InlineKeyboardButton(text="Апрель", callback_data="april"),
     ],
     [
-        KeyboardButton(text="Май"),
-        KeyboardButton(text="Июнь"),
-        KeyboardButton(text="Июль"),
-        KeyboardButton(text="Август")
+        InlineKeyboardButton(text="Май", callback_data="mai"),
+        InlineKeyboardButton(text="Июнь", callback_data="june"),
+        InlineKeyboardButton(text="Июль", callback_data="july"),
+        InlineKeyboardButton(text="Август", callback_data="august")
     ],
     [
-        KeyboardButton(text="Сентябрь"),
-        KeyboardButton(text="Октябрь"),
-        KeyboardButton(text="Ноябрь"),
-        KeyboardButton(text="Декабрь")
+        InlineKeyboardButton(text="Сентябрь", callback_data="september"),
+        InlineKeyboardButton(text="Октябрь", callback_data="oktober"),
+        InlineKeyboardButton(text="Ноябрь", callback_data="november"),
+        InlineKeyboardButton(text="Декабрь", callback_data="december")
     ]
-]
-
-select_keyboard = [
-    [KeyboardButton(text="Да"), KeyboardButton(text="Нет")]
-]
-
-reset_to_zero = [
-    [KeyboardButton(text="Да"), KeyboardButton(text="Нет")]
 ]
 
 menu_bot = [
@@ -85,6 +94,17 @@ confirm = [
         )]
 ]
 
+confirm_two = [
+    [InlineKeyboardButton(
+        text="Отмена",
+        callback_data="cancel"
+    ),
+        InlineKeyboardButton(
+            text="Продолжить",
+            callback_data="continue"
+        )]
+]
+
 mail = [
     [
         InlineKeyboardButton(
@@ -104,5 +124,8 @@ cancel = [
 
 cancel_button = InlineKeyboardMarkup(inline_keyboard=cancel)
 confirm_menu = InlineKeyboardMarkup(inline_keyboard=confirm)
+confirm_menu_two = InlineKeyboardMarkup(inline_keyboard=confirm)
 mail_menu = InlineKeyboardMarkup(inline_keyboard=mail)
 menu = InlineKeyboardMarkup(inline_keyboard=menu_bot)
+month_menu = InlineKeyboardMarkup(inline_keyboard=month_list)
+year_menu = InlineKeyboardMarkup(inline_keyboard=year_list)
