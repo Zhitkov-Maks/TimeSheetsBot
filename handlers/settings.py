@@ -4,13 +4,13 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import (
     ReplyKeyboardRemove,
     ReplyKeyboardMarkup,
-    KeyboardButton,
+    KeyboardButton, CallbackQuery,
 )
 from aiogram.utils.markdown import hbold
 
 from crud.settings import write_settings, get_settings_user_by_id
 from database import Settings
-from keywords.keyword import menu
+from keywords.keyword import menu, confirm_menu
 from states.state import SettingsState
 
 settings_router = Router()
@@ -33,12 +33,6 @@ async def ask_price(message: types.Message, state: FSMContext):
         )
 
     else:
-        kb_list = [[KeyboardButton(text="yes"), KeyboardButton(text="no")]]
-        keyword = ReplyKeyboardMarkup(
-            keyboard=kb_list,
-            resize_keyboard=True,
-            one_time_keyboard=True
-        )
         await state.set_state(SettingsState.change_settings)
         await message.answer(
             text=f"Ваши текущие настройки ⚙️🔧\n"
@@ -48,27 +42,22 @@ async def ask_price(message: types.Message, state: FSMContext):
                  f"---------------------------------------------------------\n"
                  f"Хотите изменить данные?",
             parse_mode="HTML",
-            reply_markup=keyword
+            reply_markup=confirm_menu
         )
 
 
-@settings_router.message(
-    (F.text.lower() == "yes") | (F.text.lower() == "no"),
+@settings_router.callback_query(
+    F.data == "continue",
     SettingsState.change_settings
 )
-async def change_settings(message: types.Message, state: FSMContext):
+async def change_settings(callback: CallbackQuery, state: FSMContext):
     """
     Обрабатывает команды yes and no, при запросе на
     обновление данных о настройках."""
-    if message.text == "yes":
-        await state.update_data(chat_id=message.from_user.id)
-        await state.update_data(update=True)
-        await state.set_state(SettingsState.price)
-        await message.answer(text="Ok, Введите вашу ставку: ")
-
-    else:
-        await state.clear()
-        await message.answer(text="Меню", reply_markup=menu)
+    await state.update_data(chat_id=callback.from_user.id)
+    await state.update_data(update=True)
+    await state.set_state(SettingsState.price)
+    await callback.message.answer(text="Ok, Введите вашу ставку: ")
 
 
 @settings_router.message(
