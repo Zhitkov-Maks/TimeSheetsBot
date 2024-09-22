@@ -3,8 +3,7 @@ from aiogram import types, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
     ReplyKeyboardRemove,
-    ReplyKeyboardMarkup,
-    KeyboardButton, CallbackQuery,
+    CallbackQuery,
 )
 from aiogram.utils.markdown import hbold
 
@@ -94,6 +93,6 @@ async def ask_price_over_time(
 
     await message.answer(
         text="Отлично, все готово!",
-        reply_markup=menu
+        reply_markup=await menu()
     )
     await state.clear()

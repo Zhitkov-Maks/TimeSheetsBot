@@ -1,11 +1,10 @@
-from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, ReplyKeyboardMarkup
+from aiogram.types import CallbackQuery
 from aiogram import Router
-from aiogram import types, F
+from aiogram import F
 
 from crud.create import get_total_salary
-from keywords.keyword import year_list, menu, month_menu, \
+from keywords.keyword import menu, month_menu, \
     month_data, year_menu, year_data
 from states.state import PeriodState
 from utils.statistics import total_info
@@ -64,6 +63,6 @@ async def on_date_selected(
     await callback.message.answer(
         text=text,
         parse_mode="HTML",
-        reply_markup=menu
+        reply_markup=await menu()
     )
     await state.clear()

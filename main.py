@@ -1,9 +1,9 @@
 import asyncio
 import logging
 
-import executor
 from aiogram import Bot, Dispatcher, types, F, BaseMiddleware
-from aiogram.filters import CommandStart, Command
+from aiogram.exceptions import TelegramForbiddenError
+from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -15,7 +15,8 @@ from handlers.period import period_router
 from handlers.settings import settings_router
 from handlers.create import create_router
 from handlers.unknown import unknown_rout
-from keywords.keyword import mail_menu, menu
+from handlers.predictions import predict
+from keywords.keyword import prediction, menu
 from loader import start_text, guide
 from states.state import CalcState
 from utils.schedule import get_all_users
@@ -27,6 +28,7 @@ dp.include_router(create_router)
 dp.include_router(period_router)
 dp.include_router(month_router)
 dp.include_router(unknown_rout)
+dp.include_router(predict)
 
 
 class SchedulerMiddleware(BaseMiddleware):
@@ -50,16 +52,16 @@ async def handler_start(
     await message.answer(text=start_text)
 
 
-@dp.message(F.text == "/contact")
+@dp.message(F.text == "/prediction")
 async def community_dev(
         message: types.Message,
         state: FSMContext
 ) -> None:
-    """Обработчик команды связь connection."""
+    """Обработчик команды прогноза"""
     await state.clear()
     await message.answer(
-        text="Связаться с разработчиком",
-        reply_markup=mail_menu
+        text="Выберите месяц для прогноза.",
+        reply_markup=await prediction()
     )
 
 
@@ -67,7 +69,7 @@ async def community_dev(
 async def handle_help(message: types.Message, state: FSMContext) -> None:
     """Обработчик команды help."""
     await state.clear()
-    await message.answer("Меню", reply_markup=menu)
+    await message.answer("Меню", reply_markup=await menu())
 
 
 @dp.callback_query(F.data == "main")
@@ -75,7 +77,7 @@ async def handle_help(callback: CallbackQuery, state: FSMContext) -> None:
     """Обработчик команды help."""
     await state.clear()
     await callback.message.delete_reply_markup(inline_message_id=callback.id)
-    await callback.message.answer("Меню", reply_markup=menu)
+    await callback.message.answer("Меню", reply_markup=await menu())
 
 
 @dp.callback_query(F.data == "calc")
@@ -96,7 +98,7 @@ async def guide_information(
 ) -> None:
     """Обработчик для команды info"""
     await state.clear()
-    await message.answer(text=guide, reply_markup=menu)
+    await message.answer(text=guide, reply_markup=await menu())
 
 
 @dp.message(CalcState.input)
@@ -107,24 +109,26 @@ async def calculate_data(
     """Обработчик для команды clac"""
     try:
         mess = eval(message.text)
-        await message.answer(text=str(mess), reply_markup=menu)
+        await message.answer(text=str(mess), reply_markup=await menu())
 
     except (SyntaxError, TypeError):
         await state.clear()
         await message.answer(
             text="Введенные данные не отвечают требованиям "
                  "калькулятора. Попробуйте еще раз.",
-            reply_markup=menu)
+            reply_markup=await menu())
 
 
 async def send_message_cron():
     users: Sequence = await get_all_users()
     for user in users:
-        await bot.send_message(
-            user[0].user_chat_id,
-            "Добавьте запись об отработанном времени!"
-        )
-
+        try:
+            await bot.send_message(
+                user[0].user_chat_id,
+                "Добавьте запись об отработанном времени!"
+            )
+        except TelegramForbiddenError:
+            logging.error(f"Пользователь {user[0].user_chat_id} удалился.")
 
 async def main():
     """Запуск бота."""

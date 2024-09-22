@@ -20,5 +20,5 @@ async def handler_message_unknown(
         " строка.\n"
         "- Вместо выбора да или нет вы ввели что-то свое.\n"
         "Попробуйте сначала, и будьте внимательны.",
-        reply_markup=menu
+        reply_markup=await menu()
     )

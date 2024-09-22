@@ -128,7 +128,7 @@ async def ask_count_hours(
         await callback.message.answer(
             text=success_text.format(data["date"], hbold(earned)),
             parse_mode="HTML",
-            reply_markup=menu
+            reply_markup=await menu()
         )
 
     else:
@@ -157,7 +157,7 @@ async def confirm_update_record(
         await state.clear()
         await callback.message.answer(
             text="Ок направляю вас в меню",
-            reply_markup=menu
+            reply_markup=await menu()
         )
 
     else:
@@ -178,7 +178,7 @@ async def confirm_update_record(
             await callback.message.answer(
                 text=success_text.format(data["date"], hbold(earned)),
                 parse_mode="HTML",
-                reply_markup=menu
+                reply_markup=await menu()
             )
 
 
@@ -191,12 +191,12 @@ async def zero_record(callback: CallbackQuery, state: FSMContext) -> None:
     if callback.data == "cancel":
         await callback.message.answer(
             text="Ок, возвращаю вас в меню.",
-            reply_markup=menu
+            reply_markup=await menu()
         )
     else:
         data = await state.get_data()
         await delete_record(data)
         await callback.message.answer(
             text="Запись была удалена.",
-            reply_markup=menu
+            reply_markup=await menu()
         )

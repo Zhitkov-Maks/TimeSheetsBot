@@ -31,7 +31,7 @@ async def handle_info_current_month(callback: CallbackQuery):
 
     mess_total: str = await generate_str(result, month, period=0)
     await callback.message.answer(
-        mess_total, parse_mode="HTML", reply_markup=menu
+        mess_total, parse_mode="HTML", reply_markup=await menu()
     )
 
 
@@ -55,5 +55,5 @@ async def handle_info_prev_month(callback: CallbackQuery):
 
     mess_total: str = await generate_str(result, month, period=0)
     await callback.message.answer(
-        mess_total, parse_mode="HTML", reply_markup=menu
+        mess_total, parse_mode="HTML", reply_markup=await menu()
     )
