@@ -130,8 +130,11 @@ async def prediction() -> InlineKeyboardMarkup:
 async def menu() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=menu_bot)
 
+
+async def year_menu() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=year_list)
+
 cancel_button = InlineKeyboardMarkup(inline_keyboard=cancel)
 confirm_menu = InlineKeyboardMarkup(inline_keyboard=confirm)
 confirm_menu_two = InlineKeyboardMarkup(inline_keyboard=confirm)
 month_menu = InlineKeyboardMarkup(inline_keyboard=month_list)
-year_menu = InlineKeyboardMarkup(inline_keyboard=year_list)

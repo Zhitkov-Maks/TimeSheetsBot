@@ -26,7 +26,7 @@ async def on_year_selected(
     await state.set_state(PeriodState.year)
     await callback.message.answer(
         text="Укажите год",
-        reply_markup=year_menu
+        reply_markup=await year_menu()
     )
 
 
