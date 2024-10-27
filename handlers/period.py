@@ -5,7 +5,7 @@ from aiogram import F
 
 from crud.create import get_total_salary
 from keywords.keyword import menu, month_menu, \
-    month_data, year_menu, year_data
+    month_data, year_menu, get_year_date
 from states.state import PeriodState
 from utils.statistics import total_info
 
@@ -30,7 +30,7 @@ async def on_year_selected(
     )
 
 
-@period_router.callback_query(F.data.in_(year_data), PeriodState.year)
+@period_router.callback_query(F.data.in_(get_year_date()), PeriodState.year)
 async def on_month_selected(
         callback: CallbackQuery, state: FSMContext
 ) -> None:
@@ -39,7 +39,7 @@ async def on_month_selected(
     await state.update_data(year=callback.data)
     await callback.message.answer(
         text="Укажите месяц",
-        reply_markup=month_menu
+        reply_markup=await month_menu()
     )
 
 
