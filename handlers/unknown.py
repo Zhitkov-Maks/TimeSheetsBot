@@ -10,7 +10,7 @@ unknown_rout = Router()
 @unknown_rout.message(F.text)
 async def handler_message_unknown(
         message: types.Message, state: FSMContext
-):
+) -> None:
     """Обрабатывает неизвестные команды."""
     await state.clear()
     await message.answer(

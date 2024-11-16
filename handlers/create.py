@@ -1,20 +1,12 @@
-import datetime
-
-from aiogram.filters.callback_data import CallbackData
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from aiogram import Router
 from aiogram import types, F
 from aiogram.utils.markdown import hbold
 
-from aiogram_calendar import (
-    DialogCalendar,
-    DialogCalendarCallback
-)
+from aiogram_calendar import DialogCalendar
 
-from crud.create import write_salary, check_record_salary, update_salary, \
-    delete_record
-from database.models import Salary
+from crud.create import write_salary, update_salary, delete_record
 from keywords.keyword import (
     cancel_button,
     confirm_menu,
@@ -37,40 +29,21 @@ async def on_date_selected(callback: CallbackQuery) -> None:
     )
 
 
-@create_router.callback_query(F.data == "today")
+@create_router.callback_query(F.data.in_(["change", "add"]))
 async def on_date_today(
-        callback: CallbackQuery, state: FSMContext
+    callback: CallbackQuery,
+    state: FSMContext
 ) -> None:
     """
     Обработчик команды today, чтобы быстрее
     добавить запись по текущему дню.
     """
-    date = datetime.datetime.now()
-    await state.update_data(date=date.strftime("%d/%m/%Y"))
+    await state.update_data(action=callback.data)
     await state.set_state(CreateState.check_data)
     await callback.message.answer(
         text=add_record_text,
         reply_markup=cancel_button
     )
-
-
-@create_router.callback_query(DialogCalendarCallback.filter())
-async def process_simple_calendar(
-        callback_query: CallbackQuery,
-        callback_data: CallbackData,
-        state: FSMContext
-) -> None:
-    """Обрабатывает выбранную дату."""
-    selected, select_date = await DialogCalendar().process_selection(
-        callback_query, callback_data
-    )
-    if selected:
-        await state.update_data(date=select_date.strftime("%d/%m/%Y"))
-        await state.set_state(CreateState.check_data)
-        await callback_query.message.answer(
-            text=add_record_text,
-            reply_markup=cancel_button
-        )
 
 
 @create_router.message(CreateState.check_data)
@@ -102,22 +75,20 @@ async def check_data(
         await state.set_state(CreateState.check_data)
         await message.answer(
             "Введенные данные не соответствуют требованиям. \n"
-            "Пример: 6.5*5. Попробуйте еще раз."
+            "Пример: 6.5*5. Попробуйте еще раз.",
+            reply_markup=cancel_button
         )
 
 
 @create_router.callback_query(F.data == "continue", CreateState.select_date)
 async def ask_count_hours(
-        callback: CallbackQuery, state: FSMContext
+    callback: CallbackQuery,
+    state: FSMContext
 ) -> None:
-
     await state.update_data(user_id=callback.from_user.id)
     data: dict = await state.get_data()
-    check_record: Salary = await check_record_salary(
-        callback.from_user.id, data["date"]
-    )
 
-    if check_record is None:
+    if data.get("action") == "add":
         base, overtime, earned = await earned_salary(
             data["time"], data["overtime"], callback.from_user.id
         )
@@ -132,42 +103,13 @@ async def ask_count_hours(
         )
 
     else:
-        await state.set_state(CreateState.confirm)
-        await callback.message.answer(
-            text=f"В дате {data["date"]} уже есть данные\n"
-                 f"-------------------------------------------------------\n"
-                 f"База: {check_record.base_hours}\n"
-                 f"Доп часы: {check_record.overtime}\n"
-                 f"Итого заработано: {check_record.earned}\n"
-                 f"--------------------------------------------------------\n"
-                 f"Хотите обновить данные?",
-            reply_markup=confirm_menu_two
-        )
-
-
-@create_router.callback_query(
-    (F.data == "cancel") | (F.data == "continue"),
-    CreateState.confirm
-)
-async def confirm_update_record(
-        callback: CallbackQuery, state: FSMContext
-) -> None:
-    """Функция на обработку обновить данные или нет."""
-    if callback.data == "cancel":
-        await state.clear()
-        await callback.message.answer(
-            text="Ок направляю вас в меню",
-            reply_markup=await menu()
-        )
-
-    else:
-        data = await state.get_data()
         if data["time"] == float(0) and data["overtime"] == float(0):
             await state.set_state(CreateState.zero)
             await callback.message.answer(
                 text="Вы хотите удалить запись?",
                 reply_markup=confirm_menu_two
             )
+
         else:
             base, overtime, earned = await earned_salary(
                 data["time"], data["overtime"], callback.from_user.id

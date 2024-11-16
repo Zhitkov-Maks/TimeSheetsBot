@@ -1,6 +1,10 @@
 from aiogram.fsm.state import StatesGroup, State
 
 
+class MonthState(StatesGroup):
+    choice = State()
+
+
 class SettingsState(StatesGroup):
     price = State()
     change_settings = State()

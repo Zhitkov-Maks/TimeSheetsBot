@@ -106,7 +106,7 @@ async def calculate_data(
         message: types.Message,
         state: FSMContext
 ) -> None:
-    """Обработчик для команды clac"""
+    """Обработчик для команды calc"""
     try:
         mess = eval(message.text)
         await message.answer(text=str(mess), reply_markup=await menu())

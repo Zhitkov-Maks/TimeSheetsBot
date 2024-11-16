@@ -2,11 +2,13 @@ from datetime import datetime as dt
 from typing import List
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from asyncpg.pgproto.pgproto import timedelta
 
-month_tuple = (
-    "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
-    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
-)
+month_tuple = {
+    1: "Январь", 2: "Февраль", 3: "Март", 4: "Апрель", 5: "Май", 6: "Июнь",
+    7: "Июль", 8: "Август", 9: "Сентябрь", 10: "Октябрь", 11: "Ноябрь",
+    12: "Декабрь"
+}
 
 month_data = (
     "january", "february", "mart", "april", "mai", "june",
@@ -90,29 +92,13 @@ def get_menu_bot() -> List[List[InlineKeyboardButton]]:
     return [
         [
             InlineKeyboardButton(
-                text=f"{month_tuple[dt.now().month - 1]}/Посмотреть",
+                text=f"Календарь",
                 callback_data="month_current"
             ),
             InlineKeyboardButton(
-                text=f"{month_tuple[dt.now().month - 2]}/Посмотреть",
-                callback_data="month_prev"
-            )],
-        [
-            InlineKeyboardButton(
-                text="Добавить доход", callback_data="select_date"
-            ),
-            InlineKeyboardButton(
-                text="Заработано за...", callback_data="period"
-            ),
-        ],
-        [
-            InlineKeyboardButton(
                 text="Калькулятор", callback_data="calc"
             ),
-            InlineKeyboardButton(
-                text="Сегодня", callback_data="today"
-            ),
-        ]
+        ],
     ]
 
 
@@ -120,11 +106,11 @@ def prediction_button() -> List[List[InlineKeyboardButton]]:
     return [
         [
             InlineKeyboardButton(
-                text=f"{month_tuple[dt.now().month - 1]}/Посчитать",
+                text=f"{month_tuple[dt.now().month]}/Посчитать",
                 callback_data="current_prediction"
             ),
             InlineKeyboardButton(
-                text=f"{month_tuple[dt.now().month]}/Посчитать",
+                text=f"{month_tuple[(dt.now() + timedelta(days=30)).month]}/Посчитать",
                 callback_data="next_prediction"
             ),
         ]
@@ -145,6 +131,16 @@ async def year_menu() -> InlineKeyboardMarkup:
 
 async def month_menu() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=get_month_list())
+
+
+async def get_data_choices_day() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="Изменить", callback_data="change"),
+            InlineKeyboardButton(text="Меню", callback_data="main"),
+            InlineKeyboardButton(text="Добавить", callback_data="add")
+        ]
+    ])
 
 
 cancel_button = InlineKeyboardMarkup(inline_keyboard=cancel)
