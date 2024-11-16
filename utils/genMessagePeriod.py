@@ -82,7 +82,7 @@ async def create_calendar(
         day = i
 
         for _ in range(field_size):
-            create_date: str = f"{numbers_list[day]}/{month}/{year}"
+            create_date: str = f"{numbers_list[day]}/{month:02}/{year}"
             if numbers_list[day] == " ":
                 text = " "
 
@@ -177,4 +177,4 @@ async def get_date(data: Dict[str, str], action: str) -> Tuple[int, int]:
         find_date: date = parse_date - timedelta(days=30)
     else:
         find_date: date = parse_date + timedelta(days=30)
-    return find_date.year, int(f"{find_date.month:02}")
+    return find_date.year, find_date.month
