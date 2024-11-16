@@ -37,7 +37,7 @@ async def handle_info_current_month(
     await state.update_data(year=year, month=month)
 
     calendar: InlineKeyboardMarkup = await create_calendar(result, year, month)
-    message: str = await generate_str(result, month - 1)
+    message: str = await generate_str(result, month)
 
     await callback.message.answer(
         message,
