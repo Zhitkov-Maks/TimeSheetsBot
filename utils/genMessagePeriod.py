@@ -10,8 +10,11 @@ from sqlalchemy import Sequence
 from database.models import Salary
 from keywords.keyword import month_tuple
 
+# Для добавления в календарь.
 days_list = ("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
 
+# Добавляем в календарь символы unicode чтобы
+# календарь выглядел более менее прилично.
 UNICODE_DATA: Dict[int, str] = {
     1: "₁",
     2: "₂",
@@ -36,14 +39,12 @@ UNICODE_DATA: Dict[int, str] = {
     21: "₂₁",
     22: "₂₂",
     23: "₂₃",
-    24: "₂₄"
+    24: "₂₄",
 }
 
 
 async def create_calendar(
-    salary: Sequence,
-    year: int,
-    month: int
+    salary: Sequence, year: int, month: int
 ) -> InlineKeyboardMarkup:
     """
     Функция генерирует календарь за месяц который был передан в параметрах.
@@ -55,10 +56,7 @@ async def create_calendar(
     field_size: int = 5
     days: int = 35
 
-    dates = {
-        sal[0].date: int(sal[0].base_hours + sal[0].overtime)
-        for sal in salary
-    }
+    dates = {sal[0].date: int(sal[0].base_hours + sal[0].overtime) for sal in salary}
     day_week: int = date(year, month, 1).weekday()
     days_in_month: int = monthrange(year, month)[1]
 
@@ -68,16 +66,14 @@ async def create_calendar(
         days = 42
 
     numbers_list: List[str] = (
-            [" "] * day_week +
-            [f"{i:02}" for i in range(1, days_in_month + 1)] +
-            [" "] * (days - days_in_month - day_week)
+        [" "] * day_week
+        + [f"{i:02}" for i in range(1, days_in_month + 1)]
+        + [" "] * (days - days_in_month - day_week)
     )
 
     for i in range(7):
-        row: List[InlineKeyboardButton] = [InlineKeyboardButton(
-                text=days_list[i],
-                callback_data=days_list[i]
-            )
+        row: List[InlineKeyboardButton] = [
+            InlineKeyboardButton(text=days_list[i], callback_data=days_list[i])
         ]
         day = i
 
@@ -91,24 +87,21 @@ async def create_calendar(
             else:
                 text = f"{numbers_list[day]}"
 
-            row.append(InlineKeyboardButton(
-                text=text,
-                callback_data=create_date,
-            ))
+            row.append(
+                InlineKeyboardButton(
+                    text=text,
+                    callback_data=create_date,
+                )
+            )
             day += 7
         month_keyword.append(row)
     month_keyword.append(
         [
-            InlineKeyboardButton(
-                text="prev",
-                callback_data="prev"),
-            InlineKeyboardButton(
-                text="Меню",
-                callback_data="main"),
-            InlineKeyboardButton(
-                text="next",
-                callback_data="next"),
-        ])
+            InlineKeyboardButton(text="prev", callback_data="prev"),
+            InlineKeyboardButton(text="Меню", callback_data="main"),
+            InlineKeyboardButton(text="next", callback_data="next"),
+        ]
+    )
     return InlineKeyboardMarkup(inline_keyboard=month_keyword)
 
 
@@ -116,6 +109,9 @@ async def generate_str(iterable, month: int) -> str:
     """
     Генерация сообщения с подробной информацией на каждый
     день об отработанных часах и заработанной сумме.
+    :param iterable: Объект запроса к бд.
+    :param month: Месяц зак который идет создание сообщения.
+    :return: Строку для показа пользователю.
     """
     create_str: str = f"{hbold("Итог за ", month_tuple[month])}\n"
 
@@ -138,7 +134,6 @@ async def generate_str(iterable, month: int) -> str:
             two[1] += sal[0].overtime
             two[2] += sal[0].earned
 
-
     create_str += f"{60 * "-"}\n"
     create_str += f"Период 1: "
     create_str += f"{hbold(one[0])}ч, {hbold(one[1])}ч, {one[2]:,.2f}₽\n"
@@ -152,16 +147,19 @@ async def generate_str(iterable, month: int) -> str:
     return create_str
 
 
-async def gen_message_for_choice_day(salary: Salary):
+async def gen_message_for_choice_day(salary: Salary, choice_date: str):
     """
     Генерируем простое сообщения для пользователя.
+    :param choice_date: Переданная дата из календаря.
     :param salary: Заработок за определенный день.
     :return: Сообщение для пользователя.
     """
     if not salary:
-        return "В базе нет данных о вашем заработке за выбранный день."
-    return (f"Вы отработали: {hbold(salary.base_hours + salary.overtime)} часов.\n"
-               f"Заработали: {salary.earned:,.2f}₽.")
+        return f"За дату {choice_date} нет данных."
+    return (
+        f"Дата: {choice_date}. \nВы отработали: {hbold(salary.base_hours + salary.overtime)} часов.\n"
+        f"Заработали: {salary.earned:,.2f}₽."
+    )
 
 
 async def get_date(data: Dict[str, str], action: str) -> Tuple[int, int]:

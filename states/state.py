@@ -25,3 +25,11 @@ class PeriodState(StatesGroup):
 
 class CalcState(StatesGroup):
     input = State()
+
+
+class RemindState(StatesGroup):
+    """Класс состояний для напоминаний."""
+
+    start = State()
+    add = State()
+    confirm = State()

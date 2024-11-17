@@ -4,41 +4,71 @@ from typing import List
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from asyncpg.pgproto.pgproto import timedelta
 
+from database.models import Salary
+
 month_tuple = {
-    1: "Январь", 2: "Февраль", 3: "Март", 4: "Апрель", 5: "Май", 6: "Июнь",
-    7: "Июль", 8: "Август", 9: "Сентябрь", 10: "Октябрь", 11: "Ноябрь",
-    12: "Декабрь"
+    1: "Январь",
+    2: "Февраль",
+    3: "Март",
+    4: "Апрель",
+    5: "Май",
+    6: "Июнь",
+    7: "Июль",
+    8: "Август",
+    9: "Сентябрь",
+    10: "Октябрь",
+    11: "Ноябрь",
+    12: "Декабрь",
 }
 
 month_data = (
-    "january", "february", "mart", "april", "mai", "june",
-    "july", "august", "september", "oktober", "november", "december",
+    "january",
+    "february",
+    "mart",
+    "april",
+    "mai",
+    "june",
+    "july",
+    "august",
+    "september",
+    "oktober",
+    "november",
+    "december",
 )
 
-cancel = [
-    [InlineKeyboardButton(text="Отмена", callback_data="main")]
-]
+cancel = [[InlineKeyboardButton(text="Отмена", callback_data="main")]]
 
 confirm: List[List[InlineKeyboardButton]] = [
-    [InlineKeyboardButton(
-        text="Отмена",
-        callback_data="main"
-    ),
-        InlineKeyboardButton(
-            text="Продолжить",
-            callback_data="continue"
-        )]
+    [
+        InlineKeyboardButton(text="Отмена", callback_data="main"),
+        InlineKeyboardButton(text="Продолжить", callback_data="continue"),
+    ]
 ]
 
 confirm_two: List[List[InlineKeyboardButton]] = [
-    [InlineKeyboardButton(
-        text="Отмена",
-        callback_data="cancel"
-    ),
-        InlineKeyboardButton(
-            text="Продолжить",
-            callback_data="continue"
-        )]
+    [
+        InlineKeyboardButton(text="Отмена", callback_data="cancel"),
+        InlineKeyboardButton(text="Продолжить", callback_data="continue"),
+    ]
+]
+
+choice_remind = [
+    [
+        InlineKeyboardButton(text="Добавить", callback_data="add_remind"),
+        InlineKeyboardButton(text="Удалить", callback_data="remove"),
+    ],
+    [
+        InlineKeyboardButton(text="Изменить время", callback_data="change_remind"),
+        InlineKeyboardButton(text="Отмена", callback_data="main"),
+    ],
+]
+
+
+confirm_button = [
+    [
+        InlineKeyboardButton(text="Да", callback_data="yes"),
+        InlineKeyboardButton(text="Нет", callback_data="main"),
+    ]
 ]
 
 
@@ -50,16 +80,13 @@ def get_year_list() -> List[List[InlineKeyboardButton]]:
     return [
         [
             InlineKeyboardButton(
-                text=str(dt.now().year - 2),
-                callback_data=str(dt.now().year - 2)
+                text=str(dt.now().year - 2), callback_data=str(dt.now().year - 2)
             ),
             InlineKeyboardButton(
-                text=str(dt.now().year - 1),
-                callback_data=str(dt.now().year - 1)
+                text=str(dt.now().year - 1), callback_data=str(dt.now().year - 1)
             ),
             InlineKeyboardButton(
-                text=str(dt.now().year),
-                callback_data=str(dt.now().year)
+                text=str(dt.now().year), callback_data=str(dt.now().year)
             ),
         ]
     ]
@@ -77,28 +104,25 @@ def get_month_list() -> List[List[InlineKeyboardButton]]:
             InlineKeyboardButton(text="Май", callback_data="mai"),
             InlineKeyboardButton(text="Июнь", callback_data="june"),
             InlineKeyboardButton(text="Июль", callback_data="july"),
-            InlineKeyboardButton(text="Август", callback_data="august")
+            InlineKeyboardButton(text="Август", callback_data="august"),
         ],
         [
             InlineKeyboardButton(text="Сентябрь", callback_data="september"),
             InlineKeyboardButton(text="Октябрь", callback_data="oktober"),
             InlineKeyboardButton(text="Ноябрь", callback_data="november"),
-            InlineKeyboardButton(text="Декабрь", callback_data="december")
-        ]
+            InlineKeyboardButton(text="Декабрь", callback_data="december"),
+        ],
     ]
 
 
 def get_menu_bot() -> List[List[InlineKeyboardButton]]:
     return [
         [
-            InlineKeyboardButton(
-                text=f"Календарь",
-                callback_data="month_current"
-            ),
-            InlineKeyboardButton(
-                text="Калькулятор", callback_data="calc"
-            ),
+            InlineKeyboardButton(text=f"Календарь", callback_data="month_current"),
+            InlineKeyboardButton(text="Калькулятор", callback_data="calc"),
+            InlineKeyboardButton(text="Настройки", callback_data="settings"),
         ],
+        [InlineKeyboardButton(text="Напоминание", callback_data="remind")],
     ]
 
 
@@ -107,11 +131,11 @@ def prediction_button() -> List[List[InlineKeyboardButton]]:
         [
             InlineKeyboardButton(
                 text=f"{month_tuple[dt.now().month]}/Посчитать",
-                callback_data="current_prediction"
+                callback_data="current_prediction",
             ),
             InlineKeyboardButton(
                 text=f"{month_tuple[(dt.now() + timedelta(days=30)).month]}/Посчитать",
-                callback_data="next_prediction"
+                callback_data="next_prediction",
             ),
         ]
     ]
@@ -133,16 +157,28 @@ async def month_menu() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=get_month_list())
 
 
-async def get_data_choices_day() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(text="Изменить", callback_data="change"),
-            InlineKeyboardButton(text="Меню", callback_data="main"),
-            InlineKeyboardButton(text="Добавить", callback_data="add")
-        ]
-    ])
+async def get_data_choices_day(salary: Salary) -> InlineKeyboardMarkup:
+    if not salary:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="Меню", callback_data="main"),
+                    InlineKeyboardButton(text="Добавить", callback_data="add"),
+                ]
+            ]
+        )
+    else:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="Меню", callback_data="main"),
+                    InlineKeyboardButton(text="Изменить", callback_data="change"),
+                ]
+            ]
+        )
 
 
 cancel_button = InlineKeyboardMarkup(inline_keyboard=cancel)
 confirm_menu = InlineKeyboardMarkup(inline_keyboard=confirm)
 confirm_menu_two = InlineKeyboardMarkup(inline_keyboard=confirm_two)
+remind_button = InlineKeyboardMarkup(inline_keyboard=choice_remind)

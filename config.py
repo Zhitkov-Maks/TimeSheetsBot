@@ -13,3 +13,5 @@ DB_PASS = os.environ.get("DB_PASS")
 BOT_TOKEN = config("TOKEN")
 
 weekdays = ("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
+app_schedule: dict = {}
+scheduler_ids: dict = {}
