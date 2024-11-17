@@ -11,6 +11,7 @@ from sqlalchemy import Sequence
 from crud.statistics import get_information_for_month, get_info_by_date
 from database.models import Salary
 from keywords.keyword import menu, get_data_choices_day
+from loader import date_pattern
 from states.state import MonthState
 from utils.genMessagePeriod import (
     generate_str,
@@ -20,7 +21,6 @@ from utils.genMessagePeriod import (
 )
 
 month_router = Router()
-date_pattern = r"^(0[1-9]|[12][0-9]|3[01])/(0[1-9]|1[0-2])/\d{4}$"
 
 
 @month_router.callback_query(F.data == "month_current")

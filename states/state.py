@@ -33,3 +33,8 @@ class RemindState(StatesGroup):
     start = State()
     add = State()
     confirm = State()
+
+
+class Expiration(StatesGroup):
+    start = State()
+    end = State()

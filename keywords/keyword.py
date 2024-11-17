@@ -79,7 +79,10 @@ def get_menu_bot() -> List[List[InlineKeyboardButton]]:
             InlineKeyboardButton(text="Калькулятор", callback_data="calc"),
             InlineKeyboardButton(text="Настройки", callback_data="settings"),
         ],
-        [InlineKeyboardButton(text="Напоминание", callback_data="remind")],
+        [
+            InlineKeyboardButton(text="Напоминание", callback_data="remind"),
+            InlineKeyboardButton(text="Сроки годности", callback_data="expiration"),
+        ],
     ]
 
 

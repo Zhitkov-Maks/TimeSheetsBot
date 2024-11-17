@@ -7,6 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 
 from config import BOT_TOKEN
+from handlers.expiration import expiration
 from handlers.month import month_router
 from handlers.remind import remind
 from utils.schedulers import create_scheduler_all
@@ -20,6 +21,7 @@ from states.state import CalcState
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
+dp.include_router(expiration)
 dp.include_router(settings_router)
 dp.include_router(create_router)
 dp.include_router(month_router)
