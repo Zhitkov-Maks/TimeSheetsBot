@@ -72,49 +72,6 @@ confirm_button = [
 ]
 
 
-def get_year_date() -> tuple:
-    return str(dt.now().year - 2), str(dt.now().year - 1), str(dt.now().year)
-
-
-def get_year_list() -> List[List[InlineKeyboardButton]]:
-    return [
-        [
-            InlineKeyboardButton(
-                text=str(dt.now().year - 2), callback_data=str(dt.now().year - 2)
-            ),
-            InlineKeyboardButton(
-                text=str(dt.now().year - 1), callback_data=str(dt.now().year - 1)
-            ),
-            InlineKeyboardButton(
-                text=str(dt.now().year), callback_data=str(dt.now().year)
-            ),
-        ]
-    ]
-
-
-def get_month_list() -> List[List[InlineKeyboardButton]]:
-    return [
-        [
-            InlineKeyboardButton(text="Январь", callback_data="january"),
-            InlineKeyboardButton(text="Февраль", callback_data="february"),
-            InlineKeyboardButton(text="Март", callback_data="mart"),
-            InlineKeyboardButton(text="Апрель", callback_data="april"),
-        ],
-        [
-            InlineKeyboardButton(text="Май", callback_data="mai"),
-            InlineKeyboardButton(text="Июнь", callback_data="june"),
-            InlineKeyboardButton(text="Июль", callback_data="july"),
-            InlineKeyboardButton(text="Август", callback_data="august"),
-        ],
-        [
-            InlineKeyboardButton(text="Сентябрь", callback_data="september"),
-            InlineKeyboardButton(text="Октябрь", callback_data="oktober"),
-            InlineKeyboardButton(text="Ноябрь", callback_data="november"),
-            InlineKeyboardButton(text="Декабрь", callback_data="december"),
-        ],
-    ]
-
-
 def get_menu_bot() -> List[List[InlineKeyboardButton]]:
     return [
         [
@@ -147,14 +104,6 @@ async def prediction() -> InlineKeyboardMarkup:
 
 async def menu() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=get_menu_bot())
-
-
-async def year_menu() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(inline_keyboard=get_year_list())
-
-
-async def month_menu() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(inline_keyboard=get_month_list())
 
 
 async def get_data_choices_day(salary: Salary) -> InlineKeyboardMarkup:
