@@ -2,16 +2,12 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher, types, F
-from aiogram.exceptions import TelegramForbiddenError
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
-from sqlalchemy import Sequence
 
 from config import BOT_TOKEN
-from crud.remind import get_all_users
 from handlers.month import month_router
-from handlers.period import period_router
 from handlers.remind import remind
 from utils.schedulers import create_scheduler_all
 from handlers.settings import settings_router
@@ -26,7 +22,6 @@ bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
 dp.include_router(settings_router)
 dp.include_router(create_router)
-dp.include_router(period_router)
 dp.include_router(month_router)
 dp.include_router(predict)
 dp.include_router(remind)
