@@ -1,5 +1,5 @@
-from sqlalchemy import Integer, String, Float, BIGINT, SMALLINT, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Integer, String, Float, BIGINT, SMALLINT
+from sqlalchemy.orm import Mapped, mapped_column
 
 from database.db_conf import Base
 
