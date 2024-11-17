@@ -1,4 +1,5 @@
 """We describe the connection to the database."""
+
 from config import DB_NAME, DB_PASS, DB_USER
 
 from sqlalchemy.ext.asyncio import (
@@ -10,7 +11,7 @@ from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
-DATABASE_URL: str = "postgresql+asyncpg://{0}:{1}@localhost:5432/{2}".format(
+DATABASE_URL: str = "postgresql+asyncpg://{0}:{1}@db_bot/{2}".format(
     DB_USER,
     DB_PASS,
     DB_NAME,
