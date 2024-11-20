@@ -11,7 +11,7 @@ from database.models import Salary
 from keywords.keyword import month_tuple
 
 # Для добавления в календарь.
-days_list = ("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
+days_list: tuple = ("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
 
 # Добавляем в календарь символы unicode чтобы
 # календарь выглядел более менее прилично.
@@ -56,7 +56,9 @@ async def create_calendar(
     field_size: int = 5
     days: int = 35
 
-    dates = {sal[0].date: int(sal[0].base_hours + sal[0].overtime) for sal in salary}
+    dates: Dict[str, int] = {
+        str(sal[0].date): int(sal[0].base_hours + sal[0].overtime) for sal in salary
+    }
     day_week: int = date(year, month, 1).weekday()
     days_in_month: int = monthrange(year, month)[1]
 
@@ -78,7 +80,7 @@ async def create_calendar(
         day = i
 
         for _ in range(field_size):
-            create_date: str = f"{numbers_list[day]}/{month:02}/{year}"
+            create_date: str = f"{year}-{month:02}-{numbers_list[day]}"
             if numbers_list[day] == " ":
                 text = " "
 
