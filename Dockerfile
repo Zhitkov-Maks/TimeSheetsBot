@@ -9,4 +9,4 @@ RUN pip install --no-cache-dir -r ./requirements.txt
 COPY . ./salary
 WORKDIR ./salary
 
-CMD ["python", "-m", "main"]
+CMD ["sh", "-c", "python migrate.py && python main.py"]
