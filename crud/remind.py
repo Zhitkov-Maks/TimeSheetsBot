@@ -7,10 +7,10 @@ from sqlalchemy import (
     ScalarResult,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.testing.plugin.plugin_base import logging
 
 from database.db_conf import get_async_session
 from database.models import Remind
-from config import logger
 
 
 async def add_user_time(time: int, user: int) -> None:
@@ -44,7 +44,7 @@ async def upgrade_time(time: int, user: int) -> None:
         remind.time = time
         await session.commit()
     else:
-        logger.error("Function upgrade_time: Напоминание не найдено чтобы менять его.")
+        logging.error("Напоминание не найдено чтобы менять его.")
 
 
 async def remove_time(user: int) -> None:
