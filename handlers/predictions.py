@@ -17,17 +17,14 @@ async def handle_info_current_month(callback: CallbackQuery):
     """
     month: int = dt.now().month
     year: int = dt.now().year
-    prediction_sum = await get_prediction_sum(
-        month, year, callback.from_user.id
-    )
+    prediction_sum: int = await get_prediction_sum(month, year, callback.from_user.id)
     await callback.message.answer(
-        text=f"Прогнозируемый заработок {prediction_sum}.",
-        reply_markup=await menu()
+        text=f"Прогнозируемый заработок {prediction_sum}.", reply_markup=await menu()
     )
 
 
 @predict.callback_query(F.data == "next_prediction")
-async def handle_info_current_month(callback: CallbackQuery):
+async def handle_info_current_month_next(callback: CallbackQuery):
     """
     Обработчик для команды month_current. Возвращает примерную за
     следующий месяц.
@@ -42,11 +39,8 @@ async def handle_info_current_month(callback: CallbackQuery):
     if dt.now().month == 12:
         year += 1
 
-    prediction_sum = await get_prediction_sum(
-        month, year, callback.from_user.id
-    )
+    prediction_sum: int = await get_prediction_sum(month, year, callback.from_user.id)
 
     await callback.message.answer(
-        text=f"Прогнозируемый заработок {prediction_sum}.",
-        reply_markup=await menu()
+        text=f"Прогнозируемый заработок {prediction_sum}.", reply_markup=await menu()
     )
