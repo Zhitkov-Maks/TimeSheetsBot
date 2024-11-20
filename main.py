@@ -1,5 +1,7 @@
-import asyncio
 import logging
+
+import asyncio
+from logging import DEBUG
 
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import CommandStart
@@ -10,6 +12,7 @@ from config import BOT_TOKEN
 from handlers.expiration import expiration
 from handlers.month import month_router
 from handlers.remind import remind
+from handlers.statistics import statistic
 from utils.schedulers import create_scheduler_all
 from handlers.settings import settings_router
 from handlers.create import create_router
@@ -21,6 +24,7 @@ from states.state import CalcState
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
+dp.include_router(statistic)
 dp.include_router(expiration)
 dp.include_router(settings_router)
 dp.include_router(create_router)
@@ -47,15 +51,15 @@ async def community_dev(message: types.Message, state: FSMContext) -> None:
 
 
 @dp.message(F.text == "/main")
-async def handle_help(message: types.Message, state: FSMContext) -> None:
-    """Обработчик команды help."""
+async def handle_help_command(message: types.Message, state: FSMContext) -> None:
+    """Обработчик команды main."""
     await state.clear()
     await message.answer("Меню", reply_markup=await menu())
 
 
 @dp.callback_query(F.data == "main")
 async def handle_help(callback: CallbackQuery, state: FSMContext) -> None:
-    """Обработчик команды help."""
+    """Обработчик команды main."""
     await state.clear()
     await callback.message.delete_reply_markup(inline_message_id=callback.id)
     await callback.message.answer("Меню", reply_markup=await menu())
@@ -98,7 +102,7 @@ async def calculate_data(message: types.Message, state: FSMContext) -> None:
 async def main():
     """Запуск бота."""
     await create_scheduler_all()
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=DEBUG)
     await dp.start_polling(bot)
 
 
