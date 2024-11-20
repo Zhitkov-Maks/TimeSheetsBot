@@ -7,7 +7,7 @@ from asyncpg.pgproto.pgproto import timedelta
 from keywords.keyword import cancel_button
 from loader import expiration_text
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import Message
 from aiogram import Router
 from aiogram import F
 from aiogram.utils.markdown import hbold
@@ -16,10 +16,11 @@ from states.state import Expiration
 expiration = Router()
 
 
-@expiration.callback_query(F.data == "expiration")
-async def input_date(callback: CallbackQuery, state: FSMContext) -> None:
+@expiration.message(F.text == "/expiration")
+async def input_date(message: Message, state: FSMContext) -> None:
+    """Обработка команды для проверки срока годности."""
     await state.set_state(Expiration.start)
-    await callback.message.answer(
+    await message.answer(
         text=expiration_text.format(hbold("дд.мм.гггг"), hbold("- и /")),
         parse_mode="HTML",
         reply_markup=cancel_button,
@@ -28,7 +29,11 @@ async def input_date(callback: CallbackQuery, state: FSMContext) -> None:
 
 @expiration.message(Expiration.start)
 async def get_expiration_date(message: Message) -> None:
-    pattern = r"(\d{2})[./-](\d{2})[./-](\d{4})"
+    """
+    Проверка введенной даты и вывод окончания срока годности
+    если данные введены верно.
+    """
+    pattern: str = r"(\d{2})[./-](\d{2})[./-](\d{4})"
     try:
         expiration_date, days = message.text.split()
         check_date: List[str] = re.findall(pattern, expiration_date)
