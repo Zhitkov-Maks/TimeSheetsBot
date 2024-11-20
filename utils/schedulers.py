@@ -3,7 +3,6 @@ from typing import List, Sequence
 from aiogram import BaseMiddleware, Bot, Dispatcher
 from aiogram.exceptions import TelegramForbiddenError
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from aiohttp import ClientError
 from apscheduler.job import Job
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
@@ -42,16 +41,16 @@ async def create_time() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=inline_time)
 
 
-async def send_message_cron(user_chat_id: int):
+async def send_message_cron(user_chat_id: int) -> None:
     """
     Отправляет сообщения в нужный чат.
     :param user_chat_id: Идентификатор чата куда посылать оповещение.
     """
     try:
-        await bot.send_message(user_chat_id, "Не забудьте про отслеживание привычек!!!")
+        await bot.send_message(user_chat_id, "Запишите как вы отработали.")
     except TelegramForbiddenError:
         # Если пользователь вдруг удалил бота. По идее хорошо бы здесь
-        # удалить юзера из уведомлений
+        # удалить юзера из уведомлений, будет время доработаем.
         pass
 
 
@@ -62,7 +61,7 @@ async def get_or_create_scheduler() -> AsyncIOScheduler:
     :return AsyncIOScheduler: Экземпляр планировщика.
     """
     if app_schedule.get("scheduler") is None:
-        scheduler = AsyncIOScheduler(timezone="Europe/Moscow")
+        scheduler: AsyncIOScheduler = AsyncIOScheduler(timezone="Europe/Moscow")
         scheduler.start()
         app_schedule["scheduler"] = scheduler
         dp.update.middleware(
