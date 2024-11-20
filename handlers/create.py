@@ -1,3 +1,5 @@
+from typing import List, Dict
+
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from aiogram import Router
@@ -15,10 +17,7 @@ create_router = Router()
 
 @create_router.callback_query(F.data.in_(["change", "add"]))
 async def on_date_today(callback: CallbackQuery, state: FSMContext) -> None:
-    """
-    Обработчик команды today, чтобы быстрее
-    добавить запись по текущему дню.
-    """
+    """Обработчик команд для добавления или изменения записи о смене."""
     await state.update_data(action=callback.data)
     await state.set_state(CreateState.check_data)
     await callback.message.answer(text=add_record_text, reply_markup=cancel_button)
@@ -26,7 +25,10 @@ async def on_date_today(callback: CallbackQuery, state: FSMContext) -> None:
 
 @create_router.message(CreateState.check_data)
 async def check_data(message: types.Message, state: FSMContext) -> None:
-    numbers: list = message.text.split("*")
+    """
+    Сохранение и проверка введенного отработанного времени.
+    """
+    numbers: List[str] = message.text.split("*")
     try:
         if len(numbers) == 1 or len(numbers) == 2:
 
@@ -56,8 +58,9 @@ async def check_data(message: types.Message, state: FSMContext) -> None:
 
 @create_router.callback_query(F.data == "continue", CreateState.select_date)
 async def ask_count_hours(callback: CallbackQuery, state: FSMContext) -> None:
+    """Добавляет или отправляет на обновление данных."""
     await state.update_data(user_id=callback.from_user.id)
-    data: dict = await state.get_data()
+    data: Dict[str, str | float] = await state.get_data()
 
     if data.get("action") == "add":
         base, overtime, earned = await earned_salary(
@@ -104,7 +107,7 @@ async def zero_record(callback: CallbackQuery, state: FSMContext) -> None:
             text="Ок, возвращаю вас в меню.", reply_markup=await menu()
         )
     else:
-        data = await state.get_data()
+        data: Dict[str, str] = await state.get_data()
         await delete_record(data)
         await callback.message.answer(
             text="Запись была удалена.", reply_markup=await menu()
