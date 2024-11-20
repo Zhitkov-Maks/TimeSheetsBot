@@ -11,6 +11,7 @@ from keywords.keyword import cancel_button, confirm_menu, menu, confirm_menu_two
 from loader import add_record_text, success_text
 from states.state import CreateState
 from utils.count import earned_salary
+from utils.create_calendar_and_message import create_message
 
 create_router = Router()
 
@@ -61,7 +62,6 @@ async def ask_count_hours(callback: CallbackQuery, state: FSMContext) -> None:
     """Добавляет или отправляет на обновление данных."""
     await state.update_data(user_id=callback.from_user.id)
     data: Dict[str, str | float] = await state.get_data()
-
     if data.get("action") == "add":
         base, overtime, earned = await earned_salary(
             data["time"], data["overtime"], callback.from_user.id
@@ -70,10 +70,19 @@ async def ask_count_hours(callback: CallbackQuery, state: FSMContext) -> None:
         await state.update_data(earned=earned)
         await write_salary(base, overtime, earned, data)
 
+        message, mess, calendar = await create_message(
+            callback.from_user.id, data["date"], state
+        )
+
         await callback.message.answer(
-            text=success_text.format(data["date"], hbold(earned)),
+            text=success_text.format(data["date"], hbold(earned)) + f"\n\n{message}",
             parse_mode="HTML",
-            reply_markup=await menu(),
+        )
+
+        await callback.message.answer(
+            text=mess,
+            parse_mode="HTML",
+            reply_markup=calendar,
         )
 
     else:
@@ -90,10 +99,21 @@ async def ask_count_hours(callback: CallbackQuery, state: FSMContext) -> None:
 
             await state.update_data(earned=earned)
             await update_salary(base, overtime, earned, data)
+
+            message, mess, calendar = await create_message(
+                callback.from_user.id, data["date"], state
+            )
+
             await callback.message.answer(
-                text=success_text.format(data["date"], hbold(earned)),
+                text=success_text.format(data["date"], hbold(earned))
+                + f"\n\n{message}",
                 parse_mode="HTML",
-                reply_markup=await menu(),
+            )
+
+            await callback.message.answer(
+                text=mess,
+                parse_mode="HTML",
+                reply_markup=calendar,
             )
 
 

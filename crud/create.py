@@ -37,7 +37,7 @@ async def write_salary(
 
 
 async def update_salary(
-    base: int, overtime: int, earned: int, data_: Dict[str, int | str]
+    base: float, overtime: float, earned: float, data_: Dict[str, int | str]
 ) -> None:
     """
     Функция для обновления данных о смене в базе данных.
