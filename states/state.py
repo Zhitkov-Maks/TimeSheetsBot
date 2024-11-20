@@ -2,39 +2,43 @@ from aiogram.fsm.state import StatesGroup, State
 
 
 class MonthState(StatesGroup):
-    choice = State()
+    choice: State = State()
 
 
 class SettingsState(StatesGroup):
-    price = State()
-    change_settings = State()
-    overtime_price = State()
+    price: State = State()
+    change_settings: State = State()
+    overtime_price: State = State()
 
 
 class CreateState(StatesGroup):
-    check_data = State()
-    select_date = State()
-    confirm = State()
-    zero = State()
+    check_data: State = State()
+    select_date: State = State()
+    confirm: State = State()
+    zero: State = State()
 
 
 class PeriodState(StatesGroup):
-    month = State()
-    year = State()
+    month: State = State()
+    year: State = State()
 
 
 class CalcState(StatesGroup):
-    input = State()
+    input: State = State()
 
 
 class RemindState(StatesGroup):
     """Класс состояний для напоминаний."""
 
-    start = State()
-    add = State()
-    confirm = State()
+    start: State = State()
+    add: State = State()
+    confirm: State = State()
 
 
 class Expiration(StatesGroup):
-    start = State()
-    end = State()
+    start: State = State()
+    end: State = State()
+
+
+class StatisticState(StatesGroup):
+    year: State = State()
