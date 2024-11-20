@@ -1,12 +1,12 @@
 from datetime import datetime as dt
-from typing import List
+from typing import List, Dict
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from asyncpg.pgproto.pgproto import timedelta
 
 from database.models import Salary
 
-month_tuple = {
+month_tuple: Dict[int, str] = {
     1: "Январь",
     2: "Февраль",
     3: "Март",
@@ -21,7 +21,7 @@ month_tuple = {
     12: "Декабрь",
 }
 
-month_data = (
+month_data: tuple = (
     "january",
     "february",
     "mart",
@@ -36,7 +36,9 @@ month_data = (
     "december",
 )
 
-cancel = [[InlineKeyboardButton(text="Отмена", callback_data="main")]]
+cancel: List[List[InlineKeyboardButton]] = [
+    [InlineKeyboardButton(text="Отмена", callback_data="main")]
+]
 
 confirm: List[List[InlineKeyboardButton]] = [
     [
@@ -52,7 +54,7 @@ confirm_two: List[List[InlineKeyboardButton]] = [
     ]
 ]
 
-choice_remind = [
+choice_remind: List[List[InlineKeyboardButton]] = [
     [
         InlineKeyboardButton(text="Добавить", callback_data="add_remind"),
         InlineKeyboardButton(text="Удалить", callback_data="remove"),
@@ -64,7 +66,7 @@ choice_remind = [
 ]
 
 
-confirm_button = [
+confirm_button: List[List[InlineKeyboardButton]] = [
     [
         InlineKeyboardButton(text="Да", callback_data="yes"),
         InlineKeyboardButton(text="Нет", callback_data="main"),
@@ -81,7 +83,7 @@ def get_menu_bot() -> List[List[InlineKeyboardButton]]:
         ],
         [
             InlineKeyboardButton(text="Напоминание", callback_data="remind"),
-            InlineKeyboardButton(text="Сроки годности", callback_data="expiration"),
+            InlineKeyboardButton(text="Статистика за год", callback_data="statistic"),
         ],
     ]
 
@@ -130,7 +132,11 @@ async def get_data_choices_day(salary: Salary) -> InlineKeyboardMarkup:
         )
 
 
-cancel_button = InlineKeyboardMarkup(inline_keyboard=cancel)
-confirm_menu = InlineKeyboardMarkup(inline_keyboard=confirm)
-confirm_menu_two = InlineKeyboardMarkup(inline_keyboard=confirm_two)
-remind_button = InlineKeyboardMarkup(inline_keyboard=choice_remind)
+cancel_button: InlineKeyboardMarkup = InlineKeyboardMarkup(inline_keyboard=cancel)
+confirm_menu: InlineKeyboardMarkup = InlineKeyboardMarkup(inline_keyboard=confirm)
+confirm_menu_two: InlineKeyboardMarkup = InlineKeyboardMarkup(
+    inline_keyboard=confirm_two
+)
+remind_button: InlineKeyboardMarkup = InlineKeyboardMarkup(
+    inline_keyboard=choice_remind
+)
