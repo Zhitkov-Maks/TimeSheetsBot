@@ -9,14 +9,14 @@ from database.db_conf import get_async_session
 from utils.count import Employee
 
 
-async def get_prediction_sum(
-    month: int,
-    year: int,
-    user_id: int
-) -> int:
+async def get_prediction_sum(month: int, year: int, user_id: int) -> int:
     """
     Функция для вычисления ожидаемой зп. Подсчет основан на том основании,
     что у меня один доп и 2 раза в неделю остаюсь до семи.
+    :param month: Месяц выбранный.
+    :param year: Выбранный год.
+    :param user_id: Id юзера.
+    :return: Прогнозируемую сумму.
     """
     # Получим настройки стоимости для конкретного пользователя
     session: AsyncSession = await get_async_session()
@@ -32,8 +32,7 @@ async def get_prediction_sum(
     total_sum: int = 0
     for i in range(1, days_in_month + 1):
         days: str = str(i) if i > 9 else f"0{i}"
-        wd = datetime.strptime(f"{days}-{month}-{year}",
-                               '%d-%m-%Y').weekday()
+        wd = datetime.strptime(f"{days}-{month}-{year}", "%d-%m-%Y").weekday()
         if wd in (1, 3):
             total_sum += price.price * 9 + (price.price + price.overtime) * 2
         elif wd in (0, 2, 4):
