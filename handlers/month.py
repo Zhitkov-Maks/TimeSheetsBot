@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from typing import Dict
 
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup
@@ -55,7 +56,10 @@ async def handle_info_current_month(callback: CallbackQuery, state: FSMContext) 
     lambda callback_query: re.match(date_pattern, callback_query.data),
 )
 async def choice_day_on_month(callback: CallbackQuery, state: FSMContext) -> None:
-    choice_date = callback.data
+    """
+    Обрабатывает выбранный день в календаре.
+    """
+    choice_date: str = callback.data
     await state.update_data(date=choice_date)
 
     info_for_date: Salary | None = await get_info_by_date(
@@ -69,8 +73,11 @@ async def choice_day_on_month(callback: CallbackQuery, state: FSMContext) -> Non
 
 @month_router.callback_query(F.data.in_(["next", "prev"]))
 async def next_and_prev_month(callback: CallbackQuery, state: FSMContext) -> None:
+    """
+    Обрабатывает команды на предыдущий или следующий месяц.
+    """
     await callback.message.delete_reply_markup(inline_message_id=callback.id)
-    data = await state.get_data()
+    data: Dict[str, str] = await state.get_data()
     if len(data) != 0:
         year, month = await get_date(data, callback.data)
 
