@@ -42,6 +42,7 @@ async def choice_year(callback: CallbackQuery, state: FSMContext) -> None:
     await callback.message.delete_reply_markup(inline_message_id=callback.id)
     year: int = int(callback.data)
     result: Row[tuple] = await request_statistic(callback.from_user.id, year)
+    await state.clear()
     if result[0] is not None:
         mess: str = (
             f"Ваша статистика за {hbold(year)} год.\n"
@@ -49,11 +50,11 @@ async def choice_year(callback: CallbackQuery, state: FSMContext) -> None:
             f"Отработано часов: {hbold(result[1] + result[2])}ч\n"
             f"Из них переработки: {hbold(result[2])}ч."
         )
+
         await callback.message.answer(
             text=mess, parse_mode="HTML", reply_markup=await menu()
         )
     else:
-        await state.clear()
         await callback.message.answer(
             text="За выбранный год нет данных.", reply_markup=await menu()
         )
