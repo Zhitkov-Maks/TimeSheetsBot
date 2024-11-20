@@ -6,7 +6,6 @@ from sqlalchemy import (
     Delete,
     ScalarResult,
 )
-from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.db_conf import get_async_session
