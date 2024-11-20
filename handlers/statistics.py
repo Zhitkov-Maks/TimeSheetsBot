@@ -44,7 +44,7 @@ async def choice_year(callback: CallbackQuery, state: FSMContext) -> None:
     result: Row[tuple] = await request_statistic(callback.from_user.id, year)
     if result[0] is not None:
         mess: str = (
-            f"Ваша статистика за {hbold(year)} год."
+            f"Ваша статистика за {hbold(year)} год.\n"
             f"Заработано: {hbold(result[0])}₽\n"
             f"Отработано часов: {hbold(result[1] + result[2])}ч\n"
             f"Из них переработки: {hbold(result[2])}ч."
