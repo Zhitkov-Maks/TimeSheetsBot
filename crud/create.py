@@ -19,7 +19,7 @@ async def write_salary(
     :param data_: Словарь с остальными данными.
     """
     session: AsyncSession = await get_async_session()
-    period: int = 1 if int(data_["date"][:2]) <= 15 else 2
+    period: int = 1 if int(data_["date"][-2:]) <= 15 else 2
     parse_date: date = datetime.strptime(data_["date"], "%Y-%m-%d")
 
     data: dict = {
