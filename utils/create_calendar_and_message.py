@@ -6,7 +6,7 @@ from aiogram.utils.markdown import hbold
 
 from crud.statistics import get_information_for_month
 from states.state import MonthState
-from utils.genMessagePeriod import create_calendar, generate_str
+from utils.gen_message_period import create_calendar, generate_str
 
 
 async def create_message(
