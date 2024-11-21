@@ -56,6 +56,12 @@ async def get_information_for_month(user_id: int, year: int, month: int) -> Sequ
 
 
 async def get_info_by_date(user_id: int, date: str) -> Salary:
+    """
+    Показ данных за выбранное число.
+    :param user_id: Идентификатор пользователя.
+    :param date: Выбранная дата.
+    :return: Данные за выбранный месяц.
+    """
     session: AsyncSession = await get_async_session()
     parse_date: date = datetime.strptime(date, "%Y-%m-%d")
     stmt: Select = (
