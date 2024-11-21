@@ -14,7 +14,7 @@ from database.models import Salary
 from keywords.keyword import menu, get_data_choices_day
 from loader import date_pattern
 from states.state import MonthState
-from utils.genMessagePeriod import (
+from utils.gen_message_period import (
     generate_str,
     create_calendar,
     gen_message_for_choice_day,
