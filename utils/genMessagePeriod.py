@@ -67,6 +67,10 @@ async def create_calendar(
         field_size = 6
         days = 42
 
+    elif days_in_month + day_week < 29:
+        field_size = 4
+        days = 28
+
     numbers_list: List[str] = (
         [" "] * day_week
         + [f"{i:02}" for i in range(1, days_in_month + 1)]
