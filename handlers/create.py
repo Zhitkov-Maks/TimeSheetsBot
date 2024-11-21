@@ -129,9 +129,6 @@ async def zero_record(callback: CallbackQuery, state: FSMContext) -> None:
     else:
         data: Dict[str, str] = await state.get_data()
         await delete_record(data)
-        await callback.message.answer(
-            text="Запись была удалена.", reply_markup=await menu()
-        )
 
         message, mess, calendar = await create_message(
             callback.from_user.id, data["date"], state
