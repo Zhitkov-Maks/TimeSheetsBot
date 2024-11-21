@@ -1,15 +1,12 @@
 from aiogram import Router
 from aiogram import types, F
 from aiogram.fsm.context import FSMContext
-from aiogram.types import (
-    ReplyKeyboardRemove,
-    CallbackQuery,
-)
+from aiogram.types import CallbackQuery
 from aiogram.utils.markdown import hbold
 
 from crud.settings import write_settings, get_settings_user_by_id
 from database import Settings
-from keywords.keyword import menu, confirm_menu
+from keywords.keyword import menu, confirm_menu, cancel_button
 from states.state import SettingsState
 
 settings_router = Router()
@@ -29,7 +26,7 @@ async def ask_price(callback: types.CallbackQuery, state: FSMContext):
         await state.set_state(SettingsState.price)
         await callback.message.answer(
             "Введите вашу почасовую ставку: ",
-            reply_markup=ReplyKeyboardRemove(),
+            reply_markup=cancel_button,
         )
 
     else:
