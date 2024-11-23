@@ -47,13 +47,6 @@ confirm: List[List[InlineKeyboardButton]] = [
     ]
 ]
 
-confirm_two: List[List[InlineKeyboardButton]] = [
-    [
-        InlineKeyboardButton(text="Отмена", callback_data="cancel"),
-        InlineKeyboardButton(text="Продолжить", callback_data="continue"),
-    ]
-]
-
 choice_remind: List[List[InlineKeyboardButton]] = [
     [
         InlineKeyboardButton(text="Добавить", callback_data="add_remind"),
@@ -63,14 +56,6 @@ choice_remind: List[List[InlineKeyboardButton]] = [
         InlineKeyboardButton(text="Изменить время", callback_data="change_remind"),
         InlineKeyboardButton(text="Отмена", callback_data="main"),
     ],
-]
-
-
-confirm_button: List[List[InlineKeyboardButton]] = [
-    [
-        InlineKeyboardButton(text="Да", callback_data="yes"),
-        InlineKeyboardButton(text="Нет", callback_data="main"),
-    ]
 ]
 
 
@@ -125,6 +110,7 @@ async def get_data_choices_day(salary: Salary) -> InlineKeyboardMarkup:
         return InlineKeyboardMarkup(
             inline_keyboard=[
                 [
+                    InlineKeyboardButton(text="Удалить", callback_data="del"),
                     InlineKeyboardButton(text="Меню", callback_data="main"),
                     InlineKeyboardButton(text="Изменить", callback_data="change"),
                 ]
@@ -134,9 +120,6 @@ async def get_data_choices_day(salary: Salary) -> InlineKeyboardMarkup:
 
 cancel_button: InlineKeyboardMarkup = InlineKeyboardMarkup(inline_keyboard=cancel)
 confirm_menu: InlineKeyboardMarkup = InlineKeyboardMarkup(inline_keyboard=confirm)
-confirm_menu_two: InlineKeyboardMarkup = InlineKeyboardMarkup(
-    inline_keyboard=confirm_two
-)
 remind_button: InlineKeyboardMarkup = InlineKeyboardMarkup(
     inline_keyboard=choice_remind
 )

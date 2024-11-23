@@ -4,14 +4,12 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from aiogram import Router
 from aiogram import types, F
-from aiogram.utils.markdown import hbold
 
-from crud.create import write_salary, update_salary, delete_record
-from keywords.keyword import cancel_button, confirm_menu, menu, confirm_menu_two
-from loader import add_record_text, success_text
+from crud.create import delete_record
+from handlers.bot_answer import send_calendar_and_message, processing_data
+from keywords.keyword import cancel_button
+from loader import add_record_text
 from states.state import CreateState
-from utils.count import earned_salary
-from utils.create_calendar_and_message import create_message
 
 create_router = Router()
 
@@ -39,17 +37,19 @@ async def check_data(message: types.Message, state: FSMContext) -> None:
             else:
                 time, overtime = float(numbers[0]), float(numbers[1])
 
-            await state.set_state(CreateState.select_date)
-            await state.update_data(time=time)
-            await state.update_data(overtime=overtime)
-            await message.answer(
-                "Введены корректные данные.", reply_markup=confirm_menu
+            if time + overtime > 24 or time > 24 or time + overtime < 1:
+                raise ValueError
+
+            await state.update_data(user_id=message.from_user.id)
+            data: Dict[str, str | float] = await state.get_data()
+            await processing_data(
+                message.from_user.id, time, overtime, state, data
             )
+
         else:
             raise ValueError
 
     except ValueError:
-        await state.set_state(CreateState.check_data)
         await message.answer(
             "Введенные данные не соответствуют требованиям. \n"
             "Пример: 6.5*5. Попробуйте еще раз.",
@@ -57,90 +57,15 @@ async def check_data(message: types.Message, state: FSMContext) -> None:
         )
 
 
-@create_router.callback_query(F.data == "continue", CreateState.select_date)
-async def ask_count_hours(callback: CallbackQuery, state: FSMContext) -> None:
-    """Добавляет или отправляет на обновление данных."""
-    await state.update_data(user_id=callback.from_user.id)
-    data: Dict[str, str | float] = await state.get_data()
-    if data.get("action") == "add":
-        base, overtime, earned = await earned_salary(
-            data["time"], data["overtime"], callback.from_user.id
-        )
-
-        await state.update_data(earned=earned)
-        await write_salary(base, overtime, earned, data)
-
-        message, mess, calendar = await create_message(
-            callback.from_user.id, data["date"], state
-        )
-
-        await callback.message.answer(
-            text=success_text.format(data["date"], hbold(earned)) + f"\n\n{message}",
-            parse_mode="HTML",
-        )
-
-        await callback.message.answer(
-            text=mess,
-            parse_mode="HTML",
-            reply_markup=calendar,
-        )
-
-    else:
-        if data["time"] == float(0) and data["overtime"] == float(0):
-            await state.set_state(CreateState.zero)
-            await callback.message.answer(
-                text="Вы хотите удалить запись?", reply_markup=confirm_menu_two
-            )
-
-        else:
-            base, overtime, earned = await earned_salary(
-                data["time"], data["overtime"], callback.from_user.id
-            )
-
-            await state.update_data(earned=earned)
-            await update_salary(base, overtime, earned, data)
-
-            message, mess, calendar = await create_message(
-                callback.from_user.id, data["date"], state
-            )
-
-            await callback.message.answer(
-                text=success_text.format(data["date"], hbold(earned))
-                + f"\n\n{message}",
-                parse_mode="HTML",
-            )
-
-            await callback.message.answer(
-                text=mess,
-                parse_mode="HTML",
-                reply_markup=calendar,
-            )
-
-
-@create_router.callback_query(
-    (F.data == "cancel") | (F.data == "continue"), CreateState.zero
-)
+@create_router.callback_query(F.data == "del")
 async def zero_record(callback: CallbackQuery, state: FSMContext) -> None:
     """Отправка на удаление записи."""
-    if callback.data == "cancel":
-        await callback.message.answer(
-            text="Ок, возвращаю вас в меню.", reply_markup=await menu()
-        )
-    else:
-        data: Dict[str, str] = await state.get_data()
-        await delete_record(data)
+    await state.update_data(user_id=callback.from_user.id)
+    data: Dict[str, str] = await state.get_data()
 
-        message, mess, calendar = await create_message(
-            callback.from_user.id, data["date"], state
-        )
-
-        await callback.message.answer(
-            text="Запись была удалена." + f"\n\n{message}",
-            parse_mode="HTML",
-        )
-
-        await callback.message.answer(
-            text=mess,
-            parse_mode="HTML",
-            reply_markup=calendar,
-        )
+    await delete_record(data)
+    await callback.message.answer(
+        text="Запись была удалена.",
+        parse_mode="HTML",
+    )
+    await send_calendar_and_message(callback.from_user.id, data, state)

@@ -13,9 +13,6 @@ class SettingsState(StatesGroup):
 
 class CreateState(StatesGroup):
     check_data: State = State()
-    select_date: State = State()
-    confirm: State = State()
-    zero: State = State()
 
 
 class PeriodState(StatesGroup):
