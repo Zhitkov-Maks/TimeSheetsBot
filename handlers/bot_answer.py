@@ -1,7 +1,10 @@
-from typing import Dict
+import asyncio
+from typing import Dict, Sequence
 
 from aiogram import Bot
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
+from aiogram.types import InlineKeyboardMarkup, Message
 from aiogram.utils.markdown import hbold
 
 from config import BOT_TOKEN
@@ -9,6 +12,7 @@ from crud.create import write_salary, update_salary
 from loader import success_text
 from utils.count import earned_salary
 from utils.create_calendar_and_message import create_message
+from utils.gen_message_period import create_calendar, generate_str
 
 bot = Bot(token=BOT_TOKEN)
 
@@ -26,18 +30,13 @@ async def send_calendar_and_message(
         user, data["date"], state
     )
 
-    await bot.send_message(
+    send_calendar: Message = await bot.send_message(
         chat_id=user,
-        text=f"\n\n{message}",
-        parse_mode="HTML",
-    )
-
-    await bot.send_message(
-        chat_id=user,
-        text=mess,
+        text=f"\n\n{message}\n\n" + mess,
         parse_mode="HTML",
         reply_markup=calendar,
     )
+    asyncio.create_task(delete_message_after_delay(send_calendar, 60))
 
 
 async def processing_data(
@@ -48,7 +47,7 @@ async def processing_data(
     data: Dict[str, str | int]
 ) -> None:
     base, overtime, earned = await earned_salary(time, overtime, user_id)
-    await bot.send_message(
+    send_message : Message = await bot.send_message(
         chat_id=user_id,
         text=success_text.format(data["date"], hbold(earned)),
         parse_mode="HTML",
@@ -61,3 +60,34 @@ async def processing_data(
         await update_salary(base, overtime, earned, data)
 
     await send_calendar_and_message(user_id, data, state)
+    asyncio.create_task(delete_message_after_delay(send_message, 15))
+
+
+async def sent_calendar(
+    year: int,
+    month: int,
+    result: Sequence,
+    user_id: int,
+    delay=60
+) -> None:
+    """
+    Функция, чтобы убрать дублирование код из обработчиков.
+    """
+    calendar: InlineKeyboardMarkup = await create_calendar(result, year, month)
+    message: str = await generate_str(result, month)
+
+    send_calendar: Message = await bot.send_message(
+        user_id,
+         message + f"\n\nКалендарь за - {hbold(month)}/{hbold(year)}",
+        reply_markup=calendar,
+        parse_mode="HTML",
+    )
+    asyncio.create_task(delete_message_after_delay(send_calendar, delay))
+
+
+async def delete_message_after_delay(message: Message, delay: int) -> None:
+    await asyncio.sleep(delay)
+    try:
+        await message.delete()
+    except TelegramBadRequest:
+        pass

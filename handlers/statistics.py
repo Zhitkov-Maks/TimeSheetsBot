@@ -1,18 +1,22 @@
+import asyncio
 from datetime import datetime
 from typing import List
 
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
-from aiogram.utils.markdown import hbold
+from aiogram.types import CallbackQuery, InlineKeyboardButton, \
+    InlineKeyboardMarkup, Message
 from sqlalchemy import Row
 
+from config import BOT_TOKEN
 from crud.statistics import request_statistic
+from handlers.bot_answer import delete_message_after_delay
 from keywords.keyword import menu
 from states.state import StatisticState
 from utils.gen_statistic_message import gen_message_statistic
 
 statistic: Router = Router()
+bot = Bot(token=BOT_TOKEN)
 
 
 @statistic.callback_query(F.data == "statistic")
@@ -33,6 +37,7 @@ async def get_statistics(callback: CallbackQuery, state: FSMContext) -> None:
     await callback.message.answer(
         text="Выберите год.", reply_markup=InlineKeyboardMarkup(inline_keyboard=keyword)
     )
+    await asyncio.create_task(delete_message_after_delay(callback.message, 0))
 
 
 @statistic.callback_query(StatisticState.year)
@@ -46,9 +51,15 @@ async def choice_year(callback: CallbackQuery, state: FSMContext) -> None:
     if result[0] is not None:
         mess: str = await gen_message_statistic(result, year)
 
-        await callback.message.answer(
+        sent_message: Message = await callback.message.answer(
             text=mess, parse_mode="HTML", reply_markup=await menu()
         )
+
+        await asyncio.create_task(
+            delete_message_after_delay(callback.message, 0))
+        await asyncio.create_task(
+            delete_message_after_delay(sent_message, 60))
+
     else:
         await callback.message.answer(
             text="За выбранный год нет данных.", reply_markup=await menu()

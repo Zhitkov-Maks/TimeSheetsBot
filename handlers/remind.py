@@ -1,9 +1,12 @@
+import asyncio
+
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from aiohttp import ClientError
 
 from crud.remind import remove_time, add_user_time, upgrade_time
+from handlers.bot_answer import delete_message_after_delay
 from keywords.keyword import remind_button, confirm_menu, menu
 from states.state import RemindState
 from utils.schedulers import create_time, add_send_message, remove_scheduler_job
@@ -19,6 +22,7 @@ async def start_work_to_remind(call: CallbackQuery, state: FSMContext) -> None:
     """
     await state.set_state(RemindState.start)
     await call.message.answer(text="Выберите действие", reply_markup=remind_button)
+    await asyncio.create_task(delete_message_after_delay(call.message, 0))
 
 
 @remind.callback_query(RemindState.start, F.data == "remove")
@@ -29,9 +33,10 @@ async def confirm_to_remove_remind(call: CallbackQuery, state: FSMContext) -> No
     """
     await state.set_state(RemindState.confirm)
     await call.message.answer(text="Вы уверены?", reply_markup=confirm_menu)
+    await asyncio.create_task(delete_message_after_delay(call.message, 0))
 
 
-@remind.callback_query(RemindState.confirm, F.data == "yes")
+@remind.callback_query(RemindState.confirm, F.data == "continue")
 async def finalize_remove(call: CallbackQuery) -> None:
     """Обработчик для удаления напоминания."""
     try:
@@ -42,6 +47,8 @@ async def finalize_remove(call: CallbackQuery) -> None:
         )
     except (ClientError, KeyError) as err:
         await call.message.answer(text=str(err), reply_markup=await menu())
+
+    await asyncio.create_task(delete_message_after_delay(call.message, 0))
 
 
 @remind.callback_query(RemindState.start, F.data.in_(["add_remind", "change_remind"]))
@@ -62,6 +69,7 @@ async def add_remind(call: CallbackQuery, state: FSMContext) -> None:
         text="Выберите в какой час вам напомнить о необходимости сделать запись.",
         reply_markup=await create_time(),
     )
+    await asyncio.create_task(delete_message_after_delay(call.message, 0))
 
 
 @remind.callback_query(RemindState.add, F.data.isdigit())
@@ -86,3 +94,5 @@ async def finalize_add_remind(call: CallbackQuery, state: FSMContext) -> None:
         )
     except (ClientError, KeyError) as err:
         await call.message.answer(text=str(err), reply_markup=await menu())
+
+    await asyncio.create_task(delete_message_after_delay(call.message, 0))

@@ -1,27 +1,28 @@
+import asyncio
 import re
 from datetime import datetime
 from typing import Dict
 
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup
-from aiogram import Router
+from aiogram import Router, Bot
 from aiogram import F
-from aiogram.utils.markdown import hbold
 from sqlalchemy import Sequence
 
+from config import BOT_TOKEN
 from crud.statistics import get_information_for_month, get_info_by_date
 from database.models import Salary
+from handlers.bot_answer import sent_calendar, delete_message_after_delay
 from keywords.keyword import menu, get_data_choices_day
 from loader import date_pattern
 from states.state import MonthState
 from utils.gen_message_period import (
-    generate_str,
-    create_calendar,
     gen_message_for_choice_day,
     get_date,
 )
 
 month_router = Router()
+bot = Bot(token=BOT_TOKEN)
 
 
 @month_router.callback_query(F.data == "month_current")
@@ -30,7 +31,6 @@ async def handle_info_current_month(callback: CallbackQuery, state: FSMContext) 
     Обработчик для команды month_current. Получает информацию
     о текущем месяце.
     """
-    await callback.message.delete_reply_markup(inline_message_id=callback.id)
     year: int = datetime.now().year
     month: int = datetime.now().month
     result: Sequence = await get_information_for_month(
@@ -39,16 +39,8 @@ async def handle_info_current_month(callback: CallbackQuery, state: FSMContext) 
 
     await state.set_state(MonthState.choice)
     await state.update_data(year=year, month=month)
-
-    calendar: InlineKeyboardMarkup = await create_calendar(result, year, month)
-    message: str = await generate_str(result, month)
-
-    await callback.message.answer(message, parse_mode="HTML")
-    await callback.message.answer(
-        f"Календарь за - {hbold(month)}/{hbold(year)}",
-        reply_markup=calendar,
-        parse_mode="HTML",
-    )
+    await sent_calendar(year, month, result, callback.from_user.id)
+    await callback.message.delete()
 
 
 @month_router.callback_query(
@@ -76,8 +68,8 @@ async def next_and_prev_month(callback: CallbackQuery, state: FSMContext) -> Non
     """
     Обрабатывает команды на предыдущий или следующий месяц.
     """
-    await callback.message.delete_reply_markup(inline_message_id=callback.id)
-    data: Dict[str, str] = await state.get_data()
+    data: Dict[str, str | int] = await state.get_data()
+
     if len(data) != 0:
         year, month = await get_date(data, callback.data)
 
@@ -86,16 +78,10 @@ async def next_and_prev_month(callback: CallbackQuery, state: FSMContext) -> Non
         )
         await state.update_data(year=year, month=month)
         await state.set_state(MonthState.choice)
-        calendar: InlineKeyboardMarkup = await create_calendar(result, year, month)
-        message: str = await generate_str(result, month)
+        await sent_calendar(year, month, result, callback.from_user.id)
+        await asyncio.create_task(
+            delete_message_after_delay(callback.message, 0))
 
-        await callback.message.answer(message, parse_mode="HTML")
-
-        await callback.message.answer(
-            f"Календарь за - {hbold(month)}/{hbold(year)}",
-            reply_markup=calendar,
-            parse_mode="HTML",
-        )
     else:
         await state.clear()
         await callback.message.answer(

@@ -63,7 +63,6 @@ def get_menu_bot() -> List[List[InlineKeyboardButton]]:
     return [
         [
             InlineKeyboardButton(text=f"Календарь", callback_data="month_current"),
-            InlineKeyboardButton(text="Калькулятор", callback_data="calc"),
             InlineKeyboardButton(text="Настройки", callback_data="settings"),
         ],
         [

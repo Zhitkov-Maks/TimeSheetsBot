@@ -1,8 +1,11 @@
+import asyncio
 from datetime import datetime as dt
 
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from aiogram import Router
 from aiogram import F
+
+from handlers.bot_answer import delete_message_after_delay
 from keywords.keyword import menu
 from utils.prediction import get_prediction_sum
 
@@ -18,9 +21,11 @@ async def handle_info_current_month(callback: CallbackQuery):
     month: int = dt.now().month
     year: int = dt.now().year
     prediction_sum: int = await get_prediction_sum(month, year, callback.from_user.id)
-    await callback.message.answer(
+    send_message: Message = await callback.message.answer(
         text=f"Прогнозируемый заработок {prediction_sum}.", reply_markup=await menu()
     )
+    await asyncio.create_task(delete_message_after_delay(callback.message, 5))
+    await asyncio.create_task(delete_message_after_delay(send_message, 30))
 
 
 @predict.callback_query(F.data == "next_prediction")
@@ -41,6 +46,8 @@ async def handle_info_current_month_next(callback: CallbackQuery):
 
     prediction_sum: int = await get_prediction_sum(month, year, callback.from_user.id)
 
-    await callback.message.answer(
+    send_message: Message = await callback.message.answer(
         text=f"Прогнозируемый заработок {prediction_sum}.", reply_markup=await menu()
     )
+    await asyncio.create_task(delete_message_after_delay(callback.message, 5))
+    await asyncio.create_task(delete_message_after_delay(send_message, 30))

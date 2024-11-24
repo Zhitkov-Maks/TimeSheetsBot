@@ -19,11 +19,6 @@ class PeriodState(StatesGroup):
     month: State = State()
     year: State = State()
 
-
-class CalcState(StatesGroup):
-    input: State = State()
-
-
 class RemindState(StatesGroup):
     """Класс состояний для напоминаний."""
 

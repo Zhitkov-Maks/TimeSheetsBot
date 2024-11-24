@@ -44,7 +44,7 @@ async def upgrade_time(time: int, user: int) -> None:
         remind.time = time
         await session.commit()
     else:
-        logging.error("Напоминание не найдено чтобы менять его.")
+        pass
 
 
 async def remove_time(user: int) -> None:

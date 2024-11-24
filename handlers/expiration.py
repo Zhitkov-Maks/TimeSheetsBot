@@ -1,9 +1,11 @@
+import asyncio
 import re
 from datetime import date
 from typing import List
 
 from asyncpg.pgproto.pgproto import timedelta
 
+from handlers.bot_answer import delete_message_after_delay
 from keywords.keyword import cancel_button
 from loader import expiration_text
 from aiogram.fsm.context import FSMContext
@@ -20,11 +22,13 @@ expiration = Router()
 async def input_date(message: Message, state: FSMContext) -> None:
     """Обработка команды для проверки срока годности."""
     await state.set_state(Expiration.start)
-    await message.answer(
+    send_message = await message.answer(
         text=expiration_text.format(hbold("дд.мм.гггг"), hbold("- и /")),
         parse_mode="HTML",
         reply_markup=cancel_button,
     )
+    await asyncio.create_task(delete_message_after_delay(message, 2))
+    await asyncio.create_task(delete_message_after_delay(send_message, 10))
 
 
 @expiration.message(Expiration.start)
@@ -46,7 +50,7 @@ async def get_expiration_date(message: Message) -> None:
         )
 
         ended_date: str = (input_data + timedelta(days=int(days))).strftime("%d-%m-%Y")
-        await message.answer(
+        send_message: Message = await message.answer(
             text=f"Товар хранится до {hbold(ended_date)}."
             f"\n{expiration_text.format(hbold("дд.мм.гггг"), hbold("- и /"))}",
             parse_mode="HTML",
@@ -54,9 +58,11 @@ async def get_expiration_date(message: Message) -> None:
         )
 
     except ValueError:
-        await message.answer(
+        send_message: Message = await message.answer(
             text=f"Ошибка ввода, попробуйте еще раз.\n"
             f"{expiration_text.format(hbold("дд.мм.гггг"), hbold("- и /"))}",
             parse_mode="HTML",
             reply_markup=cancel_button,
         )
+    await asyncio.create_task(delete_message_after_delay(message, 10))
+    await asyncio.create_task(delete_message_after_delay(send_message, 60))
