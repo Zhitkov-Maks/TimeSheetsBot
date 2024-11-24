@@ -59,18 +59,18 @@ async def handle_help_command(message: types.Message,
                               state: FSMContext) -> None:
     """Обработчик команды main."""
     await state.clear()
+    await message.answer("Меню", reply_markup=await menu())
     if hasattr(message, 'delete'):
         await message.delete()
-    await message.answer("Меню", reply_markup=await menu())
 
 
 @dp.callback_query(F.data == "main")
 async def handle_help(callback: CallbackQuery, state: FSMContext) -> None:
     """Обработчик команды main."""
     await state.clear()
+    await callback.message.answer("Меню", reply_markup=await menu())
     if hasattr(callback.message, 'delete'):
         await callback.message.delete()
-    await callback.message.answer("Меню", reply_markup=await menu())
 
 
 @dp.message(F.text == "/info")
