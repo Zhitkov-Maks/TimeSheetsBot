@@ -19,10 +19,10 @@ predict = Router()
 @predict.callback_query(F.data == "prediction")
 async def start_prediction(callback: CallbackQuery) -> None:
     """Обработчик команды прогноза"""
-    await callback.message.delete()
     await callback.message.answer(
         text="Выберите месяц для прогноза.", reply_markup=await prediction()
     )
+    await callback.message.delete()
 
 
 @predict.callback_query(F.data.in_(["current", "next_month"]))
