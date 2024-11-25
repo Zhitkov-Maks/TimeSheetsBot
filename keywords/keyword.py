@@ -1,8 +1,6 @@
-from datetime import datetime as dt
 from typing import List, Dict
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from asyncpg.pgproto.pgproto import timedelta
 
 from database.models import Salary
 
@@ -63,6 +61,7 @@ def get_menu_bot() -> List[List[InlineKeyboardButton]]:
     return [
         [
             InlineKeyboardButton(text=f"Календарь", callback_data="month_current"),
+            InlineKeyboardButton(text="Прогноз", callback_data="prediction"),
             InlineKeyboardButton(text="Настройки", callback_data="settings"),
         ],
         [
@@ -70,26 +69,6 @@ def get_menu_bot() -> List[List[InlineKeyboardButton]]:
             InlineKeyboardButton(text="Статистика за год", callback_data="statistic"),
         ],
     ]
-
-
-def prediction_button() -> List[List[InlineKeyboardButton]]:
-    return [
-        [
-            InlineKeyboardButton(
-                text=f"{month_tuple[dt.now().month]}/Посчитать",
-                callback_data="current_prediction",
-            ),
-            InlineKeyboardButton(
-                text=f"{month_tuple[(dt.now() + timedelta(days=30)).month]}/Посчитать",
-                callback_data="next_prediction",
-            ),
-        ]
-    ]
-
-
-async def prediction() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(inline_keyboard=prediction_button())
-
 
 async def menu() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=get_menu_bot())

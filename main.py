@@ -17,7 +17,7 @@ from handlers.remind import remind
 from handlers.settings import settings_router
 from handlers.statistics import statistic
 from handlers.unknown import unknown_rout
-from keywords.keyword import prediction, menu
+from keywords.keyword import menu
 from loader import start_text, guide
 from utils.schedulers import create_scheduler_all
 
@@ -43,44 +43,35 @@ async def handler_start(message: types.Message, state: FSMContext) -> None:
         reply_markup=await menu()
     )
 
-
-@dp.message(F.text == "/prediction")
-async def community_dev(message: types.Message, state: FSMContext) -> None:
-    """Обработчик команды прогноза"""
-    await state.clear()
-    await message.delete()
-    await message.answer(
-        text="Выберите месяц для прогноза.", reply_markup=await prediction()
-    )
-
-
 @dp.message(F.text == "/main")
 async def handle_help_command(message: types.Message,
                               state: FSMContext) -> None:
     """Обработчик команды main."""
     await state.clear()
-    await message.answer("Меню", reply_markup=await menu())
+    send_message: Message = await message.answer("Меню", reply_markup=await menu())
     if hasattr(message, 'delete'):
         await message.delete()
+    await asyncio.create_task(delete_message_after_delay(send_message, 300))
 
 
 @dp.callback_query(F.data == "main")
 async def handle_help(callback: CallbackQuery, state: FSMContext) -> None:
     """Обработчик команды main."""
     await state.clear()
-    await callback.message.answer("Меню", reply_markup=await menu())
+    send_message: Message = await callback.message.answer("Меню", reply_markup=await menu())
     if hasattr(callback.message, 'delete'):
         await callback.message.delete()
+    await asyncio.create_task(delete_message_after_delay(send_message, 300))
 
 
 @dp.message(F.text == "/info")
 async def guide_information(message: types.Message, state: FSMContext) -> None:
     """Обработчик для команды info"""
-    await message.delete()
     send_message: Message = await message.answer(text=guide,
                                                  reply_markup=await menu())
     await state.clear()
-    await asyncio.create_task(delete_message_after_delay(send_message, 60))
+    await message.delete()
+    await asyncio.create_task(delete_message_after_delay(send_message, 300))
 
 
 async def main():

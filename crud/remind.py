@@ -7,7 +7,6 @@ from sqlalchemy import (
     ScalarResult,
 )
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.testing.plugin.plugin_base import logging
 
 from database.db_conf import get_async_session
 from database.models import Remind
