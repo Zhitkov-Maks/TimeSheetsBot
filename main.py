@@ -5,10 +5,9 @@ from logging import DEBUG
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import CallbackQuery
 
 from config import BOT_TOKEN
-from handlers.bot_answer import delete_message_after_delay
 from handlers.create import create_router
 from handlers.expiration import expiration
 from handlers.month import month_router
@@ -48,30 +47,21 @@ async def handle_help_command(message: types.Message,
                               state: FSMContext) -> None:
     """Обработчик команды main."""
     await state.clear()
-    send_message: Message = await message.answer("Меню", reply_markup=await menu())
-    if hasattr(message, 'delete'):
-        await message.delete()
-    await asyncio.create_task(delete_message_after_delay(send_message, 300))
+    await message.answer("Меню", reply_markup=await menu())
 
 
 @dp.callback_query(F.data == "main")
 async def handle_help(callback: CallbackQuery, state: FSMContext) -> None:
     """Обработчик команды main."""
     await state.clear()
-    send_message: Message = await callback.message.answer("Меню", reply_markup=await menu())
-    if hasattr(callback.message, 'delete'):
-        await callback.message.delete()
-    await asyncio.create_task(delete_message_after_delay(send_message, 300))
+    await callback.message.answer("Меню", reply_markup=await menu())
 
 
 @dp.message(F.text == "/info")
 async def guide_information(message: types.Message, state: FSMContext) -> None:
     """Обработчик для команды info"""
-    send_message: Message = await message.answer(text=guide,
-                                                 reply_markup=await menu())
+    await message.answer(text=guide, reply_markup=await menu())
     await state.clear()
-    await message.delete()
-    await asyncio.create_task(delete_message_after_delay(send_message, 300))
 
 
 async def main():

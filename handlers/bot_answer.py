@@ -1,10 +1,8 @@
-import asyncio
 from typing import Dict, Sequence
 
 from aiogram import Bot
-from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
-from aiogram.types import InlineKeyboardMarkup, Message
+from aiogram.types import InlineKeyboardMarkup
 from aiogram.utils.markdown import hbold
 
 from config import BOT_TOKEN
@@ -18,9 +16,9 @@ bot = Bot(token=BOT_TOKEN)
 
 
 async def send_calendar_and_message(
-    user: int,
-    data: Dict[str, str],
-    state: FSMContext
+        user: int,
+        data: Dict[str, str],
+        state: FSMContext
 ) -> None:
     """
     Отправка пользователю текущего календаря после
@@ -30,24 +28,23 @@ async def send_calendar_and_message(
         user, data["date"], state
     )
 
-    send_calendar: Message = await bot.send_message(
+    await bot.send_message(
         chat_id=user,
         text=f"\n\n{message}\n\n" + mess,
         parse_mode="HTML",
         reply_markup=calendar,
     )
-    asyncio.create_task(delete_message_after_delay(send_calendar, 60))
 
 
 async def processing_data(
-    user_id: int,
-    time: float,
-    overtime: float,
-    state: FSMContext,
-    data: Dict[str, str | int]
+        user_id: int,
+        time: float,
+        overtime: float,
+        state: FSMContext,
+        data: Dict[str, str | int]
 ) -> None:
     base, overtime, earned = await earned_salary(time, overtime, user_id)
-    send_message : Message = await bot.send_message(
+    await bot.send_message(
         chat_id=user_id,
         text=success_text.format(data["date"], hbold(earned)),
         parse_mode="HTML",
@@ -60,15 +57,13 @@ async def processing_data(
         await update_salary(base, overtime, earned, data)
 
     await send_calendar_and_message(user_id, data, state)
-    asyncio.create_task(delete_message_after_delay(send_message, 15))
 
 
 async def sent_calendar(
-    year: int,
-    month: int,
-    result: Sequence,
-    user_id: int,
-    delay=60
+        year: int,
+        month: int,
+        result: Sequence,
+        user_id: int
 ) -> None:
     """
     Функция, чтобы убрать дублирование код из обработчиков.
@@ -76,18 +71,9 @@ async def sent_calendar(
     calendar: InlineKeyboardMarkup = await create_calendar(result, year, month)
     message: str = await generate_str(result, month)
 
-    send_calendar: Message = await bot.send_message(
+    await bot.send_message(
         user_id,
-         message + f"\n\nКалендарь за - {hbold(month)}/{hbold(year)}",
+        message + f"\n\nКалендарь за - {hbold(month)}/{hbold(year)}",
         reply_markup=calendar,
         parse_mode="HTML",
     )
-    asyncio.create_task(delete_message_after_delay(send_calendar, delay))
-
-
-async def delete_message_after_delay(message: Message, delay: int) -> None:
-    await asyncio.sleep(delay)
-    try:
-        await message.delete()
-    except TelegramBadRequest:
-        pass

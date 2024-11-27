@@ -1,4 +1,3 @@
-import asyncio
 import re
 from datetime import datetime
 from typing import Dict
@@ -12,7 +11,7 @@ from sqlalchemy import Sequence
 from config import BOT_TOKEN
 from crud.statistics import get_information_for_month, get_info_by_date
 from database.models import Salary
-from handlers.bot_answer import sent_calendar, delete_message_after_delay
+from handlers.bot_answer import sent_calendar
 from keywords.keyword import menu, get_data_choices_day
 from loader import date_pattern
 from states.state import MonthState
@@ -40,7 +39,6 @@ async def handle_info_current_month(callback: CallbackQuery, state: FSMContext) 
     await state.set_state(MonthState.choice)
     await state.update_data(year=year, month=month)
     await sent_calendar(year, month, result, callback.from_user.id)
-    await callback.message.delete()
 
 
 @month_router.callback_query(
@@ -79,8 +77,6 @@ async def next_and_prev_month(callback: CallbackQuery, state: FSMContext) -> Non
         await state.update_data(year=year, month=month)
         await state.set_state(MonthState.choice)
         await sent_calendar(year, month, result, callback.from_user.id)
-        await asyncio.create_task(
-            delete_message_after_delay(callback.message, 0))
 
     else:
         await state.clear()

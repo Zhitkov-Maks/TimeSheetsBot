@@ -12,3 +12,4 @@ BOT_TOKEN = config("TOKEN")
 weekdays: tuple = ("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
 app_schedule: dict = {}
 scheduler_ids: dict = {}
+DELAY: int = 60 * 5
