@@ -73,24 +73,18 @@ async def get_prediction_sum(user_id: int, data_: dict) -> int:
     for i in range(1, days_in_month + 1):
         days: str = str(i) if i > 9 else f"0{i}"
         wd = datetime.strptime(f"{days}-{month}-{year}", "%d-%m-%Y").weekday()
+        delay: str | list = data_.get("delay")
+        hour: int = int(data_.get("hour"))
 
-        if data_.get("delay") == "delay_no":
+        if delay == "delay_no":
             if wd in (range(5)):
                 total_sum += price.price * 9
         else:
-            count, hours = await parse_delay(data_.get("delay"))
-            if count < 3:
-                if wd in (1, 3):
-                    total_sum += price.price * 9 + (price.price + price.overtime) * hours
-                elif wd in (0, 2, 4):
-                    total_sum += price.price * 9
-
-            else:
-                if wd in (0, 1, 2):
-                    total_sum += price.price * 9 + (price.price + price.overtime) * hours
-                elif wd in (3, 4):
-                    total_sum += price.price * 9
-
+            if wd in data_.get("delay"):
+                total_sum += price.price * 9 + (
+                            price.price + price.overtime) * hour
+            elif wd in (range(5)):
+                total_sum += price.price * 9
 
     total_sum += ((price.price + price.overtime) * 9) * weekdays
     await session.close()
@@ -102,11 +96,6 @@ async def parse_data(data_: dict) -> Tuple[int, int, int]:
     year: int = data_.get("year")
     weekdays: int = data_.get("weekdays")
     return month, year, weekdays
-
-
-async def parse_delay(overtime_data: str) -> tuple:
-    count_overtime, hours_overtime = overtime_data.split("/")
-    return int(count_overtime), int(hours_overtime)
 
 
 async def get_year_and_month(action: str) -> Tuple[int, int]:
