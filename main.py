@@ -6,16 +6,17 @@ from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
-from aiogram_dialog import setup_dialogs
 
 from config import BOT_TOKEN
-from handlers.create import create_router
+from handlers.current_day import create_router
 from handlers.expiration import expiration
+from handlers.five_days import five_days_router
 from handlers.month import month_router
 from handlers.predictions import predict
 from handlers.remind import remind
 from handlers.settings import settings_router
 from handlers.statistics import statistic
+from handlers.two_in_two import two_in_two_router
 from handlers.unknown import unknown_rout
 from keywords.keyword import menu
 from loader import start_text, guide
@@ -30,6 +31,8 @@ dp.include_router(create_router)
 dp.include_router(month_router)
 dp.include_router(predict)
 dp.include_router(remind)
+dp.include_router(two_in_two_router)
+dp.include_router(five_days_router)
 dp.include_router(unknown_rout)
 
 
@@ -55,6 +58,7 @@ async def handle_help_command(message: types.Message,
 async def handle_help(callback: CallbackQuery, state: FSMContext) -> None:
     """Обработчик команды main."""
     await state.clear()
+    await callback.message.delete_reply_markup()
     await callback.message.answer("Меню", reply_markup=await menu())
 
 

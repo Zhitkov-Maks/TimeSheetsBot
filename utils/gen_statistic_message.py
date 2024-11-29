@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from aiogram.utils.markdown import hbold
 from sqlalchemy import Row
 

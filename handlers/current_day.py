@@ -3,10 +3,10 @@ from typing import List, Dict
 from aiogram import Router, Bot
 from aiogram import types, F
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, Message
 
 from config import BOT_TOKEN
-from crud.create import delete_record
+from crud.create import delete_record, add_other_income
 from handlers.bot_answer import send_calendar_and_message, processing_data
 from keywords.keyword import cancel_button
 from loader import add_record_text
@@ -58,6 +58,31 @@ async def check_data(message: types.Message, state: FSMContext) -> None:
             "Пример: 6.5*5. Попробуйте еще раз.",
             reply_markup=cancel_button,
         )
+
+
+@create_router.callback_query(F.data == "bonus")
+async def add_other_surcharges(callback: CallbackQuery,
+                               state: FSMContext) -> None:
+    await state.set_state(CreateState.other_income)
+    await callback.message.answer(
+        text="Введите сумму прочего дохода, сюда можно добавить например "
+             "доплату за ночные часы, акционные доплаты и т.п.",
+        reply_markup=cancel_button)
+
+
+@create_router.message(CreateState.other_income)
+async def update_other_income(message: Message, state: FSMContext):
+    try:
+        income: float = float(message.text)
+        await state.update_data(user_id=message.from_user.id)
+        data: dict = await state.get_data()
+        await add_other_income(income, data)
+        await send_calendar_and_message(message.from_user.id, data, state)
+    except ValueError:
+        await message.answer(
+            text="Ошибка ввода, допускается ввод либо целых чисел, "
+                 "либо чисел с точкой(333.55)",
+            reply_markup=cancel_button)
 
 
 @create_router.callback_query(F.data == "del")

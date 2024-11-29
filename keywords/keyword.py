@@ -19,21 +19,6 @@ month_tuple: Dict[int, str] = {
     12: "Декабрь",
 }
 
-month_data: tuple = (
-    "january",
-    "february",
-    "mart",
-    "april",
-    "mai",
-    "june",
-    "july",
-    "august",
-    "september",
-    "oktober",
-    "november",
-    "december",
-)
-
 cancel: List[List[InlineKeyboardButton]] = [
     [InlineKeyboardButton(text="Отмена", callback_data="main")]
 ]
@@ -51,7 +36,8 @@ choice_remind: List[List[InlineKeyboardButton]] = [
         InlineKeyboardButton(text="Удалить", callback_data="remove"),
     ],
     [
-        InlineKeyboardButton(text="Изменить время", callback_data="change_remind"),
+        InlineKeyboardButton(text="Изменить время",
+                             callback_data="change_remind"),
         InlineKeyboardButton(text="Отмена", callback_data="main"),
     ],
 ]
@@ -60,15 +46,18 @@ choice_remind: List[List[InlineKeyboardButton]] = [
 def get_menu_bot() -> List[List[InlineKeyboardButton]]:
     return [
         [
-            InlineKeyboardButton(text=f"Календарь", callback_data="month_current"),
+            InlineKeyboardButton(text=f"Календарь",
+                                 callback_data="month_current"),
             InlineKeyboardButton(text="Прогноз", callback_data="prediction"),
             InlineKeyboardButton(text="Настройки", callback_data="settings"),
         ],
         [
             InlineKeyboardButton(text="Напоминание", callback_data="remind"),
-            InlineKeyboardButton(text="Статистика за год", callback_data="statistic"),
+            InlineKeyboardButton(text="Статистика за год",
+                                 callback_data="statistic"),
         ],
     ]
+
 
 async def menu() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=get_menu_bot())
@@ -90,14 +79,22 @@ async def get_data_choices_day(salary: Salary) -> InlineKeyboardMarkup:
                 [
                     InlineKeyboardButton(text="Удалить", callback_data="del"),
                     InlineKeyboardButton(text="Меню", callback_data="main"),
-                    InlineKeyboardButton(text="Изменить", callback_data="change"),
+                    InlineKeyboardButton(text="Изменить",
+                                         callback_data="change"),
+                ],
+                [
+                    InlineKeyboardButton(
+                        text="Добавить бонус(доплаты, акции).",
+                        callback_data="bonus")
                 ]
             ]
         )
 
 
-cancel_button: InlineKeyboardMarkup = InlineKeyboardMarkup(inline_keyboard=cancel)
-confirm_menu: InlineKeyboardMarkup = InlineKeyboardMarkup(inline_keyboard=confirm)
+cancel_button: InlineKeyboardMarkup = InlineKeyboardMarkup(
+    inline_keyboard=cancel)
+confirm_menu: InlineKeyboardMarkup = InlineKeyboardMarkup(
+    inline_keyboard=confirm)
 remind_button: InlineKeyboardMarkup = InlineKeyboardMarkup(
     inline_keyboard=choice_remind
 )

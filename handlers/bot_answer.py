@@ -24,13 +24,13 @@ async def send_calendar_and_message(
     Отправка пользователю текущего календаря после
     добавления записи за выбранный день.
     """
-    message, mess, calendar = await create_message(
+    message, calendar = await create_message(
         user, data["date"], state
     )
 
     await bot.send_message(
         chat_id=user,
-        text=f"\n\n{message}\n\n" + mess,
+        text=f"\n\n{message}",
         parse_mode="HTML",
         reply_markup=calendar,
     )
@@ -73,7 +73,7 @@ async def sent_calendar(
 
     await bot.send_message(
         user_id,
-        message + f"\n\nКалендарь за - {hbold(month)}/{hbold(year)}",
+        message,
         reply_markup=calendar,
         parse_mode="HTML",
     )

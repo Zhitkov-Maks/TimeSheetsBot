@@ -61,8 +61,8 @@ delay_keyboard: InlineKeyboardMarkup = InlineKeyboardMarkup(
     inline_keyboard=delay_button)
 
 
-async def get_weekdays_keyboard():
-    keyboard = [[]]
+async def get_weekdays_keyboard() -> InlineKeyboardMarkup:
+    keyboard: List[List[InlineKeyboardButton]] = [[]]
     days = ["Пн", "Вт", "Ср", "Чт", "Пт"]
 
     for day in days:
@@ -70,14 +70,12 @@ async def get_weekdays_keyboard():
         button_text = f"[❌] {day}" if day not in user_choices else f"[✅] {day}"
         keyboard[0].append(InlineKeyboardButton(text=button_text,
                                                 callback_data=f"toggle_{day}"))
-    button_two_overtime = f"[❌] Переработка 2ч" if "2" not in hour_choices else f"[✅] Переработка 2ч"
-    button_three_overtime = f"[❌] Переработка 3ч" if "3" not in hour_choices else f"[✅] Переработка 3ч"
-    keyboard.append([
-        InlineKeyboardButton(text=button_two_overtime,
-                             callback_data="toggle_2"),
-        InlineKeyboardButton(text=button_three_overtime,
-                             callback_data="toggle_3")
-    ])
+
+    button: List[InlineKeyboardButton] = []
+    for i in range(1, 6):
+        text = f"[❌] {i}ч" if str(i) not in hour_choices else f"[✅] {i}ч"
+        button.append(InlineKeyboardButton(text=text, callback_data=f"toggle_{i}"))
+    keyboard.append(button)
 
     keyboard.append([
         InlineKeyboardButton(text="Завершить выбор", callback_data="finish"),

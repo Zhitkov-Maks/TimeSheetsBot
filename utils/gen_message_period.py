@@ -44,7 +44,7 @@ UNICODE_DATA: Dict[int, str] = {
 
 
 async def create_calendar(
-    salary: Sequence, year: int, month: int
+        salary: Sequence, year: int, month: int
 ) -> InlineKeyboardMarkup:
     """
     Функция генерирует календарь за месяц который был передан в параметрах.
@@ -57,7 +57,8 @@ async def create_calendar(
     days: int = 35
 
     dates: Dict[str, int] = {
-        str(sal[0].date): int(sal[0].base_hours + sal[0].overtime) for sal in salary
+        str(sal[0].date): int(sal[0].base_hours + sal[0].overtime) for sal in
+        salary
     }
     day_week: int = date(year, month, 1).weekday()
     days_in_month: int = monthrange(year, month)[1]
@@ -72,11 +73,16 @@ async def create_calendar(
         days = 28
 
     numbers_list: List[str] = (
-        [" "] * day_week
-        + [f"{i:02}" for i in range(1, days_in_month + 1)]
-        + [" "] * (days - days_in_month - day_week)
+            [" "] * day_week
+            + [f"{i:02}" for i in range(1, days_in_month + 1)]
+            + [" "] * (days - days_in_month - day_week)
     )
-
+    month_keyword.append(
+        [
+            InlineKeyboardButton(text=f"{month_tuple[month]} {year}г",
+                                 callback_data="календарь"),
+        ]
+    )
     for i in range(7):
         row: List[InlineKeyboardButton] = [
             InlineKeyboardButton(text=days_list[i], callback_data=days_list[i])
@@ -128,17 +134,17 @@ async def generate_str(iterable, month: int) -> str:
     for sal in iterable:
         total[0] += sal[0].base_hours + sal[0].overtime
         total[1] += sal[0].overtime
-        total[2] += sal[0].earned
+        total[2] += sal[0].earned + sal[0].other_income if sal[0].other_income else 0
 
         if sal[0].period == 1:
             one[0] += sal[0].base_hours + sal[0].overtime
             one[1] += sal[0].overtime
-            one[2] += sal[0].earned
+            one[2] += sal[0].earned  + sal[0].other_income if sal[0].other_income else 0
 
         if sal[0].period == 2:
             two[0] += sal[0].base_hours + sal[0].overtime
             two[1] += sal[0].overtime
-            two[2] += sal[0].earned
+            two[2] += sal[0].earned  + sal[0].other_income if sal[0].other_income else 0
 
     create_str += f"{60 * "-"}\n"
     create_str += f"Период 1: "
@@ -162,9 +168,11 @@ async def gen_message_for_choice_day(salary: Salary, choice_date: str):
     """
     if not salary:
         return f"За дату {choice_date} нет данных."
+    other: float = salary.other_income if salary.other_income else 0
     return (
         f"Дата: {choice_date}. \nВы отработали: {hbold(salary.base_hours + salary.overtime)} часов.\n"
-        f"Заработали: {salary.earned:,.2f}₽."
+        f"Заработали: {salary.earned + other:,.2f}₽.\n"
+        f"Из них прочие доходы: {other:,.2f}₽."
     )
 
 

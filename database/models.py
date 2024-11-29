@@ -21,6 +21,7 @@ class Salary(Base):
     earned: Mapped[float] = mapped_column(Float)
     date: Mapped[Date] = mapped_column(Date)
     period: Mapped[int] = mapped_column(Integer, default=1)
+    other_income: Mapped[int] = mapped_column(Integer, default=0, nullable=True)
 
 
 class Remind(Base):

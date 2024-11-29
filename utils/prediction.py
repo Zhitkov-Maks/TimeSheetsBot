@@ -11,7 +11,35 @@ from database.db_conf import get_async_session
 from utils.count import Employee
 
 
-async def two_in_two_get_prediction_sum(user_id: int, data_: dict) -> int:
+async def get_total_price(
+    first_day: int,
+    days_in_month: int,
+    price: Settings,
+    count: int,
+    hours
+) -> int:
+    """
+    Функция для подсчета суммы зарплаты 2/2 за месяц.
+    :param first_day: Первая смена в месяце.
+    :param days_in_month: Количество дней в месяце.
+    :param price: Настройки стоимости за час.
+    :param count: Количество доп смен в месяц.
+    :param hours: По сколько часов считается смена.
+    :return: Прогнозируемую сумму.
+    """
+    total_sum: int = 0
+    for i in range(first_day, days_in_month + 1, 4):
+        total_sum += hours * price.price
+
+        if i + 1 <= days_in_month:
+            total_sum += hours * price.price
+
+    total_sum += ((price.price + price.overtime) * hours) * count
+    return total_sum
+
+
+
+async def two_in_two_get_prediction_sum(user_id: int, data_: dict) -> tuple:
     """
     Функция для вычисления ожидаемой зп.
     :param user_id: Id юзера.
@@ -20,6 +48,7 @@ async def two_in_two_get_prediction_sum(user_id: int, data_: dict) -> int:
     """
     year: int = data_.get("year")
     month: int = data_.get("month")
+    hours: int = data_.get("how_many_hours")
     # Получим настройки стоимости для конкретного пользователя
     session: AsyncSession = await get_async_session()
 
@@ -32,19 +61,33 @@ async def two_in_two_get_prediction_sum(user_id: int, data_: dict) -> int:
     # Получаем количество дней в месяце.
     days_in_month: int = monthrange(year, month)[1]
 
+    # Первая смена в месяце.
     first_day: int = data_.get("first_day")
-    weekdays: int = data_.get("weekdays")
 
-    total_sum: int = 0
-    for i in range(first_day, days_in_month + 1, 4):
-        total_sum += 12 * price.price
+    # Количество дней с подработками.
+    count_weekdays: int = data_.get("weekdays")
 
-        if i + 1 <= days_in_month:
-            total_sum += 12 * price.price
-
-    total_sum += ((price.price + price.overtime) * 12) * weekdays
     await session.close()
-    return total_sum
+
+    # Если первая смена второго, то проблем нет и просто считаем сумму.
+    if first_day > 1:
+        total_sum: int = await get_total_price(
+            first_day, days_in_month, price, count_weekdays, hours)
+        return total_sum,
+
+
+    else:
+        # Первый вариант если смены 1 и второго
+        total_sum: int = await get_total_price(
+            first_day, days_in_month, price, count_weekdays, hours)
+
+        # Второй вариант, если смена 1 а 2 выходной
+        total_sum_two: int = await get_total_price(
+            first_day + 3, days_in_month, price, count_weekdays, hours
+        )
+        sum_by_day = price.price * hours
+        return total_sum, total_sum_two + sum_by_day
+
 
 
 async def get_prediction_sum(user_id: int, data_: dict) -> int:
@@ -55,8 +98,8 @@ async def get_prediction_sum(user_id: int, data_: dict) -> int:
     :param data_: Id юзера.
     :return: Прогнозируемую сумму.
     """
-    # Получим настройки стоимости для конкретного пользователя
-    month, year, weekdays = await parse_data(data_)
+    # Получаем необходимые переменные для подсчета.
+    month, year, weekdays, hours = await parse_data(data_)
     session: AsyncSession = await get_async_session()
 
     stmt: Select = select(Settings).where(Settings.user_chat_id == user_id)
@@ -78,24 +121,26 @@ async def get_prediction_sum(user_id: int, data_: dict) -> int:
 
         if delay == "delay_no":
             if wd in (range(5)):
-                total_sum += price.price * 9
+                total_sum += price.price * hours
+
         else:
-            if wd in data_.get("delay"):
-                total_sum += price.price * 9 + (
+            if wd in delay:
+                total_sum += price.price * hours + (
                             price.price + price.overtime) * hour
             elif wd in (range(5)):
-                total_sum += price.price * 9
+                total_sum += price.price * hours
 
-    total_sum += ((price.price + price.overtime) * 9) * weekdays
+    total_sum += ((price.price + price.overtime) * hours) * weekdays
     await session.close()
     return total_sum
 
 
-async def parse_data(data_: dict) -> Tuple[int, int, int]:
+async def parse_data(data_: dict) -> Tuple[int, int, int, int]:
     month: int = data_.get("month")
     year: int = data_.get("year")
     weekdays: int = data_.get("weekdays")
-    return month, year, weekdays
+    hours: int = data_.get("how_many_days")
+    return month, year, weekdays, hours
 
 
 async def get_year_and_month(action: str) -> Tuple[int, int]:

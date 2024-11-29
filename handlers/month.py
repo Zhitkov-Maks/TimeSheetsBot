@@ -30,6 +30,7 @@ async def handle_info_current_month(callback: CallbackQuery, state: FSMContext) 
     Обработчик для команды month_current. Получает информацию
     о текущем месяце.
     """
+    await callback.message.delete_reply_markup()
     year: int = datetime.now().year
     month: int = datetime.now().month
     result: Sequence = await get_information_for_month(
@@ -66,6 +67,7 @@ async def next_and_prev_month(callback: CallbackQuery, state: FSMContext) -> Non
     """
     Обрабатывает команды на предыдущий или следующий месяц.
     """
+    await callback.message.delete_reply_markup()
     data: Dict[str, str | int] = await state.get_data()
 
     if len(data) != 0:
