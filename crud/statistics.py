@@ -20,6 +20,7 @@ async def request_statistic(user: int, year: int) -> Row[tuple]:
             func.sum(Salary.earned),
             func.sum(Salary.base_hours),
             func.sum(Salary.overtime),
+            func.sum(Salary.other_income),
         )
         .where(Salary.user_chat_id == user)
         .where(

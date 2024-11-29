@@ -10,12 +10,13 @@ async def gen_message_statistic(data: Row[tuple], year: int) -> str:
     :return: Сообщение для пользователя.
     """
     total_hours: int = data[1] + data[2]
+    total_earned: int = data[0] + data[3]
     days_in_year: int = 365
 
     message: str = (
         f"Ваша статистика за {hbold(year)} год.\n"
         f"{60 * "-"}\n"
-        f"Заработано: {data[0]:,.2f}₽\n"
+        f"Заработано: {total_earned:,.2f}₽\n"
         f"Отработано часов: {hbold(total_hours)}ч\n"
         f"Из них переработки: {hbold(data[2])}ч.\n"
         f"{60 * "-"}\n"
