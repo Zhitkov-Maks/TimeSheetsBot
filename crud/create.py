@@ -36,6 +36,25 @@ async def write_salary(
     await session.commit()
 
 
+async def add_other_income(income: float, data_: Dict[str, int | str]) -> None:
+    """
+    Функция для добавления всяких стимулирующих бонусов.
+    :param income: Переработано.
+    :param data_: Прочие данные.
+    :return: Кортеж с временем, переработкой, заработком.
+    """
+    session: AsyncSession = await get_async_session()
+    parse_date: date = datetime.strptime(data_["date"], "%Y-%m-%d")
+    stmt: Update = (
+        update(Salary)
+        .where(Salary.user_chat_id == data_["user_id"])
+        .where(Salary.date == parse_date)
+        .values(other_income=income)
+    )
+    await session.execute(stmt)
+    await session.commit()
+
+
 async def update_salary(
     base: float, overtime: float, earned: float, data_: Dict[str, int | str]
 ) -> None:
