@@ -22,10 +22,3 @@ class Salary(Base):
     date: Mapped[Date] = mapped_column(Date)
     period: Mapped[int] = mapped_column(Integer, default=1)
     other_income: Mapped[int] = mapped_column(Integer, default=0, nullable=True)
-
-
-class Remind(Base):
-    __tablename__ = "reminds"
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    time: Mapped[int] = mapped_column(SMALLINT)
-    user_chat_id: Mapped[int] = mapped_column(BIGINT, unique=True)
