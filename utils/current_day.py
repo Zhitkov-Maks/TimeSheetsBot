@@ -1,3 +1,5 @@
+"""Вспомогательный модуль для подсчета зарплаты за выбранный день."""
+
 from typing_extensions import Tuple
 
 from crud.settings import get_settings_user_by_id

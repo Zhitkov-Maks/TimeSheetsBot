@@ -3,7 +3,7 @@ from typing import Tuple, List
 
 from crud.add_shift import write_salary_shift
 from database.models import Salary
-from utils.count import earned_salary
+from utils.current_day import earned_salary
 
 
 async def get_date(action: str) -> Tuple[int, int]:
