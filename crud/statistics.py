@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Tuple, List
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, asc, Sequence, Select, func, extract, Row, Result
@@ -6,7 +7,10 @@ from database.db_conf import get_async_session
 from database.models import Salary
 
 
-async def request_statistic(user: int, year: int) -> Row[tuple]:
+async def request_statistic(
+        user: int,
+        year: int
+) -> Row[List[Tuple[int]]]:
     """
     Запрос на получение небольшой статистики за год.
     :param user: Id юзера.
@@ -32,7 +36,9 @@ async def request_statistic(user: int, year: int) -> Row[tuple]:
     return data.one()
 
 
-async def get_information_for_month(user_id: int, year: int, month: int) -> Sequence:
+async def get_information_for_month(
+        user_id: int, year: int, month: int
+) -> Sequence[Row[tuple[Salary]]]:
     """
     Получение данных за выбранный месяц.
     :param user_id: Id юзера.
@@ -46,7 +52,7 @@ async def get_information_for_month(user_id: int, year: int, month: int) -> Sequ
     stmt: Select = (
         select(Salary)
         .where(Salary.user_chat_id == user_id)
-        .where(func.extract("year", Salary.date) == int(year))  # Фильтрация по году
+        .where(func.extract("year", Salary.date) == int(year))
         .where(func.extract("month", Salary.date) == int(month))
         .order_by(asc(Salary.date))
     )
