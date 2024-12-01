@@ -1,4 +1,4 @@
-from datetime import datetime as dt, timedelta, datetime
+from datetime import datetime as dt, timedelta, datetime, date
 from typing import Tuple, List
 
 from crud.add_shift import write_salary_shift
@@ -12,24 +12,17 @@ async def get_date(action: str) -> Tuple[int, int]:
 
     :param action: Строка, определяющая действие.
                    Если 'current', возвращает текущий месяц и год.
-                   Если любое другое значение, возвращает месяц и год через
-                   30 дней.
+                   Иначе возвращает следующий месяц.
 
     :return: Кортеж из двух целых чисел: (год, месяц).
     """
-    if action == "current":
-        # Получение текущей даты и времени
-        date_current: dt = dt.now()
+    date_current: dt = dt.now()
+    year, month = date_current.year, date_current.month
+    if action == "next_month":
+        next_date: date = date(year, month, 1) + timedelta(days=35)
+        year, month = next_date.year, next_date.month
 
-        # Возврат текущего года и месяца
-        return date_current.year, date_current.month
-
-    else:
-        # Получение даты через 30 дней от текущей
-        next_date: dt = dt.now() + timedelta(days=30)
-
-        # Возврат года и месяца через 30 дней
-        return next_date.year, next_date.month
+    return year, month
 
 
 async def create_data_by_add_shifts(
@@ -52,18 +45,12 @@ async def create_data_by_add_shifts(
     """
     # Вычисление базовой зарплаты, сверхурочных и общей заработанной суммы
     base, overtime, earned = await earned_salary(
-        time=time,
-        overtime=overtime,
-        user_id=user_id
+        time=time, overtime=overtime, user_id=user_id
     )
 
     # Создание списка объектов Salary на основе вычисленных данных и дат
     salary_lis: List[Salary] = await create_list_salary(
-        user_id,
-        base,
-        overtime,
-        earned,
-        list_dates
+        user_id, base, overtime, earned, list_dates
     )
 
     # Запись созданных объектов Salary в базу данных
@@ -91,17 +78,15 @@ async def create_list_salary(
 
     :return: Список объектов Salary, созданных на основе предоставленных данных.
     """
-    salary_list: List[
-        Salary] = []  # Инициализация списка для хранения объектов Salary
+    salary_list: List[Salary] = []
 
-    for date in list_dates:
+    for d in list_dates:
         # Определение периода (1 - первая половина месяца, 2 - вторая половина)
         period: int = 1 if int(date[-2:]) <= 15 else 2
 
         # Преобразование строки даты в объект datetime
-        parse_date: date = datetime.strptime(date, "%Y-%m-%d")
+        parse_date: date = datetime.strptime(d, "%Y-%m-%d")
 
-        # Создание словаря с данными для объекта Salary
         data: dict = {
             "user_chat_id": user_id,
             "base_hours": float(base),
@@ -110,11 +95,7 @@ async def create_list_salary(
             "date": parse_date,
             "period": period,
         }
-
-        # Создание объекта Salary с использованием распаковки словаря
         salary: Salary = Salary(**data)
-
-        # Добавление созданного объекта Salary в список
         salary_list.append(salary)
 
-    return salary_list  # Возврат списка объектов Salary
+    return salary_list
