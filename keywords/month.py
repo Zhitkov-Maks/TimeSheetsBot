@@ -49,7 +49,7 @@ async def generate_base_calendar(
         month_keyword: list,
         year: int,
         month: int
-) -> List[List[InlineKeyboardButton]]:
+) -> None:
     """
     Функция генерации основной части календаря. Заполняет календарь кнопками.
     :param field_size: Размер поля календаря.
@@ -88,7 +88,6 @@ async def generate_base_calendar(
             day += 7
 
         month_keyword.append(row)
-    return month_keyword
 
 
 async def create_calendar(
