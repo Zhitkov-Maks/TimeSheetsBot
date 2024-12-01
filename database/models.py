@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, Float, BIGINT, SMALLINT, Date
+from sqlalchemy import Integer, Float, BIGINT, SMALLINT, Date, Index
 from sqlalchemy.orm import Mapped, mapped_column
 
 from database.db_conf import Base
@@ -22,3 +22,7 @@ class Salary(Base):
     date: Mapped[Date] = mapped_column(Date)
     period: Mapped[int] = mapped_column(Integer, default=1)
     other_income: Mapped[int] = mapped_column(Integer, default=0, nullable=True)
+
+    __table_args__ = (
+        Index('ix_user_date', 'user_chat_id', 'date', unique=True)
+    )
