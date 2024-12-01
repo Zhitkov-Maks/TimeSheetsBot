@@ -93,7 +93,6 @@ async def next_and_prev_month(
     else:
         await state.clear()
         await callback.message.answer(
-            text="Информация о календаре устарела, обновите календарь "
-            "выбрав в меню текущий месяц.",
+            text="Некорректный ввод. Попробуйте еще раз.",
             reply_markup=menu,
         )

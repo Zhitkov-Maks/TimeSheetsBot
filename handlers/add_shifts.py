@@ -36,7 +36,7 @@ async def work_with_calendar(
     year, month = await get_date(callback.data)
     current_date: date = date(year, month, 1)
     await state.update_data(
-        year=year, month=month, call=callback.id, date=str(current_date))
+        year=year, month=month, date=str(current_date))
     await callback.message.answer(
         text="Отметьте все смены когда вы работаете.",
         reply_markup=await get_days_keyboard(year, month)
@@ -70,10 +70,8 @@ async def input_selection_hours(
         state: FSMContext
 ) -> None:
     if days_choices:
-        await callback_query.answer(
-            f"Ваши выбранные дни: {', '.join(days_choices[:5])}")
         await state.set_state(ShiftsState.hours)
-        await state.update_data(days=days_choices)
+        await state.update_data(days=days_choices, call=callback_query.id)
         await callback_query.message.answer(
             text="Введите по сколько часов вам проставить смены?",
             reply_markup=cancel_button
