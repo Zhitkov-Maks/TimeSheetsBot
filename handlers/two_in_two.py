@@ -1,27 +1,33 @@
-from aiogram import Router, F
+from typing import Dict
+
+from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
-from aiogram.utils.markdown import hbold
 
+from config import BOT_TOKEN
 from keywords.keyword import cancel_button, menu
-from states.Prediction import TwoInTwo
-from utils.prediction import two_in_two_get_prediction_sum
+from states.two_in_two import TwoInTwo
+from utils.two_in_two import two_in_two_get_prediction_sum
 
-two_in_two_router = Router()
+two_in_two_router: Router = Router()
+bot = Bot(token=BOT_TOKEN)
 
 
 @two_in_two_router.callback_query(F.data == "two_in_two")
-async def two_in_to_get_prediction_scheduler(callback: CallbackQuery,
-                                             state: FSMContext) -> None:
-    """Обработчик выбора графика 2 через два."""
-    await state.set_state(TwoInTwo.weekday)
+async def two_in_to_get_prediction_scheduler(
+        callback: CallbackQuery,
+        state: FSMContext
+) -> None:
+    """Обработчик выбора графика два через два."""
+    await state.set_state(TwoInTwo.count_weekday)
+    await state.update_data(callback=callback.id)
     await callback.message.answer(
-        text="Сколько дополнительных смен вы хотите отработать.",
+        text="Сколько дополнительных смен вы хотите отработать?",
         reply_markup=cancel_button
     )
 
 
-@two_in_two_router.message(TwoInTwo.weekday, F.text.isdigit())
+@two_in_two_router.message(TwoInTwo.count_weekday, F.text.isdigit())
 async def two_in_to_get_prediction_first_day(
         message: Message,
         state: FSMContext
@@ -46,9 +52,7 @@ async def two_in_to_get_prediction_first_day(
     await state.set_state(TwoInTwo.how_many_hours)
     await state.update_data(first_day=int(message.text))
     await message.answer(
-        text="Сколько часов считать в вашей смене(Обычно два через два "
-             "подразумевает смены по 12 часов, но иногда работодатели считают по 11 "
-             "часов, так как час отводится на обед.)",
+        text="Введите количество часов в вашей смене:",
         reply_markup=cancel_button
     )
 
@@ -63,24 +67,20 @@ async def two_in_to_get_prediction_final(
     заработка пользователю.
     """
     await state.update_data(how_many_hours=int(message.text))
-    data: dict = await state.get_data()
-    prediction_sum: tuple = await two_in_two_get_prediction_sum(message.from_user.id,
-                                                         data)
-    if len(prediction_sum) == 1:
-        string: str = f"Ваш прогнозируемый заработок составит {prediction_sum[0]:,.2f}₽"
-    else:
-        string: str = (f"Вы указали что первый рабочий день "
-                       f"первого числа. Здесь может быть два "
-                       f"варианта. \n"
-                       f"{hbold("Первый")} вы работаете 1 и 2 "
-                       f"числа и ваш заработок составит - {prediction_sum[0]:,.2f}₽.\n"
-                       f"{hbold("Второй")} вариант вы работаете первого, "
-                       f"а второго не работаете и тогда ваш "
-                       f"заработок составит - "
-                       f" {prediction_sum[1]:,.2f}₽")
+    data: Dict[str, int | str] = await state.get_data()
+    call_id: str = data.get("callback")
+    prediction_sum: tuple = await two_in_two_get_prediction_sum(
+        message.from_user.id, data
+    )
 
-    await message.answer(
-            text=string,
-            parse_mode="HTML",
-            reply_markup=await menu()
-        )
+    if len(prediction_sum) == 1:
+        string: str = (f"Ваш прогнозируемый заработок составит "
+                       f"{prediction_sum[0]:,.2f}₽")
+    else:
+        string: str = (f"'Вариант если смены 1, 2'\n"
+                       f"Вы заработаете: {prediction_sum[0]:,.2f}₽.\n"
+                       f"Вариант если смены 1, 4, 5\nВы заработаете: "
+                       f"{prediction_sum[1]:,.2f}₽")
+
+    await bot.answer_callback_query(call_id, string, show_alert=True)
+    await message.answer(text="Меню", reply_markup=menu)
