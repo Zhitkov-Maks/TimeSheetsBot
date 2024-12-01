@@ -7,10 +7,10 @@ from aiogram.utils.markdown import hbold
 
 from config import BOT_TOKEN
 from crud.create import write_salary, update_salary
+from keywords.month import create_calendar
 from loader import success_text
-from utils.count import earned_salary
-from utils.create_calendar_and_message import create_message
-from utils.gen_message_period import create_calendar, generate_str
+from utils.current_day import earned_salary
+from utils.month import create_message, generate_str
 
 bot = Bot(token=BOT_TOKEN)
 
@@ -21,8 +21,20 @@ async def send_calendar_and_message(
         state: FSMContext
 ) -> None:
     """
-    Отправка пользователю текущего календаря после
-    добавления записи за выбранный день.
+    Отправляет пользователю текущий календарь после добавления записи за
+    выбранный день.
+    Эта функция генерирует сообщение и инлайн-клавиатуру с календарем на основе
+    переданных данных, а затем отправляет их пользователю.
+
+    :param user: Идентификатор пользователя (чата), которому будет отправлено
+                    сообщение.
+    :param data: Словарь, содержащий данные, необходимые для генерации
+                    сообщения и календаря. Ожидается наличие ключа "date",
+                    который представляет собой дату записи.
+    :param state: Контекст состояния для управления состоянием пользователя
+                    в FSM (Finite State Machine).
+
+    :return: None
     """
     message, calendar = await create_message(
         user, data["date"], state
@@ -43,6 +55,28 @@ async def processing_data(
         state: FSMContext,
         data: Dict[str, str | int]
 ) -> None:
+    """
+    Обрабатывает данные о зарплате пользователя, вычисляет заработок и обновляет
+    записи в базе данных.
+
+    Эта функция выполняет следующие действия:
+    1. Вычисляет базовую зарплату, сверхурочные и общую заработанную сумму.
+    2. Отправляет пользователю сообщение с информацией о заработке.
+    3. В зависимости от действия (добавить или обновить) записывает или
+        обновляет данные о зарплате в базе данных.
+    4. Отправляет календарь и соответствующее сообщение пользователю.
+
+    :param user_id: Идентификатор пользователя (чата), которому будет
+                    отправлено сообщение.
+    :param time: Общее количество отработанных часов.
+    :param overtime: Количество сверхурочных часов.
+    :param state: Контекст состояния для управления состоянием пользователя
+                    в FSM.
+    :param data: Словарь, содержащий дополнительные данные, такие как
+                дата и действие (например, "add" или "update").
+
+    :return: None
+    """
     base, overtime, earned = await earned_salary(time, overtime, user_id)
     await bot.send_message(
         chat_id=user_id,
@@ -66,14 +100,23 @@ async def sent_calendar(
         user_id: int
 ) -> None:
     """
-    Функция, чтобы убрать дублирование код из обработчиков.
+    Отправляет пользователю календарь за указанный месяц и год.
+
+    Эта функция генерирует календарь и сообщение на основе переданных данных,
+    а затем отправляет их пользователю. Используется для уменьшения
+    дублирования кода в обработчиках.
+
+    :param year: Год, за который необходимо сгенерировать календарь.
+    :param month: Месяц, за который необходимо сгенерировать календарь.
+    :param result: Результат запроса, содержащий данные о зарплате или других
+                    показателях за указанный месяц.
+    :param user_id: Идентификатор пользователя (чата), которому
+                        будет отправлено сообщение с календарем.
+
+    :return: None
     """
     calendar: InlineKeyboardMarkup = await create_calendar(result, year, month)
     message: str = await generate_str(result, month)
-
     await bot.send_message(
-        user_id,
-        message,
-        reply_markup=calendar,
-        parse_mode="HTML",
+        user_id, message, reply_markup=calendar, parse_mode="HTML"
     )
