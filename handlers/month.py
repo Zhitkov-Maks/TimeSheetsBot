@@ -12,20 +12,22 @@ from config import BOT_TOKEN
 from crud.statistics import get_information_for_month, get_info_by_date
 from database.models import Salary
 from handlers.bot_answer import sent_calendar
-from keywords.keyword import menu, get_data_choices_day
+from keywords.current_day import get_data_choices_day
+from keywords.keyword import menu
 from loader import date_pattern
-from states.state import MonthState
-from utils.gen_message_period import (
-    gen_message_for_choice_day,
-    get_date,
-)
+from states.month import MonthState
+from utils.current_day import gen_message_for_choice_day
+from utils.month import get_date
 
 month_router = Router()
 bot = Bot(token=BOT_TOKEN)
 
 
 @month_router.callback_query(F.data == "month_current")
-async def handle_info_current_month(callback: CallbackQuery, state: FSMContext) -> None:
+async def handle_info_current_month(
+        callback: CallbackQuery,
+        state: FSMContext
+) -> None:
     """
     Обработчик для команды month_current. Получает информацию
     о текущем месяце.
@@ -46,7 +48,10 @@ async def handle_info_current_month(callback: CallbackQuery, state: FSMContext) 
     MonthState.choice,
     lambda callback_query: re.match(date_pattern, callback_query.data),
 )
-async def choice_day_on_month(callback: CallbackQuery, state: FSMContext) -> None:
+async def choice_day_on_month(
+        callback: CallbackQuery,
+        state: FSMContext
+) -> None:
     """
     Обрабатывает выбранный день в календаре.
     """
@@ -59,11 +64,16 @@ async def choice_day_on_month(callback: CallbackQuery, state: FSMContext) -> Non
     message: str = await gen_message_for_choice_day(info_for_date, choice_date)
     keyword: InlineKeyboardMarkup = await get_data_choices_day(info_for_date)
 
-    await callback.message.answer(text=message, parse_mode="HTML", reply_markup=keyword)
+    await callback.message.answer(
+        text=message, parse_mode="HTML", reply_markup=keyword
+    )
 
 
 @month_router.callback_query(F.data.in_(["next", "prev"]))
-async def next_and_prev_month(callback: CallbackQuery, state: FSMContext) -> None:
+async def next_and_prev_month(
+        callback: CallbackQuery,
+        state: FSMContext
+) -> None:
     """
     Обрабатывает команды на предыдущий или следующий месяц.
     """
@@ -85,5 +95,5 @@ async def next_and_prev_month(callback: CallbackQuery, state: FSMContext) -> Non
         await callback.message.answer(
             text="Информация о календаре устарела, обновите календарь "
             "выбрав в меню текущий месяц.",
-            reply_markup=await menu(),
+            reply_markup=menu,
         )
