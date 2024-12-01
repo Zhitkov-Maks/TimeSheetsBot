@@ -8,11 +8,11 @@ from loader import MONTH_DATA
 user_choices: List[str] = []
 hour_choices: List[str] = []
 choices_days: Dict[str, int] = {
-    "Пн": 0,
-    "Вт": 1,
-    "Ср": 2,
-    "Чт": 3,
-    "Пт": 4,
+    "Понедельник": 0,
+    "Вторник": 1,
+    "Среда": 2,
+    "Четверг": 3,
+    "Пятница": 4,
 }
 
 
@@ -70,7 +70,7 @@ async def get_weekdays_keyboard() -> InlineKeyboardMarkup:
                 кнопками.
     """
     keyboard: List[List[InlineKeyboardButton]] = [[]]
-    days: List[str] = ["Пн", "Вт", "Ср", "Чт", "Пт"]
+    days: List[str] = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница"]
 
     for day in days:
         # Добавляем кнопку с состоянием
