@@ -3,6 +3,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram import types
 
 from keywords.keyword import menu
+from loader import unfamiliar_command
 
 unknown_rout = Router()
 
@@ -13,12 +14,4 @@ async def handler_message_unknown(
 ) -> None:
     """Обрабатывает неизвестные команды."""
     await state.clear()
-    await message.answer(
-        "Не могу обработать введенную команду.\n"
-        "Возможные причины: \n"
-        "- Необходимо было ввести число, а введена была"
-        " строка.\n"
-        "- Вместо выбора да или нет вы ввели что-то свое.\n"
-        "Попробуйте сначала, и будьте внимательны.",
-        reply_markup=await menu()
-    )
+    await message.answer(text=unfamiliar_command, reply_markup=menu)
