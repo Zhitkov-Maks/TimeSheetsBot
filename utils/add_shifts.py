@@ -82,7 +82,7 @@ async def create_list_salary(
 
     for d in list_dates:
         # Определение периода (1 - первая половина месяца, 2 - вторая половина)
-        period: int = 1 if int(date[-2:]) <= 15 else 2
+        period: int = 1 if int(d[-2:]) <= 15 else 2
 
         # Преобразование строки даты в объект datetime
         parse_date: date = datetime.strptime(d, "%Y-%m-%d")
