@@ -1,8 +1,12 @@
 from aiogram.utils.markdown import hbold
 from sqlalchemy import Row
+from typing import Tuple, List
 
 
-async def gen_message_statistic(data: Row[tuple], year: int) -> str:
+async def gen_message_statistic(
+        data: Row[List[Tuple[int]]],
+        year: int
+) -> str:
     """
     Функция для генерации сообщения для показа статистики.
     :param year: Год для статистики.
