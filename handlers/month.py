@@ -57,16 +57,28 @@ async def choice_day_on_month(
     """
     choice_date: str = callback.data
     await state.update_data(date=choice_date)
-
     info_for_date: Salary | None = await get_info_by_date(
         callback.from_user.id, choice_date
     )
     message: str = await gen_message_for_choice_day(info_for_date, choice_date)
-    keyword: InlineKeyboardMarkup = await get_data_choices_day(info_for_date)
+    user_data = await state.get_data()
 
-    await callback.message.answer(
-        text=message, parse_mode="HTML", reply_markup=keyword
-    )
+    last_choice_date = user_data.get("last_choice_date")
+
+    if last_choice_date == choice_date:
+        # Если дата была выбрана ранее, отправляем сообщение
+        await callback.message.answer(
+            text=message,
+            parse_mode="HTML",
+            reply_markup=await get_data_choices_day(info_for_date)
+        )
+        await state.update_data(last_choice_date=None)
+    else:
+        # Если это новое нажатие, просто отвечаем на callback с сообщением
+        await callback.answer(message, show_alert=True)
+        # Обновляем последнюю выбранную дату в состоянии
+        await state.update_data(last_choice_date=choice_date)
+
 
 
 @month_router.callback_query(F.data.in_(["next", "prev"]))

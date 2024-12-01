@@ -67,7 +67,7 @@ async def gen_message_for_choice_day(salary: Salary, choice_date: str) -> str:
     other: float = salary.other_income if salary.other_income else 0
     return (
         f"Дата: {choice_date}. \nВы отработали: "
-        f"{hbold(salary.base_hours + salary.overtime)} часов.\n"
+        f"{salary.base_hours + salary.overtime} часов.\n"
         f"Заработали: {salary.earned + other:,.2f}₽.\n"
         f"Из них прочие доходы: {other:,.2f}₽."
     )
