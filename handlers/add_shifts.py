@@ -2,6 +2,7 @@ from datetime import date
 from typing import List, Dict
 
 from aiogram import Router, F, Bot
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
@@ -106,7 +107,7 @@ async def finish_add_shifts(
                 message.from_user.id, time, overtime, data.get("days")
             )
             await bot.answer_callback_query(
-                call_id, "Записи были успешно добавлены!"
+                call_id, "Записи были успешно добавлены!", cache_time=60
             )
             await send_calendar_and_message(message.from_user.id, data, state)
         else:
@@ -117,5 +118,9 @@ async def finish_add_shifts(
             "Введенные данные не соответствуют требованиям. \n"
             "Пример: 6.5*5. Попробуйте еще раз.",
             reply_markup=cancel_button,
+        )
+    except TelegramBadRequest:
+        await message.answer(
+            text="Время ожидания истекло, попробуйте еще раз!"
         )
     days_choices.clear()
