@@ -7,9 +7,9 @@ from aiogram.utils.markdown import hbold
 from crud.settings import write_settings, get_settings_user_by_id
 from database import Settings
 from keywords.keyword import menu, confirm_menu, cancel_button
-from states.state import SettingsState
+from states.settings import SettingsState
 
-settings_router = Router()
+settings_router: Router = Router()
 
 @settings_router.callback_query(F.data == "settings")
 async def ask_price(callback: CallbackQuery, state: FSMContext):
@@ -77,7 +77,7 @@ async def ask_price_over_time(message: Message,
         await write_settings(await state.get_data())
         await message.answer(
             text="Отлично, все готово!",
-            reply_markup=await menu())
+            reply_markup=menu)
 
     except ValueError:
         await message.answer(text="Ошибочка вышла((")
