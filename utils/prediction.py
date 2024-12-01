@@ -70,7 +70,7 @@ async def get_year_and_month(action: str) -> Tuple[int, int]:
     year, month = datetime.now().year, datetime.now().month
     if action == "next_month":
         # Получение даты через 35 дней от текущей
-        next_date: date = (date(year, month, 1) + timedelta(days=35)).date()
+        next_date: date = (date(year, month, 1) + timedelta(days=35))
         # Извлечение года и месяца из следующей даты
         year, month = next_date.year, next_date.month
 
