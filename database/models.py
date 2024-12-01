@@ -24,5 +24,5 @@ class Salary(Base):
     other_income: Mapped[int] = mapped_column(Integer, default=0, nullable=True)
 
     __table_args__ = (
-        Index('ix_user_date', 'user_chat_id', 'date', unique=True)
+        Index('ix_user_date', 'user_chat_id', 'date', unique=True,),
     )
