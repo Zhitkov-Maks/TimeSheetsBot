@@ -30,6 +30,3 @@ services:
           - ./logs:/usr/logs
 
         restart: on-failure
-
-volumes:
-  logs:
