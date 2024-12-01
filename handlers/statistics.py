@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Tuple
 
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
@@ -10,8 +10,8 @@ from sqlalchemy import Row
 from config import BOT_TOKEN
 from crud.statistics import request_statistic
 from keywords.keyword import menu
-from states.state import StatisticState
-from utils.gen_statistic_message import gen_message_statistic
+from states.statistic import StatisticState
+from utils.statistic import gen_message_statistic
 
 statistic: Router = Router()
 bot = Bot(token=BOT_TOKEN)
@@ -46,16 +46,18 @@ async def choice_year(callback: CallbackQuery, state: FSMContext) -> None:
     Показа статистики за выбранный год.
     """
     year: int = int(callback.data)
-    result: Row[tuple] = await request_statistic(callback.from_user.id, year)
+    result: Row[List[Tuple[int]]] = await request_statistic(
+        callback.from_user.id, year
+    )
     await state.clear()
     if result[0] is not None:
         mess: str = await gen_message_statistic(result, year)
 
         await callback.message.answer(
-            text=mess, parse_mode="HTML", reply_markup=await menu()
+            text=mess, parse_mode="HTML", reply_markup=menu
         )
 
     else:
         await callback.message.answer(
-            text="За выбранный год нет данных.", reply_markup=await menu()
+            text="За выбранный год нет данных.", reply_markup=menu
         )
