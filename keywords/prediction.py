@@ -1,13 +1,13 @@
-from datetime import timedelta, datetime as dt
-from typing import List
+from datetime import timedelta, datetime as dt, datetime, date
+from typing import List, Dict
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from keywords.keyword import month_tuple
+from loader import MONTH_DATA
 
-user_choices = []
-hour_choices = []
-choices_days = {
+user_choices: List[str] = []
+hour_choices: List[str] = []
+choices_days: Dict[str, int] = {
     "Пн": 0,
     "Вт": 1,
     "Ср": 2,
@@ -17,14 +17,27 @@ choices_days = {
 
 
 def prediction_button() -> List[List[InlineKeyboardButton]]:
+    """
+    Генерирует инлайн-кнопки для выбора текущего и следующего месяца.
+
+    Эта функция создает список списков кнопок для инлайн-клавиатуры, где
+    каждая кнопка представляет собой месяц. Первая кнопка соответствует
+    текущему месяцу, а вторая кнопка соответствует следующему месяцу.
+
+    :return: Список списков объектов InlineKeyboardButton, представляющих
+            кнопки для инлайн-клавиатуры.
+    """
+    year, month = datetime.now().year, datetime.now().month
     return [
         [
             InlineKeyboardButton(
-                text=f"{month_tuple[dt.now().month]}/Посчитать",
+                text=f"{MONTH_DATA[dt.now().month]}",
                 callback_data="current",
             ),
             InlineKeyboardButton(
-                text=f"{month_tuple[(dt.now() + timedelta(days=30)).month]}/Посчитать",
+                text=f"{MONTH_DATA[(
+                        date(year, month, 1) + timedelta(days=35)
+                ).month]}",
                 callback_data="next_month",
             ),
         ]
@@ -32,7 +45,53 @@ def prediction_button() -> List[List[InlineKeyboardButton]]:
 
 
 async def prediction() -> InlineKeyboardMarkup:
+    """
+    Генерирует инлайн-клавиатуру с кнопками для выбора месяцев.
+
+    Эта асинхронная функция создает и возвращает инлайн-клавиатуру, содержащую
+    кнопки, которые позволяют пользователю выбрать текущий и следующий месяц.
+
+    :return: Объект InlineKeyboardMarkup, представляющий инлайн-клавиатуру с
+            кнопками.
+    """
     return InlineKeyboardMarkup(inline_keyboard=prediction_button())
+
+
+async def get_weekdays_keyboard() -> InlineKeyboardMarkup:
+    """
+    Генерирует инлайн-клавиатуру для выбора дней недели и часов.
+
+    Эта асинхронная функция создает инлайн-клавиатуру, содержащую кнопки для
+    выбора дней недели (Пн, Вт, Ср, Чт, Пт) и часов (1ч - 5ч). Кнопки
+    отображают состояние выбора (выбрано или не выбрано) в зависимости от
+    текущих выборов пользователя.
+
+    :return: Объект InlineKeyboardMarkup, представляющий инлайн-клавиатуру с
+                кнопками.
+    """
+    keyboard: List[List[InlineKeyboardButton]] = [[]]
+    days: List[str] = ["Пн", "Вт", "Ср", "Чт", "Пт"]
+
+    for day in days:
+        # Добавляем кнопку с состоянием
+        button_text = f"[❌] {day}" if day not in user_choices else f"[✅] {day}"
+        keyboard[0].append(
+            InlineKeyboardButton(text=button_text, callback_data=f"toggle_{day}")
+        )
+
+    button: List[InlineKeyboardButton] = []
+    for i in range(1, 6):
+        text = f"[❌] {i}ч" if str(i) not in hour_choices else f"[✅] {i}ч"
+        button.append(
+            InlineKeyboardButton(text=text, callback_data=f"toggle_{i}")
+        )
+
+    keyboard.append(button)
+    keyboard.append([
+        InlineKeyboardButton(text="Завершить выбор", callback_data="finish"),
+        InlineKeyboardButton(text="Меню", callback_data="main")
+    ])
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)
 
 
 select_schedule_button: List[List[InlineKeyboardButton]] = [
@@ -42,43 +101,7 @@ select_schedule_button: List[List[InlineKeyboardButton]] = [
     ]
 ]
 
+
 select_schedule_keyboard: InlineKeyboardMarkup = InlineKeyboardMarkup(
-    inline_keyboard=select_schedule_button)
-
-delay_button: List[List[InlineKeyboardButton]] = [
-    [
-        InlineKeyboardButton(text="Да Вт/Чт/2ч", callback_data="2/2"),
-        InlineKeyboardButton(text="Да Вт/Чт/3ч", callback_data="2/3"),
-        InlineKeyboardButton(text="Да Пн-Ср/3ч", callback_data="3/3"),
-    ],
-    [
-        InlineKeyboardButton(text="Нет", callback_data="delay_no"),
-        InlineKeyboardButton(text="Отмена", callback_data="main"),
-    ]
-]
-
-delay_keyboard: InlineKeyboardMarkup = InlineKeyboardMarkup(
-    inline_keyboard=delay_button)
-
-
-async def get_weekdays_keyboard() -> InlineKeyboardMarkup:
-    keyboard: List[List[InlineKeyboardButton]] = [[]]
-    days = ["Пн", "Вт", "Ср", "Чт", "Пт"]
-
-    for day in days:
-        # Добавляем кнопку с состоянием
-        button_text = f"[❌] {day}" if day not in user_choices else f"[✅] {day}"
-        keyboard[0].append(InlineKeyboardButton(text=button_text,
-                                                callback_data=f"toggle_{day}"))
-
-    button: List[InlineKeyboardButton] = []
-    for i in range(1, 6):
-        text = f"[❌] {i}ч" if str(i) not in hour_choices else f"[✅] {i}ч"
-        button.append(InlineKeyboardButton(text=text, callback_data=f"toggle_{i}"))
-    keyboard.append(button)
-
-    keyboard.append([
-        InlineKeyboardButton(text="Завершить выбор", callback_data="finish"),
-        InlineKeyboardButton(text="Меню", callback_data="main")
-    ])
-    return InlineKeyboardMarkup(inline_keyboard=keyboard)
+    inline_keyboard=select_schedule_button
+)
