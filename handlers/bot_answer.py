@@ -3,7 +3,6 @@ from typing import Dict, Sequence
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup
-from aiogram.utils.markdown import hbold
 
 from config import BOT_TOKEN
 from crud.create import write_salary, update_salary
@@ -78,10 +77,11 @@ async def processing_data(
     :return: None
     """
     base, overtime, earned = await earned_salary(time, overtime, user_id)
-    await bot.send_message(
-        chat_id=user_id,
-        text=success_text.format(data["date"], hbold(earned)),
-        parse_mode="HTML",
+    callback: str = data.get("callback")
+    await bot.answer_callback_query(
+        callback_query_id=callback,
+        text=success_text.format(data["date"], earned),
+        show_alert=True
     )
 
     if data["action"] == "add":
@@ -89,7 +89,6 @@ async def processing_data(
 
     else:
         await update_salary(base, overtime, earned, data)
-
     await send_calendar_and_message(user_id, data, state)
 
 
