@@ -1,11 +1,13 @@
 import asyncio
 import logging
 from logging import DEBUG
+from typing import List
 
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, InlineKeyboardMarkup, \
+    InlineKeyboardButton
 
 from config import BOT_TOKEN
 from handlers.add_shifts import shifts_router
@@ -18,7 +20,7 @@ from handlers.statistics import statistic
 from handlers.two_in_two import two_in_two_router
 from handlers.unknown import unknown_rout
 from keywords.keyword import menu
-from loader import start_text, guide
+from loader import start_text, GUIDE
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
@@ -50,6 +52,34 @@ async def handle_help_command(
     await message.answer("Меню", reply_markup=menu)
 
 
+@dp.message(F.text == "/dev")
+async def handle_help_command(
+        message: types.Message,
+        state: FSMContext
+) -> None:
+    """Обработчик команды main."""
+    await state.clear()
+    button: List[List[InlineKeyboardButton]] = [
+            [
+                InlineKeyboardButton(
+                    text="Мой Email", callback_data="send_email"),
+                InlineKeyboardButton(
+                    text="Мой Телеграм", url="https://t.me/Maksim1Zhitkov"),
+            ]
+        ]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=button)
+    await message.answer("Меню", reply_markup=keyboard)
+
+
+@dp.callback_query(F.data == "send_email")
+async def process_email_button(callback_query: types.CallbackQuery):
+    await callback_query.message.answer(
+        text="[m-zhitkov@inbox.ru](mailto:m-zhitkov@inbox.ru)",
+        parse_mode="Markdown",
+        reply_markup=menu
+    )
+
+
 @dp.callback_query(F.data == "main")
 async def handler_help(callback: CallbackQuery, state: FSMContext) -> None:
     """Обработчик команды main."""
@@ -61,8 +91,13 @@ async def handler_help(callback: CallbackQuery, state: FSMContext) -> None:
 @dp.message(F.text == "/info")
 async def guide_information(message: types.Message, state: FSMContext) -> None:
     """Обработчик для команды info"""
-    await message.answer(text=guide, reply_markup=menu)
     await state.clear()
+    for mess in GUIDE:
+        await message.answer(text=mess)
+    await message.answer(
+        text="Меню",
+        reply_markup=menu
+    )
 
 
 async def main():
