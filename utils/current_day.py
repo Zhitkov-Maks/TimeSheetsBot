@@ -1,4 +1,6 @@
 """Вспомогательный модуль для подсчета зарплаты за выбранный день."""
+from typing import List
+
 from aiogram.utils.markdown import hbold
 from dataclasses import dataclass
 from typing_extensions import Tuple
@@ -69,3 +71,33 @@ async def gen_message_for_choice_day(salary: Salary, choice_date: str) -> str:
         f"Заработали: {salary.earned + other:,.2f}₽.\n"
         f"Из них прочие доходы: {other:,.2f}₽."
     )
+
+
+async def split_data(data: List[str]) -> Tuple[float, float]:
+    """
+    Разделяет данные о времени и сверхурочных часах на два значения.
+
+    Эта асинхронная функция принимает список строк, где ожидается,
+    что первая строка представляет собой время, а вторая — сверхурочные часы.
+    Если в списке только одно значение, считается, что сверхурочные часы равны нулю.
+    Функция проверяет, чтобы сумма времени и сверхурочных часов не превышала 24,
+    а также чтобы время было больше 0.
+
+    :param data: Список строк, содержащий время и сверхурочные часы.
+                 Ожидается, что список может содержать одно или два значения.
+
+    :return: Кортеж из двух значений (time, overtime), представляющих время и
+            сверхурочные часы.
+
+    :raises ValueError: Если сумма времени и сверхурочных часов больше 24,
+                        если время больше 24 или если сумма времени и
+                        сверхурочных часов меньше 1.
+    """
+    if len(data) == 1:
+        time, overtime = float(data[0]), 0
+    else:
+        time, overtime = float(data[0]), float(data[1])
+
+    if time + overtime > 24 or time > 24 or time + overtime < 1:
+        raise ValueError
+    return time, overtime
