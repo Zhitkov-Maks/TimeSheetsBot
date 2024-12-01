@@ -3,12 +3,13 @@ from datetime import date
 from typing import Sequence, Dict, List, Tuple
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from sqlalchemy import Row
 
 from database.models import Salary
 from loader import UNICODE_DATA, MONTH_DATA, DAYS_LIST
 
 
-async def get_dates(salary: Sequence[Salary]) -> Dict[str, int]:
+async def get_dates(salary: Sequence[Row[tuple[Salary]]]) -> Dict[str, int]:
     """
     Функция для формирования словаря, где ключ дата,
     а значение количество отработанных часов за выбранную дату.
@@ -91,7 +92,7 @@ async def generate_base_calendar(
 
 
 async def create_calendar(
-        salary: Sequence[Salary],
+        salary: Sequence[Row[tuple[Salary]]],
         year: int,
         month: int
 ) -> InlineKeyboardMarkup:
@@ -156,7 +157,7 @@ async def get_month_range(
     на основе дня недели и количества дней в месяце.
 
     :param day_week: Целое число, представляющее день недели (0 - понедельник,
-        6 - воскресенье).
+                        6 - воскресенье).
     :param days_in_month: Общее количество дней в месяце.
 
     :return: Кортеж из двух целых чисел:
