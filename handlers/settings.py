@@ -30,11 +30,9 @@ async def ask_price(callback: CallbackQuery, state: FSMContext):
     else:
         await state.set_state(SettingsState.change_settings)
         await callback.message.answer(
-            text=f"Ваши текущие настройки ⚙️🔧\n"
-                 f"---------------------------------------------------------\n"
+            text=f"Ваши текущие настройки ⚙️🔧\n\n"
                  f"Ставка в час: {hbold(get_data_user.price)}₽\n"
-                 f"Прибавка за доп час: {hbold(get_data_user.overtime)}₽\n"
-                 f"---------------------------------------------------------\n"
+                 f"Прибавка за доп час: {hbold(get_data_user.overtime)}₽\n\n"
                  f"Хотите изменить данные?",
             parse_mode="HTML",
             reply_markup=confirm_menu,
