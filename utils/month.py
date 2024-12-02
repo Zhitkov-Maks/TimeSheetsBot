@@ -48,7 +48,7 @@ async def generate_str(iterable: Sequence[Row[tuple[Salary]]], month: int) -> st
     :param month: Месяц зак который идет создание сообщения.
     :return: Строку для показа пользователю.
     """
-    create_str: str = f"{hbold("Итог за ", MONTH_DATA[month])}\n"
+    create_str: str = f"{hbold("Итог за ", MONTH_DATA[month])}\n\n"
 
     one: List[int] = [0, 0, 0]
     two: List[int] = [0, 0, 0]
@@ -69,16 +69,12 @@ async def generate_str(iterable: Sequence[Row[tuple[Salary]]], month: int) -> st
             two[1] += sal[0].overtime
             two[2] += sal[0].earned  + (sal[0].other_income if sal[0].other_income else 0)
 
-    create_str += f"{60 * "-"}\n"
     create_str += f"Период 1: "
-    create_str += f"{hbold(one[0])}ч, {hbold(one[1])}ч, {one[2]:,.2f}₽\n"
-    create_str += f"{60 * "-"}\n"
+    create_str += f"{hbold(one[0])}ч, {hbold(one[1])}ч, {one[2]:,.2f}₽\n\n"
     create_str += f"Период 2: "
-    create_str += f"{hbold(two[0])}ч, {hbold(two[1])}ч, {two[2]:,.2f}₽\n"
-    create_str += f"{60 * "-"}\n"
+    create_str += f"{hbold(two[0])}ч, {hbold(two[1])}ч, {two[2]:,.2f}₽\n\n"
     create_str += f"За месяц: "
     create_str += f"{hbold(total[0])}ч, {hbold(total[1])}ч, {total[2]:,.2f}₽\n"
-    create_str += f"{60 * "-"}"
     return create_str
 
 
