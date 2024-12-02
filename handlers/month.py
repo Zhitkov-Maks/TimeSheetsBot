@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Dict
 
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, InlineKeyboardMarkup
+from aiogram.types import CallbackQuery
 from aiogram import Router, Bot
 from aiogram import F
 from sqlalchemy import Sequence
