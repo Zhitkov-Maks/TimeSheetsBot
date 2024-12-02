@@ -18,12 +18,10 @@ async def gen_message_statistic(
     days_in_year: int = 365
 
     message: str = (
-        f"Ваша статистика за {hbold(year)} год.\n"
-        f"{60 * "-"}\n"
+        f"Ваша статистика за {hbold(year)} год.\n\n"
         f"Заработано: {total_earned:,.2f}₽\n"
         f"Отработано часов: {hbold(total_hours)}ч\n"
-        f"Из них переработки: {hbold(data[2])}ч.\n"
-        f"{60 * "-"}\n"
+        f"Из них переработки: {hbold(data[2])}ч.\n\n"
         f"За год вы потратили на работу {int(total_hours // 24)} дней,\n"
         f"Что составляет {hbold(round((total_hours / (days_in_year * 24)) * 100, 2))}% "
         f"времени в году."
