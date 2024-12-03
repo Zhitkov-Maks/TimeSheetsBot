@@ -140,6 +140,3 @@ unfamiliar_command: str = ("Не могу обработать ваш запро
 GUIDE: tuple = (
     greeting, settings, calendar, prediction, shifts_group, finish
 )
-
-SMILE: list = ["💪", "👌", "😎", "🤓", "🔥", "⚡️",
-         "🤝", "🦾", "😀", "🥲", "😜", "😉", "🙃", "👻"]

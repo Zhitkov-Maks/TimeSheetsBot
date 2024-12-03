@@ -1,5 +1,4 @@
 from typing import Dict, Sequence
-from random import choice
 
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
@@ -8,9 +7,9 @@ from aiogram.types import InlineKeyboardMarkup
 from config import BOT_TOKEN
 from crud.create import write_salary, update_salary
 from keywords.month import create_calendar
-from loader import success_text, SMILE
+from loader import success_text
 from utils.current_day import earned_salary
-from utils.month import create_message, generate_str
+from utils.month import create_message
 
 bot = Bot(token=BOT_TOKEN)
 
@@ -42,7 +41,7 @@ async def send_calendar_and_message(
 
     await bot.send_message(
         chat_id=user,
-        text=choice(SMILE),
+        text="^_^",
         parse_mode="HTML",
         reply_markup=calendar,
     )
@@ -117,5 +116,5 @@ async def sent_calendar(
     """
     calendar: InlineKeyboardMarkup = await create_calendar(result, year, month)
     await bot.send_message(
-        user_id, choice(SMILE), reply_markup=calendar
+        user_id, "^_^", reply_markup=calendar
     )
