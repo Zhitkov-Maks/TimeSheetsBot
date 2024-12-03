@@ -3,7 +3,6 @@ from typing import Sequence, Tuple, List, Dict
 
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup
-from aiogram.utils.markdown import hbold
 from sqlalchemy import Row
 
 from crud.statistics import get_information_for_month
@@ -15,7 +14,7 @@ from states.month import MonthState
 
 async def create_message(
     user_id: int, _date: str, state: FSMContext
-) -> Tuple[str, InlineKeyboardMarkup]:
+) -> InlineKeyboardMarkup:
     """
     Функция собирает информацию для отображения календаря и сообщения о зарплате.
     :param user_id: ID пользователя.
@@ -34,9 +33,7 @@ async def create_message(
 
     calendar: InlineKeyboardMarkup = await create_calendar(result, year, month)
 
-    message: str = await generate_str(result, month)
-
-    return message, calendar
+    return calendar
 
 
 async def generate_str(iterable: Sequence[Row[tuple[Salary]]], month: int) -> str:
@@ -48,7 +45,7 @@ async def generate_str(iterable: Sequence[Row[tuple[Salary]]], month: int) -> st
     :param month: Месяц зак который идет создание сообщения.
     :return: Строку для показа пользователю.
     """
-    create_str: str = f"{hbold("Итог за ", MONTH_DATA[month])}\n\n"
+    create_str: str = f"{"Итог за ", MONTH_DATA[month]}\n\n"
 
     one: List[int] = [0, 0, 0]
     two: List[int] = [0, 0, 0]
@@ -70,11 +67,11 @@ async def generate_str(iterable: Sequence[Row[tuple[Salary]]], month: int) -> st
             two[2] += sal[0].earned  + (sal[0].other_income if sal[0].other_income else 0)
 
     create_str += f"Период 1: "
-    create_str += f"{hbold(one[0])}ч, {hbold(one[1])}ч, {one[2]:,.2f}₽\n\n"
+    create_str += f"{one[0]}ч, {one[1]}ч, {one[2]:,.2f}₽\n\n"
     create_str += f"Период 2: "
-    create_str += f"{hbold(two[0])}ч, {hbold(two[1])}ч, {two[2]:,.2f}₽\n\n"
+    create_str += f"{two[0]}ч, {two[1]}ч, {two[2]:,.2f}₽\n\n"
     create_str += f"За месяц: "
-    create_str += f"{hbold(total[0])}ч, {hbold(total[1])}ч, {total[2]:,.2f}₽\n"
+    create_str += f"{total[0]}ч, {total[1]}ч, {total[2]:,.2f}₽\n"
     return create_str
 
 

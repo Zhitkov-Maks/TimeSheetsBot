@@ -128,7 +128,7 @@ async def create_calendar(
     month_keyword.append(
         [
             InlineKeyboardButton(text=f"{MONTH_DATA[month]} {year}г",
-                                 callback_data="календарь")]
+                                 callback_data="calendar")]
     )
 
     # Формирование строк с днями недели и их значениями

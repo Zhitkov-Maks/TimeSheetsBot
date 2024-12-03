@@ -1,12 +1,13 @@
 import re
 from datetime import datetime
-from typing import Dict
+from random import sample
+from typing import Dict, List
 
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 from aiogram import Router, Bot
 from aiogram import F
-from sqlalchemy import Sequence
+from sqlalchemy import Sequence, Row
 
 from config import BOT_TOKEN
 from crud.statistics import get_information_for_month, get_info_by_date
@@ -17,7 +18,7 @@ from keywords.keyword import menu
 from loader import date_pattern
 from states.month import MonthState
 from utils.current_day import gen_message_for_choice_day
-from utils.month import get_date
+from utils.month import get_date, generate_str
 
 month_router = Router()
 bot = Bot(token=BOT_TOKEN)
@@ -40,7 +41,7 @@ async def handle_info_current_month(
     )
 
     await state.set_state(MonthState.choice)
-    await state.update_data(year=year, month=month)
+    await state.update_data(year=year, month=month, result=result)
     await sent_calendar(year, month, result, callback.from_user.id)
 
 
@@ -80,6 +81,17 @@ async def choice_day_on_month(
         await state.update_data(last_choice_date=choice_date)
 
 
+@month_router.callback_query(F.data == "calendar")
+async def show_monthly_data(
+        callback: CallbackQuery,
+        state: FSMContext
+) -> None:
+    data: Dict[str, str | int] = await state.get_data()
+    month: int = data.get("month")
+    result: Sequence[Row[tuple[Salary]]] = data.get("result")
+    message: str = await generate_str(result, month)
+    await callback.answer(message, show_alert=True)
+
 
 @month_router.callback_query(F.data.in_(["next", "prev"]))
 async def next_and_prev_month(
@@ -89,16 +101,15 @@ async def next_and_prev_month(
     """
     Обрабатывает команды на предыдущий или следующий месяц.
     """
-    await callback.message.delete_reply_markup()
     data: Dict[str, str | int] = await state.get_data()
-
+    await callback.message.delete_reply_markup()
     if len(data) != 0:
         year, month = await get_date(data, callback.data)
 
         result: Sequence = await get_information_for_month(
             callback.from_user.id, year, month
         )
-        await state.update_data(year=year, month=month)
+        await state.update_data(year=year, month=month, result=result)
         await state.set_state(MonthState.choice)
         await sent_calendar(year, month, result, callback.from_user.id)
 

@@ -1,7 +1,6 @@
 """Вспомогательный модуль для подсчета зарплаты за выбранный день."""
 from typing import List
 
-from aiogram.utils.markdown import hbold
 from dataclasses import dataclass
 from typing_extensions import Tuple
 
