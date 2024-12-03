@@ -21,6 +21,7 @@ from handlers.two_in_two import two_in_two_router
 from handlers.unknown import unknown_rout
 from keywords.keyword import menu
 from loader import start_text, GUIDE
+from utils.five_days import clear_data
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
@@ -85,6 +86,7 @@ async def handler_help(callback: CallbackQuery, state: FSMContext) -> None:
     """Обработчик команды main."""
     await callback.message.delete_reply_markup()
     await state.clear()
+    await clear_data()
     await callback.message.answer("Меню", reply_markup=menu)
 
 

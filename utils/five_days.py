@@ -3,6 +3,7 @@ from datetime import datetime
 
 from crud.settings import get_settings_user_by_id
 from database import Settings
+from keywords.prediction import user_choices, hour_choices
 from utils.current_day import Employee
 from utils.prediction import parse_data
 
@@ -47,3 +48,11 @@ async def get_prediction_sum(user_id: int, data_: dict) -> int:
 
     total_sum += ((price.price + price.overtime) * hours) * weekdays
     return total_sum
+
+
+async def clear_data() -> None:
+    """
+    Очищаем словари от данных.
+    """
+    user_choices.clear()
+    hour_choices.clear()

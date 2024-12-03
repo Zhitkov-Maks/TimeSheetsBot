@@ -57,7 +57,7 @@ async def five_days_get_prediction_delay(
              f"быть только выбран {hbold("один")} вариант иначе будет считаться "
              f"по минимальному.",
         parse_mode="HTML",
-        reply_markup=await get_weekdays_keyboard()
+        reply_markup=await get_weekdays_keyboard(message.from_user.id)
     )
 
 
@@ -67,26 +67,26 @@ async def toggle_day(callback_query: CallbackQuery) -> None:
     Обработчик выбора вариантов рабочих дней и количества доп часов.
     """
     day: str = callback_query.data.split("_")[1]
-
+    user_id: int = callback_query.from_user.id
     # Обновляем состояние выбора
-    if not day.isdigit() and day in user_choices:
-        user_choices.remove(day)
+    if not day.isdigit() and day in user_choices[user_id]:
+        user_choices[user_id].remove(day)
         await callback_query.answer(f"Вы убрали: {day}")
 
-    elif not day.isdigit() and day not in user_choices:
-        user_choices.append(day)
+    elif not day.isdigit() and day not in user_choices[user_id]:
+        user_choices[user_id].append(day)
         await callback_query.answer(f"Вы выбрали: {day}")
 
-    elif day.isdigit() and day in hour_choices:
-        hour_choices.remove(day)
+    elif day.isdigit() and day in hour_choices[user_id]:
+        hour_choices[user_id].remove(day)
         await callback_query.answer(f"Вы убрали: {day} часа дополнительно.")
 
-    elif day.isdigit() and day not in hour_choices:
-        hour_choices.append(day)
+    elif day.isdigit() and day not in hour_choices[user_id]:
+        hour_choices[user_id].append(day)
         await callback_query.answer(f"Вы выбрали: {day} часа дополнительно.")
 
     await callback_query.message.edit_reply_markup(
-        reply_markup=await get_weekdays_keyboard())
+        reply_markup=await get_weekdays_keyboard(user_id))
 
 
 @five_days_router.callback_query(F.data == "finish")
@@ -95,18 +95,18 @@ async def finish_selection(
 ) -> None:
     delay_list: List[int] = []
 
-    if user_choices:
-        for i in user_choices:
+    if user_choices[callback_query.from_user.id]:
+        for i in user_choices[callback_query.from_user.id]:
             delay_list.append(choices_days.get(i))
         await state.update_data(delay=delay_list)
 
     else:
         await state.update_data(delay="delay_no")
 
-    if hour_choices:
-        await state.update_data(hour=hour_choices[0])
+    if hour_choices[callback_query.from_user.id]:
+        await state.update_data(hour=hour_choices[callback_query.from_user.id][0])
     else:
-        await state.update_data(hour=3)
+        await state.update_data(hour=0)
 
     data: dict = await state.get_data()
     prediction_sum: int = await get_prediction_sum(
@@ -116,5 +116,4 @@ async def finish_selection(
         text=f"Ваш прогнозируемый заработок составит: {prediction_sum:,.2f}₽",
         show_alert=True
     )
-    user_choices.clear()
-    hour_choices.clear()
+

@@ -1,12 +1,13 @@
 from datetime import timedelta, datetime as dt, datetime, date
 from typing import List, Dict
+from collections import defaultdict
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from loader import MONTH_DATA
 
-user_choices: List[str] = []
-hour_choices: List[str] = []
+user_choices: Dict[int, List[str]] = defaultdict(list)
+hour_choices: Dict[int, List[str]] = defaultdict(list)
 choices_days: Dict[str, int] = {
     "Понедельник": 0,
     "Вторник": 1,
@@ -57,7 +58,7 @@ async def prediction() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=prediction_button())
 
 
-async def get_weekdays_keyboard() -> InlineKeyboardMarkup:
+async def get_weekdays_keyboard(user_id: int) -> InlineKeyboardMarkup:
     """
     Генерирует инлайн-клавиатуру для выбора дней недели и часов.
 
@@ -74,14 +75,14 @@ async def get_weekdays_keyboard() -> InlineKeyboardMarkup:
 
     for day in days:
         # Добавляем кнопку с состоянием
-        button_text = f"[❌] {day}" if day not in user_choices else f"[✅] {day}"
+        button_text = f"[❌] {day}" if day not in user_choices[user_id] else f"[✅] {day}"
         keyboard[0].append(
             InlineKeyboardButton(text=button_text, callback_data=f"toggle_{day}")
         )
 
     button: List[InlineKeyboardButton] = []
     for i in range(1, 6):
-        text = f"[❌] {i}ч" if str(i) not in hour_choices else f"[✅] {i}ч"
+        text = f"[❌] {i}ч" if str(i) not in hour_choices[user_id] else f"[✅] {i}ч"
         button.append(
             InlineKeyboardButton(text=text, callback_data=f"toggle_{i}")
         )
