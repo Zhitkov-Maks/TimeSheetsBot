@@ -1,7 +1,6 @@
 import re
 from datetime import datetime
-from random import sample
-from typing import Dict, List
+from typing import Dict
 
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
@@ -12,9 +11,9 @@ from sqlalchemy import Sequence, Row
 from config import BOT_TOKEN
 from crud.statistics import get_information_for_month, get_info_by_date
 from database.models import Salary
-from handlers.bot_answer import sent_calendar
 from keywords.current_day import get_data_choices_day
 from keywords.keyword import menu
+from keywords.month import create_calendar
 from loader import date_pattern
 from states.month import MonthState
 from utils.current_day import gen_message_for_choice_day
@@ -42,7 +41,10 @@ async def handle_info_current_month(
 
     await state.set_state(MonthState.choice)
     await state.update_data(year=year, month=month, result=result)
-    await sent_calendar(year, month, result, callback.from_user.id)
+    await callback.message.answer(
+        text="...",
+        reply_markup=await create_calendar(result, year, month)
+    )
 
 
 @month_router.callback_query(
@@ -102,7 +104,6 @@ async def next_and_prev_month(
     Обрабатывает команды на предыдущий или следующий месяц.
     """
     data: Dict[str, str | int] = await state.get_data()
-    await callback.message.delete_reply_markup()
     if len(data) != 0:
         year, month = await get_date(data, callback.data)
 
@@ -111,7 +112,9 @@ async def next_and_prev_month(
         )
         await state.update_data(year=year, month=month, result=result)
         await state.set_state(MonthState.choice)
-        await sent_calendar(year, month, result, callback.from_user.id)
+        await callback.message.edit_reply_markup(
+            reply_markup=await  create_calendar(result, year, month)
+        )
 
     else:
         await state.clear()

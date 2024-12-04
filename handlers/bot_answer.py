@@ -1,4 +1,4 @@
-from typing import Dict, Sequence
+from typing import Dict
 
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
@@ -6,7 +6,6 @@ from aiogram.types import InlineKeyboardMarkup
 
 from config import BOT_TOKEN
 from crud.create import write_salary, update_salary
-from keywords.month import create_calendar
 from loader import success_text
 from utils.current_day import earned_salary
 from utils.month import create_message
@@ -90,31 +89,3 @@ async def processing_data(
     else:
         await update_salary(base, overtime, earned, data)
     await send_calendar_and_message(user_id, data, state)
-
-
-async def sent_calendar(
-        year: int,
-        month: int,
-        result: Sequence,
-        user_id: int
-) -> None:
-    """
-    Отправляет пользователю календарь за указанный месяц и год.
-
-    Эта функция генерирует календарь и сообщение на основе переданных данных,
-    а затем отправляет их пользователю. Используется для уменьшения
-    дублирования кода в обработчиках.
-
-    :param year: Год, за который необходимо сгенерировать календарь.
-    :param month: Месяц, за который необходимо сгенерировать календарь.
-    :param result: Результат запроса, содержащий данные о зарплате или других
-                    показателях за указанный месяц.
-    :param user_id: Идентификатор пользователя (чата), которому
-                        будет отправлено сообщение с календарем.
-
-    :return: None
-    """
-    calendar: InlineKeyboardMarkup = await create_calendar(result, year, month)
-    await bot.send_message(
-        user_id, "^_^", reply_markup=calendar
-    )
