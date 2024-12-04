@@ -32,7 +32,6 @@ async def handle_info_current_month(
     Обработчик для команды month_current. Получает информацию
     о текущем месяце.
     """
-    await callback.message.delete_reply_markup()
     year: int = datetime.now().year
     month: int = datetime.now().month
     result: Sequence = await get_information_for_month(
@@ -45,6 +44,7 @@ async def handle_info_current_month(
         text="...",
         reply_markup=await create_calendar(result, year, month)
     )
+    await callback.message.delete()
 
 
 @month_router.callback_query(

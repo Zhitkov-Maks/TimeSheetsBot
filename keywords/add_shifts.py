@@ -1,13 +1,14 @@
 from calendar import monthrange
 from datetime import date
 from typing import List
+from collections import defaultdict
 
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from keywords.month import get_month_range, create_list_with_calendar_days
 from loader import MONTH_DATA, DAYS_LIST
 
-days_choices = []
+days_choices = defaultdict(list)
 
 
 async def generate_base_calendar(
@@ -15,7 +16,8 @@ async def generate_base_calendar(
         numbers_list: List[str],
         month_keyword: list,
         year: int,
-        month: int
+        month: int,
+        user_chat_id: int
 ) -> None:
     """
     Функция генерации основной части календаря. Заполняет календарь кнопками.
@@ -23,6 +25,7 @@ async def generate_base_calendar(
     :param numbers_list: Поле календаря.
     :param month_keyword: Непосредственно клавиатура в виде календаря.
     :param year: Нужен для формирования даты.
+    :param user_chat_id: Нужен для формирования клавиатуры.
     :param month: Нужен для формирования даты.
     :return List: Инлайн клавиатуру.
     """
@@ -37,7 +40,7 @@ async def generate_base_calendar(
                 text = " "
             else:
                 text = f"{numbers_list[day]} ˟" \
-                    if create_date not in days_choices \
+                    if create_date not in days_choices[user_chat_id] \
                     else f"{numbers_list[day]} ˯"
 
             row.append(
@@ -50,7 +53,11 @@ async def generate_base_calendar(
         month_keyword.append(row)
 
 
-async def get_days_keyboard(year: int, month: int) -> InlineKeyboardMarkup:
+async def get_days_keyboard(
+        year: int,
+        month: int,
+        user_chat_id: int
+) -> InlineKeyboardMarkup:
     days_in_month: int = monthrange(year, month)[1]
     day_week: int = date(year, month, 1).weekday()
 
@@ -66,7 +73,7 @@ async def get_days_keyboard(year: int, month: int) -> InlineKeyboardMarkup:
             text=f"{MONTH_DATA[month]} {year}г", callback_data="календарь"),])
 
     await generate_base_calendar(
-        field_size, numbers_list, month_keyword, year, month
+        field_size, numbers_list, month_keyword, year, month, user_chat_id
     )
 
     month_keyword.append([

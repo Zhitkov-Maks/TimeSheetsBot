@@ -3,6 +3,7 @@ from datetime import datetime
 
 from crud.settings import get_settings_user_by_id
 from database import Settings
+from keywords.add_shifts import days_choices
 from keywords.prediction import user_choices, hour_choices
 from utils.current_day import Employee
 from utils.prediction import parse_data
@@ -50,9 +51,10 @@ async def get_prediction_sum(user_id: int, data_: dict) -> int:
     return total_sum
 
 
-async def clear_data() -> None:
+async def clear_data(user_chat_id: int) -> None:
     """
     Очищаем словари от данных.
     """
-    user_choices.clear()
-    hour_choices.clear()
+    user_choices[user_chat_id].clear()
+    hour_choices[user_chat_id].clear()
+    days_choices[user_chat_id].clear()

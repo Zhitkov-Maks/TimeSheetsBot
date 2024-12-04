@@ -40,7 +40,7 @@ async def work_with_calendar(
         year=year, month=month, date=str(current_date))
     await callback.message.answer(
         text="Отметьте все смены когда вы работаете.",
-        reply_markup=await get_days_keyboard(year, month)
+        reply_markup=await get_days_keyboard(year, month, callback.from_user.id)
     )
 
 
@@ -52,16 +52,17 @@ async def toggle_day(
     day: str = callback_query.data.split("_")[1]
     data = await state.get_data()
     year, month = data["year"], data["month"]
-    if day in days_choices:
-        days_choices.remove(day)
+    user_chat_id: int = callback_query.from_user.id
+    if day in days_choices[user_chat_id]:
+        days_choices[user_chat_id].remove(day)
         await callback_query.answer(f"Вы убрали: {day}")
 
-    elif day not in days_choices:
-        days_choices.append(day)
+    elif day not in days_choices[user_chat_id]:
+        days_choices[user_chat_id].append(day)
         await callback_query.answer(f"Вы выбрали: {day}")
 
     await callback_query.message.edit_reply_markup(
-        reply_markup=await get_days_keyboard(year, month)
+        reply_markup=await get_days_keyboard(year, month, user_chat_id)
     )
 
 
@@ -70,9 +71,12 @@ async def input_selection_hours(
         callback_query: CallbackQuery,
         state: FSMContext
 ) -> None:
-    if days_choices:
+    user_id: int = callback_query.from_user.id
+    if days_choices[user_id]:
         await state.set_state(ShiftsState.hours)
-        await state.update_data(days=days_choices, call=callback_query.id)
+        await state.update_data(
+            days=days_choices[user_id], call=callback_query.id
+        )
         await callback_query.message.answer(
             text="Введите по сколько часов вам проставить смены?",
             reply_markup=cancel_button
