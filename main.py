@@ -50,6 +50,7 @@ async def handle_help_command(
 ) -> None:
     """Обработчик команды main."""
     await state.clear()
+    await clear_data(message.from_user.id)
     await message.answer("Меню", reply_markup=menu)
 
 
@@ -84,10 +85,10 @@ async def process_email_button(callback_query: types.CallbackQuery):
 @dp.callback_query(F.data == "main")
 async def handler_help(callback: CallbackQuery, state: FSMContext) -> None:
     """Обработчик команды main."""
-    await callback.message.delete_reply_markup()
     await state.clear()
-    await clear_data()
+    await clear_data(callback.from_user.id)
     await callback.message.answer("Меню", reply_markup=menu)
+    await callback.message.delete()
 
 
 @dp.message(F.text == "/info")

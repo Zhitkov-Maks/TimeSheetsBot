@@ -26,14 +26,12 @@ async def create_message(
     month: int = int(_date[5:7])
     await state.clear()
     await state.set_state(MonthState.choice)
-    await state.update_data(year=year, month=month)
 
     result: Sequence[Row[tuple[Salary]]] = \
         await get_information_for_month(user_id, year, month)
+    await state.update_data(year=year, month=month, result=result)
 
-    calendar: InlineKeyboardMarkup = await create_calendar(result, year, month)
-
-    return calendar
+    return await create_calendar(result, year, month)
 
 
 async def generate_str(iterable: Sequence[Row[tuple[Salary]]], month: int) -> str:

@@ -40,7 +40,7 @@ async def send_calendar_and_message(
 
     await bot.send_message(
         chat_id=user,
-        text="^_^",
+        text="...",
         parse_mode="HTML",
         reply_markup=calendar,
     )

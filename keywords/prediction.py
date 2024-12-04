@@ -75,7 +75,7 @@ async def get_weekdays_keyboard(user_id: int) -> InlineKeyboardMarkup:
 
     for day in days:
         # Добавляем кнопку с состоянием
-        button_text = f"[❌] {day}" if day not in user_choices[user_id] else f"[✅] {day}"
+        button_text = f"[❌] {day[:2]}" if day not in user_choices[user_id] else f"[✅] {day[:2]}"
         keyboard[0].append(
             InlineKeyboardButton(text=button_text, callback_data=f"toggle_{day}")
         )
