@@ -79,7 +79,6 @@ async def choice_day_on_month(
     else:
         # Если это новое нажатие, просто отвечаем на callback с сообщением
         await callback.answer(message, show_alert=True)
-        # Обновляем последнюю выбранную дату в состоянии
         await state.update_data(last_choice_date=choice_date)
 
 
@@ -91,7 +90,7 @@ async def show_monthly_data(
     data: Dict[str, str | int] = await state.get_data()
     month: int = data.get("month")
     result: Sequence[Row[tuple[Salary]]] = data.get("result")
-    message: str = await generate_str(result, month)
+    message: str = await generate_str(result, month, callback.from_user.id)
     await callback.answer(message, show_alert=True)
 
 

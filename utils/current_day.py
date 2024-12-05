@@ -7,6 +7,7 @@ from typing_extensions import Tuple
 from crud.settings import get_settings_user_by_id
 from database import Settings
 from database.models import Salary
+from loader import MONTH_DATA
 
 
 @dataclass
@@ -60,12 +61,14 @@ async def gen_message_for_choice_day(salary: Salary, choice_date: str) -> str:
     :param salary: Заработок за определенный день.
     :return: Сообщение для пользователя.
     """
+    month, day = int(choice_date[5:7]), choice_date[8:]
+    day_month: str = f"{MONTH_DATA[month]} {day}"
     if not salary:
-        return f"За дату {choice_date} нет данных."
+        return f"{day_month}, нет данных."
 
     other: float = salary.other_income if salary.other_income else 0
     return (
-        f"Дата: {choice_date}. \nВы отработали: "
+        f"{day_month}. \nВы отработали: "
         f"{salary.base_hours + salary.overtime} часов.\n"
         f"Заработали: {salary.earned + other:,.2f}₽.\n"
         f"Из них прочие доходы: {other:,.2f}₽."

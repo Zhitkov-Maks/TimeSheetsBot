@@ -77,7 +77,7 @@ async def update_other_income(message: Message, state: FSMContext):
 
 
 @create_router.callback_query(F.data == "del")
-async def zero_record(callback: CallbackQuery, state: FSMContext) -> None:
+async def delete_record(callback: CallbackQuery, state: FSMContext) -> None:
     """Отправка на удаление записи."""
     await state.update_data(user_id=callback.from_user.id)
     data: Dict[str, str] = await state.get_data()

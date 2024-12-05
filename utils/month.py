@@ -3,9 +3,12 @@ from typing import Sequence, Tuple, List, Dict
 
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup
+from aiogram.utils.markdown import hbold
 from sqlalchemy import Row
 
+from crud.settings import get_settings_user_by_id
 from crud.statistics import get_information_for_month
+from database import Settings
 from database.models import Salary
 from keywords.month import create_calendar
 from loader import MONTH_DATA
@@ -34,17 +37,22 @@ async def create_message(
     return await create_calendar(result, year, month)
 
 
-async def generate_str(iterable: Sequence[Row[tuple[Salary]]], month: int) -> str:
+async def generate_str(
+        iterable: Sequence[Row[tuple[Salary]]],
+        month: int,
+        user_id: int
+) -> str:
     """
     Генерация сообщения с подробной информацией за месяц
     об отработанных часах и заработанной сумме.
 
     :param iterable: Объект запроса к бд.
     :param month: Месяц зак который идет создание сообщения.
+    :param user_id: Id пользователя чата.
     :return: Строку для показа пользователю.
     """
-    create_str: str = f"{"Итог за ", MONTH_DATA[month]}\n\n"
-
+    create_str: str = f"{MONTH_DATA[month]}\n\n"
+    settings: Settings = await get_settings_user_by_id(user_id)
     one: List[int] = [0, 0, 0]
     two: List[int] = [0, 0, 0]
     total: List[int] = [0, 0, 0]
@@ -64,12 +72,9 @@ async def generate_str(iterable: Sequence[Row[tuple[Salary]]], month: int) -> st
             two[1] += sal[0].overtime
             two[2] += sal[0].earned  + (sal[0].other_income if sal[0].other_income else 0)
 
-    create_str += f"Период 1: "
-    create_str += f"{one[0]}ч, {one[1]}ч, {one[2]:,.2f}₽\n\n"
-    create_str += f"Период 2: "
-    create_str += f"{two[0]}ч, {two[1]}ч, {two[2]:,.2f}₽\n\n"
-    create_str += f"За месяц: "
-    create_str += f"{total[0]}ч, {total[1]}ч, {total[2]:,.2f}₽\n"
+    create_str += (f"Период 1: ({one[0]}ч) - ({one[1]}ч) - ({one[2]:,.1f}₽)\n\n"
+                   f"Период 2: ({two[0]}ч) - ({two[1]}ч) - ({two[2]:,.1f}₽)\n\n"
+                   f"Месяц: ({total[0]}ч) - ({total[1]}ч) - ({total[2]:,.1f}₽)\n")
     return create_str
 
 
