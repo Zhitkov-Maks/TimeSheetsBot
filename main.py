@@ -88,7 +88,6 @@ async def handler_help(callback: CallbackQuery, state: FSMContext) -> None:
     await state.clear()
     await clear_data(callback.from_user.id)
     await callback.message.answer("Меню", reply_markup=menu)
-    await callback.message.delete()
 
 
 @dp.message(F.text == "/info")
