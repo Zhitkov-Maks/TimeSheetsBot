@@ -32,7 +32,8 @@ async def handle_info_current_month(
 ) -> None:
     """
     Обработчик для команды month_current. Получает информацию
-    о текущем месяце.
+    о текущем месяце и формирует календарь пользователю, в котором
+    отмечены его смены.
     """
     year: int = datetime.now().year
     month: int = datetime.now().month
@@ -59,7 +60,9 @@ async def choice_day_on_month(
         state: FSMContext
 ) -> None:
     """
-    Обрабатывает выбранный день в календаре.
+    Обрабатывает выбранный день в календаре. При первом нажатии показывает
+    уведомление с данными за выбранный день, при повторном нажатии показывает
+    сообщение с данными и предложением добавить, изменить или удалить данные.
     """
     choice_date: str = callback.data
     await state.update_data(date=choice_date)
@@ -67,9 +70,9 @@ async def choice_day_on_month(
         callback.from_user.id, choice_date
     )
     message: str = await gen_message_for_choice_day(info_for_date, choice_date)
-    user_data = await state.get_data()
+    user_data: Dict[str, str | int] = await state.get_data()
 
-    last_choice_date = user_data.get("last_choice_date")
+    last_choice_date: str | None = user_data.get("last_choice_date")
 
     if last_choice_date == choice_date:
         # Если дата была выбрана ранее, отправляем сообщение
@@ -91,10 +94,14 @@ async def show_monthly_data(
         callback: CallbackQuery,
         state: FSMContext
 ) -> None:
+    """
+    Обработчик кнопки при нажатии на месяц в календаре. Показывает общую
+    информацию за выбранный месяц в виде всплывающего уведомления.
+    """
     data: Dict[str, str | int] = await state.get_data()
     month: int = data.get("month")
     result: Sequence[Row[tuple[Salary]]] = data.get("result")
-    message: str = await generate_str(result, month, callback.from_user.id)
+    message: str = await generate_str(result, month)
     await callback.answer(message, show_alert=True)
 
 
@@ -105,24 +112,17 @@ async def next_and_prev_month(
         state: FSMContext
 ) -> None:
     """
-    Обрабатывает команды на предыдущий или следующий месяц.
+    Обрабатывает команды на предыдущий или следующий месяц. Формирует календари
+    в зависимости от месяца.
     """
     data: Dict[str, str | int] = await state.get_data()
-    if len(data) != 0:
-        year, month = await get_date(data, callback.data)
+    year, month = await get_date(data, callback.data)
 
-        result: Sequence = await get_information_for_month(
-            callback.from_user.id, year, month
-        )
-        await state.update_data(year=year, month=month, result=result)
-        await state.set_state(MonthState.choice)
-        await callback.message.edit_reply_markup(
-            reply_markup=await  create_calendar(result, year, month)
-        )
-
-    else:
-        await state.clear()
-        await callback.message.answer(
-            text="Некорректный ввод. Попробуйте еще раз.",
-            reply_markup=menu,
-        )
+    result: Sequence = await get_information_for_month(
+        callback.from_user.id, year, month
+    )
+    await state.update_data(year=year, month=month, result=result)
+    await state.set_state(MonthState.choice)
+    await callback.message.edit_reply_markup(
+        reply_markup=await  create_calendar(result, year, month)
+    )

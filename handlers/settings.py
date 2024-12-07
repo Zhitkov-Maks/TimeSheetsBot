@@ -15,7 +15,10 @@ settings_router: Router = Router()
 @settings_router.callback_query(F.data == "settings")
 @decorator_errors
 async def ask_price(callback: CallbackQuery, state: FSMContext):
-    """Обработчик для команд settings."""
+    """Обработчик для команд settings. Если у пользователя еще нет настроек,
+    то просит пользователя сразу ввести нужные данные, иначе спрашивает,
+    хочет ли пользователь изменить настройки.
+    """
     get_data_user: Settings | None = await get_settings_user_by_id(
         callback.from_user.id
     )
@@ -41,8 +44,8 @@ async def ask_price(callback: CallbackQuery, state: FSMContext):
         )
 
 
-@settings_router.callback_query(F.data == "continue",
-                                SettingsState.change_settings)
+@settings_router.callback_query(
+    F.data == "continue", SettingsState.change_settings)
 @decorator_errors
 async def change_settings(callback: CallbackQuery, state: FSMContext):
     """
@@ -52,8 +55,7 @@ async def change_settings(callback: CallbackQuery, state: FSMContext):
     await state.update_data(update=True)
     await state.set_state(SettingsState.price)
 
-    await callback.message.answer(
-        text="Ok, Введите вашу ставку: ")
+    await callback.message.answer(text="Ok, Введите вашу ставку: ")
 
 
 @settings_router.message(F.text.isdigit(), SettingsState.price)
