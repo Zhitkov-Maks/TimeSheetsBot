@@ -61,7 +61,6 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
     return wrapper
 
 
-@decorator_errors
 async def processing_data(
         user_id: int,
         time: float,
@@ -107,7 +106,6 @@ async def processing_data(
     await send_calendar_and_message(user_id, data, state)
 
 
-@decorator_errors
 async def send_calendar_and_message(
         user: int,
         data: Dict[str, str],
