@@ -20,7 +20,10 @@ five_days_router: Router = Router()
 async def five_days_get_prediction_scheduler(
         callback: CallbackQuery, state: FSMContext
 ) -> None:
-    """Обработчик команды для прогнозирования заработка пятидневки."""
+    """
+    Обработчик команды для прогнозирования заработка пятидневки. Запрашивает
+    у пользователя ввод числа.
+    """
     await state.set_state(FiveState.weekday)
     await callback.message.delete_reply_markup()
     await callback.message.answer(
@@ -36,8 +39,12 @@ async def five_days_how_many_hours(
         message: Message,
         state: FSMContext
 ) -> None:
+    """
+    Обработчик сохраняет введенное пользователем число, и запрашивает ввод
+    следующего числа.
+    """
     await state.set_state(FiveState.how_many_hours)
-    await state.update_data(weekdays=int(message.text))
+    await state.update_data(weekdays=int(message.text), usr_id=message.from_user.id)
     await message.answer(
         text="По сколько часов ставится смена?",
         reply_markup=cancel_button
@@ -69,13 +76,12 @@ async def five_days_get_prediction_delay(
 
 @five_days_router.callback_query(lambda c: c.data.startswith("toggle_"))
 @decorator_errors
-async def toggle_day(callback_query: CallbackQuery) -> None:
+async def toggle_day(callback_query: CallbackQuery, state: FSMContext) -> None:
     """
     Обработчик выбора вариантов рабочих дней и количества доп часов.
     """
     day: str = callback_query.data.split("_")[1]
-    user_id: int = callback_query.from_user.id
-    # Обновляем состояние выбора
+    user_id: int = (await state.get_data())["usr_id"]
     if not day.isdigit() and day in user_choices[user_id]:
         user_choices[user_id].remove(day)
         await callback_query.answer(f"Вы убрали: {day}")
@@ -101,6 +107,11 @@ async def toggle_day(callback_query: CallbackQuery) -> None:
 async def finish_selection(
         callback_query: CallbackQuery, state: FSMContext
 ) -> None:
+    """
+    Финальный обработчик прогнозирования пятидневки. Высчитывает прогнозируемый
+    заработок на основе введенных пользователем данных, и отмеченных
+    пользователем данных.
+    """
     delay_list: List[int] = []
 
     if user_choices[callback_query.from_user.id]:
