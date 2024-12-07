@@ -9,6 +9,7 @@ from aiogram.types import InlineKeyboardMarkup
 from config import BOT_TOKEN
 from crud.create import write_salary, update_salary
 from loader import success_text
+from utils.bot_answer import write_logger_error
 from utils.current_day import earned_salary
 from utils.month import create_message
 
@@ -39,6 +40,9 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
                 "никаких данных."
             )
             await bot.send_message(arg.from_user.id, mess)
+            await write_logger_error("KeyError", arg.from_user, func.__name__)
+
+
         except TelegramNetworkError:
             mess: str = (
                 "У нас проблемы с интернетом, попробуйте зайти чуть позже."
@@ -50,6 +54,9 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
                 "какие действия вы совершали."
             )
             await bot.send_message(arg.from_user.id, mess)
+            await write_logger_error(
+                "TelegramBadRequest", arg.from_user, func.__name__
+            )
 
     return wrapper
 
