@@ -9,7 +9,7 @@
 
 ### Пример работы бота.
 
-[Ссылка на видео](https://cloud.mail.ru/public/fZfc/r9P5SNMoR)
+[Ссылка на видео](https://cloud.mail.ru/public/u5eS/GnieHuH16)
 
 ### Базовый функционал
 
