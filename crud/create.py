@@ -13,7 +13,7 @@ async def write_salary(
 ) -> None:
     """
     Функция для сохранения записи о смене.
-    :param base: Базовая ставка
+    :param base: Базовая ставка.
     :param overtime: Доплата за переработку.
     :param earned: Итого заработано.
     :param data_: Словарь с остальными данными.
@@ -41,7 +41,6 @@ async def add_other_income(income: float, data_: Dict[str, int | str]) -> None:
     Функция для добавления всяких стимулирующих бонусов.
     :param income: Переработано.
     :param data_: Прочие данные.
-    :return: Кортеж с временем, переработкой, заработком.
     """
     session: AsyncSession = await get_async_session()
     parse_date: date = datetime.strptime(data_["date"], "%Y-%m-%d")
@@ -82,8 +81,7 @@ async def update_salary(
 async def delete_record(data: Dict[str, str | int]) -> None:
     """
     Функция для удаления записи за выбранное число.
-    :param data:
-    :return:
+    :param data: Данные о дате и пользователе у которого удаляем запись.
     """
     session: AsyncSession = await get_async_session()
     parse_date: date = datetime.strptime(data["date"], "%Y-%m-%d")
