@@ -1,6 +1,8 @@
-from typing import Dict
+from functools import wraps
+from typing import Dict, Callable, ParamSpec, TypeVar
 
 from aiogram import Bot
+from aiogram.exceptions import TelegramNetworkError, TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup
 
@@ -13,39 +15,46 @@ from utils.month import create_message
 bot = Bot(token=BOT_TOKEN)
 
 
-async def send_calendar_and_message(
-        user: int,
-        data: Dict[str, str],
-        state: FSMContext
-) -> None:
+T = TypeVar("T")
+P = ParamSpec("P")
+
+
+def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
     """
-    Отправляет пользователю текущий календарь после добавления записи за
-    выбранный день.
-    Эта функция генерирует сообщение и инлайн-клавиатуру с календарем на основе
-    переданных данных, а затем отправляет их пользователю.
-
-    :param user: Идентификатор пользователя (чата), которому будет отправлено
-                    сообщение.
-    :param data: Словарь, содержащий данные, необходимые для генерации
-                    сообщения и календаря. Ожидается наличие ключа "date",
-                    который представляет собой дату записи.
-    :param state: Контекст состояния для управления состоянием пользователя
-                    в FSM (Finite State Machine).
-
-    :return: None
+    Декоратор для функции обработки колбеков и сообщений.
     """
-    calendar: InlineKeyboardMarkup = await create_message(
-        user, data["date"], state
-    )
+    @wraps(func)
+    async def wrapper(arg: P, state: FSMContext) -> None:
+        """
+        Обертка для обработки ошибок при выполнении функции.
+        """
+        try:
+            return await func(arg, state)
 
-    await bot.send_message(
-        chat_id=user,
-        text="...",
-        parse_mode="HTML",
-        reply_markup=calendar,
-    )
+        except KeyError:
+            mess: str = (
+                "I'm Sorry! Произошла ошибка при обработке данных."
+                " Возможные причина ошибки - вы нажали кнопку, "
+                "которая с течением времени уже не содержит "
+                "никаких данных."
+            )
+            await bot.send_message(arg.from_user.id, mess)
+        except TelegramNetworkError:
+            mess: str = (
+                "У нас проблемы с интернетом, попробуйте зайти чуть позже."
+            )
+            await bot.send_message(arg.from_user.id, mess)
+        except TelegramBadRequest:
+            mess: str = (
+                "Что-то сломалось. Ошибка на нашей стороне, пришлите мне подробно"
+                "какие действия вы совершали."
+            )
+            await bot.send_message(arg.from_user.id, mess)
+
+    return wrapper
 
 
+@decorator_errors
 async def processing_data(
         user_id: int,
         time: float,
@@ -89,3 +98,37 @@ async def processing_data(
     else:
         await update_salary(base, overtime, earned, data)
     await send_calendar_and_message(user_id, data, state)
+
+
+@decorator_errors
+async def send_calendar_and_message(
+        user: int,
+        data: Dict[str, str],
+        state: FSMContext
+) -> None:
+    """
+    Отправляет пользователю текущий календарь после добавления записи за
+    выбранный день.
+    Эта функция генерирует сообщение и инлайн-клавиатуру с календарем на основе
+    переданных данных, а затем отправляет их пользователю.
+
+    :param user: Идентификатор пользователя (чата), которому будет отправлено
+                    сообщение.
+    :param data: Словарь, содержащий данные, необходимые для генерации
+                    сообщения и календаря. Ожидается наличие ключа "date",
+                    который представляет собой дату записи.
+    :param state: Контекст состояния для управления состоянием пользователя
+                    в FSM (Finite State Machine).
+
+    :return: None
+    """
+    calendar: InlineKeyboardMarkup = await create_message(
+        user, data["date"], state
+    )
+
+    await bot.send_message(
+        chat_id=user,
+        text="...",
+        parse_mode="HTML",
+        reply_markup=calendar,
+    )

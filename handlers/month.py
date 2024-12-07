@@ -11,6 +11,7 @@ from sqlalchemy import Sequence, Row
 from config import BOT_TOKEN
 from crud.statistics import get_information_for_month, get_info_by_date
 from database.models import Salary
+from handlers.bot_answer import decorator_errors
 from keywords.current_day import get_data_choices_day
 from keywords.keyword import menu
 from keywords.month import create_calendar
@@ -24,6 +25,7 @@ bot = Bot(token=BOT_TOKEN)
 
 
 @month_router.callback_query(F.data == "month_current")
+@decorator_errors
 async def handle_info_current_month(
         callback: CallbackQuery,
         state: FSMContext
@@ -51,6 +53,7 @@ async def handle_info_current_month(
     MonthState.choice,
     lambda callback_query: re.match(date_pattern, callback_query.data),
 )
+@decorator_errors
 async def choice_day_on_month(
         callback: CallbackQuery,
         state: FSMContext
@@ -83,6 +86,7 @@ async def choice_day_on_month(
 
 
 @month_router.callback_query(F.data == "calendar")
+@decorator_errors
 async def show_monthly_data(
         callback: CallbackQuery,
         state: FSMContext
@@ -95,6 +99,7 @@ async def show_monthly_data(
 
 
 @month_router.callback_query(F.data.in_(["next", "prev"]))
+@decorator_errors
 async def next_and_prev_month(
         callback: CallbackQuery,
         state: FSMContext

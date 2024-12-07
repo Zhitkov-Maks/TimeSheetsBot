@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from config import BOT_TOKEN
-from handlers.bot_answer import send_calendar_and_message
+from handlers.bot_answer import send_calendar_and_message, decorator_errors
 from keywords.add_shifts import get_days_keyboard, days_choices
 from keywords.keyword import cancel_button, menu
 from keywords.prediction import prediction
@@ -20,6 +20,7 @@ bot = Bot(token=BOT_TOKEN)
 
 
 @shifts_router.callback_query(F.data == "many_add")
+@decorator_errors
 async def shifts_calendar(callback: CallbackQuery, state: FSMContext) -> None:
     await state.set_state(ShiftsState.month)
     await callback.message.answer(
@@ -30,6 +31,7 @@ async def shifts_calendar(callback: CallbackQuery, state: FSMContext) -> None:
 
 @shifts_router.callback_query(
     ShiftsState.month, F.data.in_(["current", "next_month"]))
+@decorator_errors
 async def work_with_calendar(
         callback: CallbackQuery,
         state: FSMContext
@@ -45,6 +47,7 @@ async def work_with_calendar(
 
 
 @shifts_router.callback_query(lambda c: c.data.startswith("toggle2_"))
+@decorator_errors
 async def toggle_day(
         callback_query: CallbackQuery,
         state: FSMContext
@@ -67,6 +70,7 @@ async def toggle_day(
 
 
 @shifts_router.callback_query(F.data == "shift_finish")
+@decorator_errors
 async def input_selection_hours(
         callback_query: CallbackQuery,
         state: FSMContext
@@ -91,6 +95,7 @@ async def input_selection_hours(
 
 
 @shifts_router.message(ShiftsState.hours)
+@decorator_errors
 async def finish_add_shifts(
         message: Message,
         state: FSMContext

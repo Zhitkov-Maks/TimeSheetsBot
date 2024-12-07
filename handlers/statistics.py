@@ -3,13 +3,14 @@ from typing import List, Tuple
 
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, InlineKeyboardButton, \
-    InlineKeyboardMarkup
+from aiogram.types import CallbackQuery
 from sqlalchemy import Row
 
 from config import BOT_TOKEN
 from crud.statistics import request_statistic
+from handlers.bot_answer import decorator_errors
 from keywords.keyword import menu
+from keywords.statistics import keyword_statistic_year
 from states.statistic import StatisticState
 from utils.statistic import gen_message_statistic
 
@@ -18,29 +19,21 @@ bot = Bot(token=BOT_TOKEN)
 
 
 @statistic.callback_query(F.data == "statistic")
+@decorator_errors
 async def get_statistics(callback: CallbackQuery, state: FSMContext) -> None:
     """Обработчик команды получения статистики. Показывает клавиатуру для
     выбора года.
     """
     year: int = datetime.now().year
-    keyword: List[List[InlineKeyboardButton]] = [
-        [
-            InlineKeyboardButton(text=f"{year} г", callback_data=str(year)),
-            InlineKeyboardButton(text=f"{year - 1} г",
-                                 callback_data=str(year - 1)),
-            InlineKeyboardButton(text=f"{year - 2} г.",
-                                 callback_data=str(year - 2)),
-        ],
-        [InlineKeyboardButton(text="Показать меню", callback_data="main")],
-    ]
     await state.set_state(StatisticState.year)
     await callback.message.answer(
         text="Выберите год.",
-        reply_markup=InlineKeyboardMarkup(inline_keyboard=keyword)
+        reply_markup=await keyword_statistic_year(year)
     )
 
 
 @statistic.callback_query(StatisticState.year)
+@decorator_errors
 async def choice_year(callback: CallbackQuery, state: FSMContext) -> None:
     """
     Показа статистики за выбранный год.

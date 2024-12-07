@@ -5,6 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from config import BOT_TOKEN
+from handlers.bot_answer import decorator_errors
 from keywords.keyword import cancel_button, menu
 from states.two_in_two import TwoInTwo
 from utils.two_in_two import two_in_two_get_prediction_sum
@@ -14,20 +15,24 @@ bot = Bot(token=BOT_TOKEN)
 
 
 @two_in_two_router.callback_query(F.data == "two_in_two")
+@decorator_errors
 async def two_in_to_get_prediction_scheduler(
         callback: CallbackQuery,
         state: FSMContext
 ) -> None:
     """Обработчик выбора графика два через два."""
     await state.set_state(TwoInTwo.count_weekday)
+    await callback.message.delete_reply_markup()
     await state.update_data(callback=callback.id)
     await callback.message.answer(
-        text="Сколько дополнительных смен вы хотите отработать?",
+        text="Вы выбрали график работы 2/2. Сколько дополнительных смен вы "
+             "хотите отработать? Если не работаете доп смены поставьте 0",
         reply_markup=cancel_button
     )
 
 
 @two_in_two_router.message(TwoInTwo.count_weekday, F.text.isdigit())
+@decorator_errors
 async def two_in_to_get_prediction_first_day(
         message: Message,
         state: FSMContext
@@ -43,6 +48,7 @@ async def two_in_to_get_prediction_first_day(
 
 
 @two_in_two_router.message(TwoInTwo.first_day, F.text.isdigit())
+@decorator_errors
 async def two_in_to_get_prediction_first_day(
         message: Message,
         state: FSMContext
@@ -58,6 +64,7 @@ async def two_in_to_get_prediction_first_day(
 
 
 @two_in_two_router.message(TwoInTwo.how_many_hours, F.text.isdigit())
+@decorator_errors
 async def two_in_to_get_prediction_final(
         message: Message,
         state: FSMContext

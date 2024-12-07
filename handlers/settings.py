@@ -6,12 +6,14 @@ from aiogram.utils.markdown import hbold
 
 from crud.settings import write_settings, get_settings_user_by_id
 from database import Settings
+from handlers.bot_answer import decorator_errors
 from keywords.keyword import menu, confirm_menu, cancel_button
 from states.settings import SettingsState
 
 settings_router: Router = Router()
 
 @settings_router.callback_query(F.data == "settings")
+@decorator_errors
 async def ask_price(callback: CallbackQuery, state: FSMContext):
     """Обработчик для команд settings."""
     get_data_user: Settings | None = await get_settings_user_by_id(
@@ -41,6 +43,7 @@ async def ask_price(callback: CallbackQuery, state: FSMContext):
 
 @settings_router.callback_query(F.data == "continue",
                                 SettingsState.change_settings)
+@decorator_errors
 async def change_settings(callback: CallbackQuery, state: FSMContext):
     """
     Обрабатывает команды yes and no, при запросе на
@@ -54,6 +57,7 @@ async def change_settings(callback: CallbackQuery, state: FSMContext):
 
 
 @settings_router.message(F.text.isdigit(), SettingsState.price)
+@decorator_errors
 async def ask_chart(message: Message, state: FSMContext):
     """Обрабатывает введенную пользователем стоимость часа."""
     await state.update_data(price=int(message.text))
@@ -64,8 +68,11 @@ async def ask_chart(message: Message, state: FSMContext):
 
 
 @settings_router.message(F.text.isdigit(), SettingsState.overtime_price)
-async def ask_price_over_time(message: Message,
-                              state: FSMContext) -> None:
+@decorator_errors
+async def ask_price_over_time(
+        message: Message,
+        state: FSMContext
+) -> None:
     """
     Обрабатывает введенную пользователем информацию о вводе
     стоимости о доп часе. И отправляет всю информацию на сохранение в бд.

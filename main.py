@@ -11,6 +11,7 @@ from aiogram.types import CallbackQuery, InlineKeyboardMarkup, \
 
 from config import BOT_TOKEN
 from handlers.add_shifts import shifts_router
+from handlers.bot_answer import decorator_errors
 from handlers.current_day import create_router
 from handlers.five_days import five_days_router
 from handlers.month import month_router
@@ -37,6 +38,7 @@ dp.include_router(unknown_rout)
 
 
 @dp.message(CommandStart())
+@decorator_errors
 async def handler_start(message: types.Message, state: FSMContext) -> None:
     """Обработчик команды старт."""
     await state.clear()
@@ -44,6 +46,7 @@ async def handler_start(message: types.Message, state: FSMContext) -> None:
 
 
 @dp.message(F.text == "/main")
+@decorator_errors
 async def handle_help_command(
         message: types.Message,
         state: FSMContext
@@ -55,6 +58,7 @@ async def handle_help_command(
 
 
 @dp.message(F.text == "/dev")
+@decorator_errors
 async def handle_help_command(
         message: types.Message,
         state: FSMContext
@@ -69,12 +73,18 @@ async def handle_help_command(
                     text="Мой Телеграм", url="https://t.me/Maksim1Zhitkov"),
             ]
         ]
-    keyboard = InlineKeyboardMarkup(inline_keyboard=button)
+    keyboard: InlineKeyboardMarkup = InlineKeyboardMarkup(inline_keyboard=button)
     await message.answer("Меню", reply_markup=keyboard)
 
 
 @dp.callback_query(F.data == "send_email")
-async def process_email_button(callback_query: types.CallbackQuery):
+@decorator_errors
+async def process_email_button(
+        callback_query: types.CallbackQuery,
+        state: FSMContext
+) -> None:
+    await state.clear()
+    await callback_query.message.delete_reply_markup()
     await callback_query.message.answer(
         text="[m-zhitkov@inbox.ru](mailto:m-zhitkov@inbox.ru)",
         parse_mode="Markdown",
@@ -83,14 +93,17 @@ async def process_email_button(callback_query: types.CallbackQuery):
 
 
 @dp.callback_query(F.data == "main")
+@decorator_errors
 async def handler_help(callback: CallbackQuery, state: FSMContext) -> None:
     """Обработчик команды main."""
     await state.clear()
+    await callback.message.delete_reply_markup()
     await clear_data(callback.from_user.id)
     await callback.message.answer("Меню", reply_markup=menu)
 
 
 @dp.message(F.text == "/info")
+@decorator_errors
 async def guide_information(message: types.Message, state: FSMContext) -> None:
     """Обработчик для команды info"""
     await state.clear()

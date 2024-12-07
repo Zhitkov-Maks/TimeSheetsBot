@@ -5,6 +5,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from aiogram.utils.markdown import hbold
 
+from handlers.bot_answer import decorator_errors
 from keywords.keyword import cancel_button
 from keywords.prediction import get_weekdays_keyboard, user_choices, \
     hour_choices, choices_days
@@ -15,18 +16,22 @@ five_days_router: Router = Router()
 
 
 @five_days_router.callback_query(F.data == "five_days")
+@decorator_errors
 async def five_days_get_prediction_scheduler(
         callback: CallbackQuery, state: FSMContext
 ) -> None:
     """Обработчик команды для прогнозирования заработка пятидневки."""
     await state.set_state(FiveState.weekday)
+    await callback.message.delete_reply_markup()
     await callback.message.answer(
-        text="Сколько дополнительных смен вы хотите отработать.",
+        text="Вы выбрали пятидневный график работы! Сколько дополнительных "
+             "смен вы хотите отработать, если не работаете доп смены поставьте 0.",
         reply_markup=cancel_button
     )
 
 
-@five_days_router.message(FiveState.weekday)
+@five_days_router.message(FiveState.weekday, F.text.isdigit())
+@decorator_errors
 async def five_days_how_many_hours(
         message: Message,
         state: FSMContext
@@ -40,6 +45,7 @@ async def five_days_how_many_hours(
 
 
 @five_days_router.message(FiveState.how_many_hours, F.text.isdigit())
+@decorator_errors
 async def five_days_get_prediction_delay(
         message: Message,
         state: FSMContext
@@ -55,13 +61,14 @@ async def five_days_get_prediction_delay(
         text=f"Если вы задерживаетесь после основной смены, то выберите по "
              f"каким дням, и по сколько часов. Дни можно выбрать все. Часы должен "
              f"быть только выбран {hbold("один")} вариант иначе будет считаться "
-             f"по минимальному.",
+             f"первый отмеченный вариант.",
         parse_mode="HTML",
         reply_markup=await get_weekdays_keyboard(message.from_user.id)
     )
 
 
 @five_days_router.callback_query(lambda c: c.data.startswith("toggle_"))
+@decorator_errors
 async def toggle_day(callback_query: CallbackQuery) -> None:
     """
     Обработчик выбора вариантов рабочих дней и количества доп часов.
@@ -90,6 +97,7 @@ async def toggle_day(callback_query: CallbackQuery) -> None:
 
 
 @five_days_router.callback_query(F.data == "finish")
+@decorator_errors
 async def finish_selection(
         callback_query: CallbackQuery, state: FSMContext
 ) -> None:
@@ -116,4 +124,3 @@ async def finish_selection(
         text=f"Ваш прогнозируемый заработок составит: {prediction_sum:,.2f}₽",
         show_alert=True
     )
-
