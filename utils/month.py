@@ -8,7 +8,6 @@ from sqlalchemy import Row
 from crud.statistics import get_information_for_month
 from database.models import Salary
 from keywords.month import create_calendar
-from loader import MONTH_DATA
 from states.month import MonthState
 
 
@@ -34,22 +33,20 @@ async def create_message(
     return await create_calendar(result, year, month)
 
 
-async def generate_str(
-        iterable: Sequence[Row[tuple[Salary]]],
-        month: int
-) -> str:
+async def generate_str(iterable: Sequence[Row[tuple[Salary]]]) -> str:
     """
     Генерация сообщения с подробной информацией за месяц
     об отработанных часах и заработанной сумме.
 
     :param iterable: Объект запроса к бд.
-    :param month: Месяц зак который идет создание сообщения.
     :return: Строку для показа пользователю.
     """
-    create_str: str = f"{MONTH_DATA[month]}\n\n"
     one: List[int] = [0, 0, 0]
     two: List[int] = [0, 0, 0]
     total: List[int] = [0, 0, 0]
+
+    if iterable is None:
+        raise KeyError
 
     for sal in iterable:
         total[0] += sal[0].base_hours + sal[0].overtime
@@ -69,10 +66,10 @@ async def generate_str(
             two[2] += sal[0].earned  + (sal[0].other_income
                                         if sal[0].other_income else 0)
 
-    create_str += (f"Период 1: ( {one[0]}ч )( {one[1]}ч )( {one[2]:,.1f}₽ )\n\n"
+    string: str = (f"Период 1: ( {one[0]}ч )( {one[1]}ч )( {one[2]:,.1f}₽ )\n\n"
                    f"Период 2: ( {two[0]}ч )( {two[1]}ч )( {two[2]:,.1f}₽ )\n\n"
                    f"Месяц: ( {total[0]}ч )( {total[1]}ч )( {total[2]:,.1f}₽ )\n")
-    return create_str
+    return string
 
 
 async def get_date(data: Dict[str, str], action: str) -> Tuple[int, int]:

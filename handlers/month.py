@@ -16,7 +16,8 @@ from keywords.current_day import get_data_choices_day
 from keywords.month import create_calendar
 from loader import date_pattern
 from states.month import MonthState
-from utils.current_day import gen_message_for_choice_day
+from utils.current_day import gen_message_for_choice_day, \
+    gen_message_day_minimal
 from utils.month import get_date, generate_str
 
 month_router = Router()
@@ -68,13 +69,12 @@ async def choice_day_on_month(
     info_for_date: Salary | None = await get_info_by_date(
         callback.from_user.id, choice_date
     )
-    message: str = await gen_message_for_choice_day(info_for_date, choice_date)
     user_data: Dict[str, str | int] = await state.get_data()
 
     last_choice_date: str | None = user_data.get("last_choice_date")
 
     if last_choice_date == choice_date:
-        # Если дата была выбрана ранее, отправляем сообщение
+        message: str = await gen_message_for_choice_day(info_for_date, choice_date)
         await callback.message.answer(
             text=message,
             parse_mode="HTML",
@@ -82,8 +82,8 @@ async def choice_day_on_month(
         )
         await state.update_data(last_choice_date=None)
     else:
-        # Если это новое нажатие, просто отвечаем на callback с сообщением
-        await callback.answer(message, show_alert=True)
+        message: str = await gen_message_day_minimal(info_for_date, choice_date)
+        await callback.answer(message)
         await state.update_data(last_choice_date=choice_date)
 
 
@@ -98,9 +98,8 @@ async def show_monthly_data(
     информацию за выбранный месяц в виде всплывающего уведомления.
     """
     data: Dict[str, str | int] = await state.get_data()
-    month: int = data.get("month")
     result: Sequence[Row[tuple[Salary]]] = data.get("result")
-    message: str = await generate_str(result, month)
+    message: str = await generate_str(result)
     await callback.answer(message, show_alert=True)
 
 

@@ -75,6 +75,26 @@ async def gen_message_for_choice_day(salary: Salary, choice_date: str) -> str:
     )
 
 
+async def gen_message_day_minimal(
+        salary: Salary, choice_date: str) -> str:
+    """
+    Генерируем простое сообщения по з/п за выбранную смену для пользователя.
+
+    :param choice_date: Переданная дата из календаря.
+    :param salary: Заработок за определенный день.
+    :return: Сообщение для пользователя.
+    """
+    month, day = int(choice_date[5:7]), choice_date[8:]
+    day_month: str = f"{MONTH_DATA[month]} {day}"
+    if not salary:
+        return f"{day_month}, нет данных."
+
+    other: float = salary.other_income if salary.other_income else 0
+    return (f"Заработано: {salary.earned + other:,.2f}₽ "
+            f"за ({salary.base_hours + salary.overtime}) ч, "
+            f" доп часов: ({salary.overtime}) ч.")
+
+
 async def split_data(data: List[str]) -> Tuple[float, float]:
     """
     Разделяет данные о времени и сверхурочных часах на два значения.
