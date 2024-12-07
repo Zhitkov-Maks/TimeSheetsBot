@@ -17,7 +17,7 @@ choices_days: Dict[str, int] = {
 }
 
 
-def prediction_button() -> List[List[InlineKeyboardButton]]:
+async def prediction_button() -> InlineKeyboardMarkup:
     """
     Генерирует инлайн-кнопки для выбора текущего и следующего месяца.
 
@@ -29,7 +29,7 @@ def prediction_button() -> List[List[InlineKeyboardButton]]:
             кнопки для инлайн-клавиатуры.
     """
     year, month = datetime.now().year, datetime.now().month
-    return [
+    return  InlineKeyboardMarkup(inline_keyboard=[
         [
             InlineKeyboardButton(
                 text=f"{MONTH_DATA[dt.now().month]}",
@@ -42,20 +42,7 @@ def prediction_button() -> List[List[InlineKeyboardButton]]:
                 callback_data="next_month",
             ),
         ]
-    ]
-
-
-async def prediction() -> InlineKeyboardMarkup:
-    """
-    Генерирует инлайн-клавиатуру с кнопками для выбора месяцев.
-
-    Эта асинхронная функция создает и возвращает инлайн-клавиатуру, содержащую
-    кнопки, которые позволяют пользователю выбрать текущий и следующий месяц.
-
-    :return: Объект InlineKeyboardMarkup, представляющий инлайн-клавиатуру с
-            кнопками.
-    """
-    return InlineKeyboardMarkup(inline_keyboard=prediction_button())
+    ])
 
 
 async def get_weekdays_keyboard(user_id: int) -> InlineKeyboardMarkup:

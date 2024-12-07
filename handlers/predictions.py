@@ -1,10 +1,10 @@
 from aiogram import F
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, InlineKeyboardMarkup
 
 from handlers.bot_answer import decorator_errors
-from keywords.prediction import prediction, select_schedule_keyboard
+from keywords.prediction import select_schedule_keyboard, prediction_button
 from loader import MONTH_DATA
 from states.prediction import Prediction
 from utils.prediction import get_year_and_month
@@ -22,7 +22,8 @@ async def start_prediction(callback: CallbackQuery, state: FSMContext) -> None:
     await callback.message.delete_reply_markup()
     await state.set_state(Prediction.month)
     await callback.message.answer(
-        text="Выберите месяц для прогноза.", reply_markup=await prediction()
+        text="Выберите месяц для прогноза.",
+        reply_markup=await prediction_button()
     )
 
 
