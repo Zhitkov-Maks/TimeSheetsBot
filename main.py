@@ -1,6 +1,4 @@
 import asyncio
-import logging
-from logging import DEBUG
 from typing import List
 
 from aiogram import Bot, Dispatcher, types, F
@@ -117,7 +115,6 @@ async def guide_information(message: types.Message, state: FSMContext) -> None:
 
 async def main():
     """Запуск бота."""
-    logging.basicConfig(level=DEBUG)
     await dp.start_polling(bot)
 
 
