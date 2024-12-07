@@ -2,123 +2,80 @@ from datetime import date
 from typing import List, Dict
 
 from aiogram import Router, F, Bot
-from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
+from aiogram.utils.markdown import hbold
 
 from config import BOT_TOKEN
 from handlers.bot_answer import send_calendar_and_message, decorator_errors
 from keywords.add_shifts import get_days_keyboard, days_choices
 from keywords.keyword import cancel_button, menu
 from keywords.prediction import prediction
+from loader import MONTH_DATA
 from states.add_shifts import ShiftsState
 from utils.add_shifts import get_date, create_data_by_add_shifts
 from utils.current_day import split_data
 
 shifts_router: Router = Router()
-bot = Bot(token=BOT_TOKEN)
+bot: Bot = Bot(token=BOT_TOKEN)
 
 
 @shifts_router.callback_query(F.data == "many_add")
 @decorator_errors
 async def shifts_calendar(callback: CallbackQuery, state: FSMContext) -> None:
-    await state.set_state(ShiftsState.month)
+    """
+    Обработчик команды для групповой отметки смен. Отправляет пользователю
+    инлайн клавиатуру для выбора месяца.
+    """
+    await state.set_state(ShiftsState.hours)
     await callback.message.answer(
-        text="Выберите месяц для отметки смен.",
+        text="За какой месяц будем проставлять смены?",
         reply_markup=await prediction()
     )
 
 
 @shifts_router.callback_query(
-    ShiftsState.month, F.data.in_(["current", "next_month"]))
+    ShiftsState.hours,
+    F.data.in_(["current", "next_month"]))
 @decorator_errors
-async def work_with_calendar(
+async def input_selection_hours(
         callback: CallbackQuery,
         state: FSMContext
 ) -> None:
+    """
+    Обработчик обрабатывает выбранный месяц. И запрашивает у пользователя по
+    сколько часов проставить смены.
+    """
     year, month = await get_date(callback.data)
     current_date: date = date(year, month, 1)
+
     await state.update_data(
-        year=year, month=month, date=str(current_date))
+        year=year, month=month, date=str(current_date)
+    )
+
+    await state.set_state(ShiftsState.month)
     await callback.message.answer(
-        text="Отметьте все смены когда вы работаете.",
-        reply_markup=await get_days_keyboard(year, month, callback.from_user.id)
+        text=f"Отлично! Вы выбрали {hbold(MONTH_DATA[month])}. "
+             f"\nВведите по сколько часов вам проставить смены?",
+        reply_markup=cancel_button
     )
 
 
-@shifts_router.callback_query(lambda c: c.data.startswith("toggle2_"))
+@shifts_router.message(ShiftsState.month)
 @decorator_errors
-async def toggle_day(
-        callback_query: CallbackQuery,
-        state: FSMContext
-) -> None:
-    day: str = callback_query.data.split("_")[1]
-    data = await state.get_data()
-    year, month = data["year"], data["month"]
-    user_chat_id: int = callback_query.from_user.id
-    if day in days_choices[user_chat_id]:
-        days_choices[user_chat_id].remove(day)
-        await callback_query.answer(f"Вы убрали: {day}")
-
-    elif day not in days_choices[user_chat_id]:
-        days_choices[user_chat_id].append(day)
-        await callback_query.answer(f"Вы выбрали: {day}")
-
-    await callback_query.message.edit_reply_markup(
-        reply_markup=await get_days_keyboard(year, month, user_chat_id)
-    )
-
-
-@shifts_router.callback_query(F.data == "shift_finish")
-@decorator_errors
-async def input_selection_hours(
-        callback_query: CallbackQuery,
-        state: FSMContext
-) -> None:
-    user_id: int = callback_query.from_user.id
-    if days_choices[user_id]:
-        await state.set_state(ShiftsState.hours)
-        await state.update_data(
-            days=days_choices[user_id], call=callback_query.id
-        )
-        await callback_query.message.answer(
-            text="Введите по сколько часов вам проставить смены?",
-            reply_markup=cancel_button
-        )
-
-    else:
-        await state.clear()
-        await callback_query.message.answer(
-            text="Вы ничего не выбрали, открываю вам меню!",
-            reply_markup=menu
-        )
-
-
-@shifts_router.message(ShiftsState.hours)
-@decorator_errors
-async def finish_add_shifts(
-        message: Message,
-        state: FSMContext
-) -> None:
+async def work_with_calendar(message: Message, state: FSMContext) -> None:
     """
-    Функция для завершения проставления смен.
+    Обработчик введенных часов, получает число в зависимости от
+    пользовательского ввода. Показывает пользователю календарь за выбранный
+    месяц, чтобы выбрать дни для добавления смен.
     """
-    await state.update_data(user_id=message.from_user.id)
     data: Dict[str, str | float | list] = await state.get_data()
-    call_id: str = data.get("call")
-
+    year, month = int(data["year"]), int(data["month"])
     numbers: List[str] = message.text.split("*")
     try:
         if len(numbers) == 1 or len(numbers) == 2:
             time, overtime = await split_data(numbers)
-
-            await create_data_by_add_shifts(
-                message.from_user.id, time, overtime, data.get("days")
-            )
-            await bot.answer_callback_query(
-                call_id, "Записи были успешно добавлены!", cache_time=60
-            )
-            await send_calendar_and_message(message.from_user.id, data, state)
+            await state.update_data(time=time, overtime=overtime)
         else:
             raise ValueError
 
@@ -128,8 +85,58 @@ async def finish_add_shifts(
             "Пример: 6.5*5. Попробуйте еще раз.",
             reply_markup=cancel_button,
         )
-    except TelegramBadRequest:
-        await message.answer(
-            text="Время ожидания истекло, попробуйте еще раз!"
+    await message.answer(
+        text=f"Выберите все смены когда вы работаете.",
+        reply_markup=await get_days_keyboard(year, month, message.from_user.id)
+    )
+
+
+@shifts_router.callback_query(lambda c: c.data.startswith("toggle2_"))
+@decorator_errors
+async def toggle_day(callback: CallbackQuery, state: FSMContext) -> None:
+    """
+    Обработчик выбранных дней. Добавляет или убирает дни в словарь, где ключ
+    идентификатор пользователя, значение множество выбранных дней.
+    """
+    day: str = callback.data.split("_")[1]
+    data: dict = await state.get_data()
+    year, month = data["year"], data["month"]
+    user_chat_id: int = callback.from_user.id
+
+    if day in days_choices[user_chat_id]:
+        days_choices[user_chat_id].remove(day)
+        await callback.answer(f"Вы убрали: {day}")
+
+    elif day not in days_choices[user_chat_id]:
+        days_choices[user_chat_id].add(day)
+        await callback.answer(f"Вы выбрали: {day}")
+
+    await callback.message.edit_reply_markup(
+        reply_markup=await get_days_keyboard(year, month, user_chat_id)
+    )
+
+
+@shifts_router.callback_query(F.data == "shift_finish")
+@decorator_errors
+async def finish_add_shifts(callback: CallbackQuery, state: FSMContext) -> None:
+    """
+    Обработчик выбранных дней, отправляет запрос на добавление смен в бд.
+    """
+    user_id: int = callback.from_user.id
+    if days_choices[user_id]:
+        await state.update_data(user_id=user_id)
+        data: Dict[str, str | float] = await state.get_data()
+        time, overtime = data["time"], data["overtime"]
+
+        await create_data_by_add_shifts(
+            user_id, time, overtime, days_choices[user_id]
         )
-    days_choices.clear()
+        await callback.answer("Записи были успешно добавлены!")
+        await send_calendar_and_message(user_id, data, state)
+
+    else:
+        await state.clear()
+        await callback.message.answer(
+            text="Вы ничего не выбрали, открываю вам меню!",
+            reply_markup=menu
+        )
