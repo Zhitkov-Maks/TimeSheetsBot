@@ -27,9 +27,10 @@ async def five_days_get_prediction_scheduler(
     await state.set_state(FiveState.weekday)
     await callback.message.delete_reply_markup()
     await callback.message.answer(
-        text="Вы выбрали пятидневный график работы! Сколько дополнительных "
+        text=f"Вы выбрали {hbold("пятидневный")} график работы! Сколько дополнительных "
              "смен вы хотите отработать, если не работаете доп смены поставьте 0.",
-        reply_markup=cancel_button
+        reply_markup=cancel_button,
+        parse_mode="HTML"
     )
 
 

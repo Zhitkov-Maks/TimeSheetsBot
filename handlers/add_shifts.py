@@ -27,6 +27,7 @@ async def shifts_calendar(callback: CallbackQuery, state: FSMContext) -> None:
     Обработчик команды для групповой отметки смен. Отправляет пользователю
     инлайн клавиатуру для выбора месяца.
     """
+    await callback.message.delete_reply_markup()
     await state.set_state(ShiftsState.hours)
     await callback.message.answer(
         text="За какой месяц будем проставлять смены?",
@@ -46,6 +47,7 @@ async def input_selection_hours(
     Обработчик обрабатывает выбранный месяц. И запрашивает у пользователя по
     сколько часов проставить смены.
     """
+    await callback.message.delete_reply_markup()
     year, month = await get_date(callback.data)
     current_date: date = date(year, month, 1)
 
@@ -57,7 +59,8 @@ async def input_selection_hours(
     await callback.message.answer(
         text=f"Отлично! Вы выбрали {hbold(MONTH_DATA[month])}. "
              f"\nВведите по сколько часов вам проставить смены?",
-        reply_markup=cancel_button
+        reply_markup=cancel_button,
+        parse_mode="HTML"
     )
 
 

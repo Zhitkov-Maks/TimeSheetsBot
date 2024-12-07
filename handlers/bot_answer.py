@@ -51,7 +51,7 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
         except TelegramBadRequest:
             mess: str = (
                 "Что-то сломалось. Ошибка на нашей стороне, пришлите мне подробно"
-                "какие действия вы совершали."
+                " какие действия вы совершали."
             )
             await bot.send_message(arg.from_user.id, mess)
             await write_logger_error(

@@ -13,7 +13,6 @@ from crud.statistics import get_information_for_month, get_info_by_date
 from database.models import Salary
 from handlers.bot_answer import decorator_errors
 from keywords.current_day import get_data_choices_day
-from keywords.keyword import menu
 from keywords.month import create_calendar
 from loader import date_pattern
 from states.month import MonthState
@@ -35,6 +34,7 @@ async def handle_info_current_month(
     о текущем месяце и формирует календарь пользователю, в котором
     отмечены его смены.
     """
+    await callback.message.delete_reply_markup()
     year: int = datetime.now().year
     month: int = datetime.now().month
     result: Sequence = await get_information_for_month(
@@ -47,7 +47,6 @@ async def handle_info_current_month(
         text="...",
         reply_markup=await create_calendar(result, year, month)
     )
-    await callback.message.delete()
 
 
 @month_router.callback_query(

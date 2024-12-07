@@ -69,9 +69,9 @@ async def generate_str(
             two[2] += sal[0].earned  + (sal[0].other_income
                                         if sal[0].other_income else 0)
 
-    create_str += (f"Период 1: ({one[0]}ч) - ({one[1]}ч) - ({one[2]:,.1f}₽)\n\n"
-                   f"Период 2: ({two[0]}ч) - ({two[1]}ч) - ({two[2]:,.1f}₽)\n\n"
-                   f"Месяц: ({total[0]}ч) - ({total[1]}ч) - ({total[2]:,.1f}₽)\n")
+    create_str += (f"Период 1: ( {one[0]}ч )( {one[1]}ч )( {one[2]:,.1f}₽ )\n\n"
+                   f"Период 2: ( {two[0]}ч )( {two[1]}ч )( {two[2]:,.1f}₽ )\n\n"
+                   f"Месяц: ( {total[0]}ч )( {total[1]}ч )( {total[2]:,.1f}₽ )\n")
     return create_str
 
 

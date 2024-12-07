@@ -3,6 +3,7 @@ from typing import Dict
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
+from aiogram.utils.markdown import hbold
 
 from config import BOT_TOKEN
 from handlers.bot_answer import decorator_errors
@@ -82,9 +83,9 @@ async def two_in_to_get_prediction_final(
         string: str = (f"Ваш прогнозируемый заработок составит "
                        f"{prediction_sum[0]:,.2f}₽")
     else:
-        string: str = (f"'Вариант если смены 1, 2'\n"
-                       f"Вы заработаете: {prediction_sum[0]:,.2f}₽.\n"
-                       f"Вариант если смены 1, 4, 5\nВы заработаете: "
+        string: str = (f"{hbold("Вариант если смены 1, 2")}\n"
+                       f"Вы заработаете: {prediction_sum[0]:,.2f}₽.\n\n"
+                       f"{hbold("Вариант если смены 1, 4, 5")}\nВы заработаете: "
                        f"{prediction_sum[1]:,.2f}₽")
 
-    await message.answer(text=string, reply_markup=menu)
+    await message.answer(text=string, reply_markup=menu, parse_mode="HTML")
