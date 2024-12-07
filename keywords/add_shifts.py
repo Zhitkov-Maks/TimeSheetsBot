@@ -8,7 +8,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from keywords.month import get_month_range, create_list_with_calendar_days
 from loader import MONTH_DATA, DAYS_LIST
 
-days_choices = defaultdict(list)
+days_choices = defaultdict(set)
 
 
 async def generate_base_calendar(
@@ -58,6 +58,14 @@ async def get_days_keyboard(
         month: int,
         user_chat_id: int
 ) -> InlineKeyboardMarkup:
+    """
+    Функция для генерации календаря для выбора смен, при групповой
+    простановке смен.
+    :param year: Год для календаря.
+    :param month: Месяц для календаря.
+    :param user_chat_id: Идентификатор пользователя чата.
+    :return InlineKeyboardMarkup: Инлайн клавиатура в виде календаря.
+    """
     days_in_month: int = monthrange(year, month)[1]
     day_week: int = date(year, month, 1).weekday()
 

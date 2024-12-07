@@ -1,9 +1,10 @@
 from calendar import monthrange
-from datetime import date
+from datetime import date, datetime
 from typing import Sequence, Dict, List, Tuple
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from sqlalchemy import Row
+
 
 from database.models import Salary
 from loader import UNICODE_DATA, MONTH_DATA, DAYS_LIST
@@ -30,6 +31,7 @@ async def create_list_with_calendar_days(
     """
     Функция формирует список с днями календаря плюс пустые ячейки
     перед первым числом, плюс пустые ячейки после последнего дня месяца.
+
     :param day_week: Номер дня недели - первого числа месяца.
     :param days_in_month: Всего дней в месяце.
     :param days: Размер поля календаря.
@@ -52,6 +54,7 @@ async def generate_base_calendar(
 ) -> None:
     """
     Функция генерации основной части календаря. Заполняет календарь кнопками.
+
     :param field_size: Размер поля календаря.
     :param numbers_list: Поле календаря.
     :param dates: Словарь с датами и заработком.
@@ -60,6 +63,7 @@ async def generate_base_calendar(
     :param month: Нужен для формирования даты.
     :return List: Инлайн клавиатуру.
     """
+    current_date = str(datetime.now().date())
     for i in range(7):  # Для каждого дня недели (7 дней)
         row: List[InlineKeyboardButton] = [
             InlineKeyboardButton(text=DAYS_LIST[i], callback_data=DAYS_LIST[i])
@@ -71,20 +75,20 @@ async def generate_base_calendar(
             create_date: str = f"{year}-{month:02}-{numbers_list[day]}"
 
             if numbers_list[day] == " ":
-                text = " "  # Пустая ячейка
+                text = " "
+
+            elif create_date == current_date:
+                text = f"[ {numbers_list[day]} ]"
 
             elif create_date in dates:
-                # Отображение числа и данных о зарплате
                 text = f"{numbers_list[day]} {UNICODE_DATA[dates[create_date]]}"
 
             else:
-                # Только число без данных о зарплате
                 text = f"{numbers_list[day]}"
 
             row.append(
                 InlineKeyboardButton(text=text, callback_data=create_date)
             )
-            # Переход к следующей строке (неделе)
             day += 7
 
         month_keyword.append(row)
