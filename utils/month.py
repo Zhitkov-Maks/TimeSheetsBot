@@ -3,12 +3,9 @@ from typing import Sequence, Tuple, List, Dict
 
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup
-from aiogram.utils.markdown import hbold
 from sqlalchemy import Row
 
-from crud.settings import get_settings_user_by_id
 from crud.statistics import get_information_for_month
-from database import Settings
 from database.models import Salary
 from keywords.month import create_calendar
 from loader import MONTH_DATA
@@ -39,8 +36,7 @@ async def create_message(
 
 async def generate_str(
         iterable: Sequence[Row[tuple[Salary]]],
-        month: int,
-        user_id: int
+        month: int
 ) -> str:
     """
     Генерация сообщения с подробной информацией за месяц
@@ -48,11 +44,9 @@ async def generate_str(
 
     :param iterable: Объект запроса к бд.
     :param month: Месяц зак который идет создание сообщения.
-    :param user_id: Id пользователя чата.
     :return: Строку для показа пользователю.
     """
     create_str: str = f"{MONTH_DATA[month]}\n\n"
-    settings: Settings = await get_settings_user_by_id(user_id)
     one: List[int] = [0, 0, 0]
     two: List[int] = [0, 0, 0]
     total: List[int] = [0, 0, 0]
@@ -60,17 +54,20 @@ async def generate_str(
     for sal in iterable:
         total[0] += sal[0].base_hours + sal[0].overtime
         total[1] += sal[0].overtime
-        total[2] += sal[0].earned + (sal[0].other_income if sal[0].other_income else 0)
+        total[2] += sal[0].earned + (sal[0].other_income
+                                     if sal[0].other_income else 0)
 
         if sal[0].period == 1:
             one[0] += sal[0].base_hours + sal[0].overtime
             one[1] += sal[0].overtime
-            one[2] += sal[0].earned  + (sal[0].other_income if sal[0].other_income else 0)
+            one[2] += sal[0].earned  + (sal[0].other_income
+                                        if sal[0].other_income else 0)
 
         if sal[0].period == 2:
             two[0] += sal[0].base_hours + sal[0].overtime
             two[1] += sal[0].overtime
-            two[2] += sal[0].earned  + (sal[0].other_income if sal[0].other_income else 0)
+            two[2] += sal[0].earned  + (sal[0].other_income
+                                        if sal[0].other_income else 0)
 
     create_str += (f"Период 1: ({one[0]}ч) - ({one[1]}ч) - ({one[2]:,.1f}₽)\n\n"
                    f"Период 2: ({two[0]}ч) - ({two[1]}ч) - ({two[2]:,.1f}₽)\n\n"

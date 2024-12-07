@@ -10,7 +10,7 @@ from config import BOT_TOKEN
 from handlers.bot_answer import send_calendar_and_message, decorator_errors
 from keywords.add_shifts import get_days_keyboard, days_choices
 from keywords.keyword import cancel_button, menu
-from keywords.prediction import prediction
+from keywords.prediction import prediction_button
 from loader import MONTH_DATA
 from states.add_shifts import ShiftsState
 from utils.add_shifts import get_date, create_data_by_add_shifts
@@ -30,7 +30,7 @@ async def shifts_calendar(callback: CallbackQuery, state: FSMContext) -> None:
     await state.set_state(ShiftsState.hours)
     await callback.message.answer(
         text="За какой месяц будем проставлять смены?",
-        reply_markup=await prediction()
+        reply_markup=await prediction_button()
     )
 
 

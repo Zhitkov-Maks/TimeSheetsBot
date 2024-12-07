@@ -48,4 +48,4 @@ async def two_in_two_get_prediction_sum(
             first_day + 3, days_in_month, price, weekdays, hours
         )
         sum_by_day = price.price * hours
-        return total_sum, total_sum_two + sum_by_day
+        return total_sum, int(total_sum_two + sum_by_day)
