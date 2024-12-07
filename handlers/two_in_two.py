@@ -23,7 +23,6 @@ async def two_in_to_get_prediction_scheduler(
     """Обработчик выбора графика два через два."""
     await state.set_state(TwoInTwo.count_weekday)
     await callback.message.delete_reply_markup()
-    await state.update_data(callback=callback.id)
     await callback.message.answer(
         text="Вы выбрали график работы 2/2. Сколько дополнительных смен вы "
              "хотите отработать? Если не работаете доп смены поставьте 0",
@@ -75,7 +74,6 @@ async def two_in_to_get_prediction_final(
     """
     await state.update_data(how_many_hours=int(message.text))
     data: Dict[str, int | str] = await state.get_data()
-    call_id: str = data.get("callback")
     prediction_sum: tuple = await two_in_two_get_prediction_sum(
         message.from_user.id, data
     )
@@ -89,5 +87,4 @@ async def two_in_to_get_prediction_final(
                        f"Вариант если смены 1, 4, 5\nВы заработаете: "
                        f"{prediction_sum[1]:,.2f}₽")
 
-    await bot.answer_callback_query(call_id, string, show_alert=True)
-    await message.answer(text="Меню", reply_markup=menu)
+    await message.answer(text=string, reply_markup=menu)

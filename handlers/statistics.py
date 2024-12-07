@@ -21,7 +21,8 @@ bot = Bot(token=BOT_TOKEN)
 @statistic.callback_query(F.data == "statistic")
 @decorator_errors
 async def get_statistics(callback: CallbackQuery, state: FSMContext) -> None:
-    """Обработчик команды получения статистики. Показывает клавиатуру для
+    """
+    Обработчик команды получения статистики. Показывает клавиатуру для
     выбора года.
     """
     year: int = datetime.now().year

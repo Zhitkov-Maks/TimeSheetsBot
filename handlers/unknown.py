@@ -14,6 +14,10 @@ unknown_rout = Router()
 async def handler_message_unknown(
         message: types.Message, state: FSMContext
 ) -> None:
-    """Обрабатывает неизвестные команды."""
+    """
+    Обрабатывает либо неизвестные команды, либо неправильный ввод,
+    когда например, нужно ввести число, а пользователь вводит строку, то
+    пользователь попадет сюда.
+    """
     await state.clear()
     await message.answer(text=unfamiliar_command, reply_markup=menu)
