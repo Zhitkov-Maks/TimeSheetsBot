@@ -91,8 +91,8 @@ async def gen_message_day_minimal(
 
     other: float = salary.other_income if salary.other_income else 0
     return (f"Заработано: {salary.earned + other:,.2f}₽ "
-            f"за ({salary.base_hours + salary.overtime}) ч, "
-            f" доп часов: ({salary.overtime}) ч.")
+            f"за ({salary.base_hours + salary.overtime})ч, "
+            f" доп часов: ({salary.overtime})ч.")
 
 
 async def split_data(data: List[str]) -> Tuple[float, float]:
