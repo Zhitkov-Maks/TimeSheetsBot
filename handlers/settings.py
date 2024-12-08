@@ -19,6 +19,7 @@ async def ask_price(callback: CallbackQuery, state: FSMContext):
     то просит пользователя сразу ввести нужные данные, иначе спрашивает,
     хочет ли пользователь изменить настройки.
     """
+    await callback.message.delete_reply_markup()
     get_data_user: Settings | None = await get_settings_user_by_id(
         callback.from_user.id
     )
@@ -51,6 +52,7 @@ async def change_settings(callback: CallbackQuery, state: FSMContext):
     """
     Обрабатывает команды yes and no, при запросе на
     обновление данных о настройках."""
+    await callback.message.delete_reply_markup()
     await state.update_data(chat_id=callback.from_user.id)
     await state.update_data(update=True)
     await state.set_state(SettingsState.price)

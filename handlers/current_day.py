@@ -67,6 +67,7 @@ async def add_other_surcharges(
     Обработчик для добавления прочих доходов к выбранному дню. Просит ввести
     пользователя сумму прочего дохода.
     """
+    await callback.message.delete_reply_markup()
     await state.set_state(CreateState.other_income)
     await callback.message.answer(
         text="Введите сумму прочего дохода, сюда можно добавить например "
@@ -103,6 +104,7 @@ async def update_other_income(message: Message, state: FSMContext):
 @decorator_errors
 async def del_record(callback: CallbackQuery, state: FSMContext) -> None:
     """Отправка на удаление записи."""
+    await callback.message.delete_reply_markup()
     await state.update_data(user_id=callback.from_user.id)
     data: Dict[str, str] = await state.get_data()
 

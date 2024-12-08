@@ -25,6 +25,7 @@ async def get_statistics(callback: CallbackQuery, state: FSMContext) -> None:
     Обработчик команды получения статистики. Показывает клавиатуру для
     выбора года.
     """
+    await callback.message.delete_reply_markup()
     year: int = datetime.now().year
     await state.set_state(StatisticState.year)
     await callback.message.answer(
@@ -39,6 +40,7 @@ async def choice_year(callback: CallbackQuery, state: FSMContext) -> None:
     """
     Показа статистики за выбранный год.
     """
+    await callback.message.delete_reply_markup()
     year: int = int(callback.data)
     result: Row[List[Tuple[int]]] = await request_statistic(
         callback.from_user.id, year

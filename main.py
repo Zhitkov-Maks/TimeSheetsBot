@@ -79,7 +79,6 @@ async def process_email_button(
         state: FSMContext
 ) -> None:
     await state.clear()
-    await callback_query.message.delete_reply_markup()
     await callback_query.message.answer(
         text="[m-zhitkov@inbox.ru](mailto:m-zhitkov@inbox.ru)",
         parse_mode="Markdown",
