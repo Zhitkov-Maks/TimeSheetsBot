@@ -21,7 +21,6 @@ from handlers.unknown import unknown_rout
 from keywords.keyword import menu
 from loader import start_text, GUIDE
 from utils.five_days import clear_data
-from utils.main import remove_inline_keyword
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher()
@@ -52,7 +51,6 @@ async def handle_help_command(
 ) -> None:
     """Обработчик команды main."""
     await state.clear()
-    await remove_inline_keyword(message)
     await clear_data(message.from_user.id)
     await message.answer("Меню", reply_markup=menu)
 
@@ -62,7 +60,6 @@ async def handle_help_command(
 async def handle_help_command(message: types.Message, state: FSMContext) -> None:
     """Обработчик команды main."""
     await state.clear()
-    await remove_inline_keyword(message)
     button: List[List[InlineKeyboardButton]] = [
             [
                 InlineKeyboardButton(
@@ -82,7 +79,6 @@ async def process_email_button(
         state: FSMContext
 ) -> None:
     await state.clear()
-    await callback_query.message.delete_reply_markup()
     await callback_query.message.delete_reply_markup()
     await callback_query.message.answer(
         text="[m-zhitkov@inbox.ru](mailto:m-zhitkov@inbox.ru)",
@@ -106,7 +102,6 @@ async def handler_help(callback: CallbackQuery, state: FSMContext) -> None:
 async def guide_information(message: types.Message, state: FSMContext) -> None:
     """Обработчик для команды info"""
     await state.clear()
-    await remove_inline_keyword(message)
     for mess in GUIDE:
         await message.answer(text=mess)
     await message.answer(
