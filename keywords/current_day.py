@@ -19,8 +19,7 @@ async def get_data_choices_day(salary: Salary) -> InlineKeyboardMarkup:
                 ],
                 [
                     InlineKeyboardButton(
-                        text="Открыть календарь",
-                        callback_data="month_current"
+                        text="Открыть календарь", callback_data="month_current"
                     )
                 ]
             ]
@@ -36,13 +35,9 @@ async def get_data_choices_day(salary: Salary) -> InlineKeyboardMarkup:
                 ],
                 [
                     InlineKeyboardButton(
-                        text="Добавить бонус.",
-                        callback_data="bonus")
-                ],
-                [
+                        text="Добавить бонус.", callback_data="bonus"),
                     InlineKeyboardButton(
-                        text="Календарь",
-                        callback_data="month_current"
+                        text="Календарь", callback_data="month_current"
                     )
                 ]
             ]
