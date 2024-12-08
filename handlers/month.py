@@ -74,7 +74,7 @@ async def choice_day_on_month(
     last_choice_date: str | None = user_data.get("last_choice_date")
 
     if last_choice_date == choice_date:
-        await callback.message.delete_reply_markup()
+        await callback.message.delete()
         message: str = await gen_message_for_choice_day(info_for_date, choice_date)
         await callback.message.answer(
             text=message,
