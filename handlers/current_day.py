@@ -26,6 +26,7 @@ async def on_date_today(callback: CallbackQuery, state: FSMContext) -> None:
     await state.set_state(CreateState.check_data)
     await callback.message.answer(
         text=add_record_text, reply_markup=cancel_button)
+    await callback.message.delete()
 
 
 @create_router.message(CreateState.check_data)
