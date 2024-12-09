@@ -1,7 +1,7 @@
 from aiogram import F
 from aiogram import Router
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, InlineKeyboardMarkup
+from aiogram.types import CallbackQuery
 
 from handlers.bot_answer import decorator_errors
 from keywords.prediction import select_schedule_keyboard, prediction_button

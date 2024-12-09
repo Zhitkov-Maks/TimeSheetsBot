@@ -22,11 +22,11 @@ bot = Bot(token=BOT_TOKEN)
 @decorator_errors
 async def on_date_today(callback: CallbackQuery, state: FSMContext) -> None:
     """Обработчик команд для добавления или изменения записи о смене."""
+    await callback.message.delete_reply_markup()
     await state.update_data(action=callback.data, callback=callback.id)
     await state.set_state(CreateState.check_data)
     await callback.message.answer(
         text=add_record_text, reply_markup=cancel_button)
-    await callback.message.delete()
 
 
 @create_router.message(CreateState.check_data)
