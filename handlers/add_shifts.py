@@ -139,6 +139,7 @@ async def finish_add_shifts(callback: CallbackQuery, state: FSMContext) -> None:
         await send_calendar_and_message(user_id, data, state)
 
     else:
+        await callback.message.delete_reply_markup()
         await state.clear()
         await callback.message.answer(
             text="Вы ничего не выбрали, открываю вам меню!",
