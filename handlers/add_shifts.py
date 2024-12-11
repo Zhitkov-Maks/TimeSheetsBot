@@ -79,6 +79,11 @@ async def work_with_calendar(message: Message, state: FSMContext) -> None:
         if len(numbers) == 1 or len(numbers) == 2:
             time, overtime = await split_data(numbers)
             await state.update_data(time=time, overtime=overtime)
+            await message.answer(
+                text=f"Выберите все смены когда вы работаете.",
+                reply_markup=await get_days_keyboard(
+                    year, month, message.from_user.id)
+            )
         else:
             raise ValueError
 
@@ -88,10 +93,6 @@ async def work_with_calendar(message: Message, state: FSMContext) -> None:
             "Пример: 6.5*5. Попробуйте еще раз.",
             reply_markup=cancel_button,
         )
-    await message.answer(
-        text=f"Выберите все смены когда вы работаете.",
-        reply_markup=await get_days_keyboard(year, month, message.from_user.id)
-    )
 
 
 @shifts_router.callback_query(lambda c: c.data.startswith("toggle2_"))
