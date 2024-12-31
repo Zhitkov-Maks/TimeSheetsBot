@@ -21,3 +21,20 @@ async def handler_message_unknown(
     """
     await state.clear()
     await message.answer(text=unfamiliar_command, reply_markup=menu)
+
+
+@unknown_rout.callback_query(F.data)
+@decorator_errors
+async def handler_callback_unknown(
+        callback: types.CallbackQuery, state: FSMContext
+) -> None:
+    """
+    Обрабатывает либо неизвестные команды, либо неправильный ввод,
+    когда например, нужно ввести число, а пользователь вводит строку, то
+    пользователь попадет сюда.
+    """
+    await state.clear()
+    await callback.answer(
+        text="На меня не нужно нажимать, на мне нет никакой информации. "
+             "Надеюсь на понимание.", show_alert=True
+    )
