@@ -12,7 +12,7 @@ from states.month import MonthState
 
 
 async def create_message(
-    user_id: int, _date: str, state: FSMContext
+        user_id: int, _date: str, state: FSMContext
 ) -> InlineKeyboardMarkup:
     """
     Функция собирает информацию для отображения календаря и сообщения о зарплате.
@@ -57,18 +57,22 @@ async def generate_str(iterable: Sequence[Row[tuple[Salary]]]) -> str:
         if sal[0].period == 1:
             one[0] += sal[0].base_hours + sal[0].overtime
             one[1] += sal[0].overtime
-            one[2] += sal[0].earned  + (sal[0].other_income
-                                        if sal[0].other_income else 0)
+            one[2] += sal[0].earned + (sal[0].other_income
+                                       if sal[0].other_income else 0)
 
         if sal[0].period == 2:
             two[0] += sal[0].base_hours + sal[0].overtime
             two[1] += sal[0].overtime
-            two[2] += sal[0].earned  + (sal[0].other_income
-                                        if sal[0].other_income else 0)
-
-    string: str = (f"Период 1: ( {one[0]}ч )( {one[1]}ч )( {one[2]:,.1f}₽ )\n\n"
-                   f"Период 2: ( {two[0]}ч )( {two[1]}ч )( {two[2]:,.1f}₽ )\n\n"
-                   f"Месяц: ( {total[0]}ч )( {total[1]}ч )( {total[2]:,.1f}₽ )\n")
+            two[2] += sal[0].earned + (sal[0].other_income
+                                       if sal[0].other_income else 0)
+    northern: float = total[0] * 25
+    northern_1: float = one[0] * 25
+    northern_2: float = two[0] * 25
+    string: str = (f"П1: {one[0]}ч | {one[1]}ч | {one[2] - northern_1:,.1f}₽ | {northern_1}₽ \n"
+                   f"П2: {two[0]}ч | {two[1]}ч | {two[2] - northern_2:,.1f}₽ | {northern_2} \n"
+                   f"Месяц: {total[0]}ч | {total[1]}ч | {total[2]:,.1f}₽ \n"
+                   f"Без северных: {total[2] - northern}\n"
+                   f"Северные: {northern}")
     return string
 
 

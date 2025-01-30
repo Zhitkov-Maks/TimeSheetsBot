@@ -30,3 +30,5 @@ services:
           - ./logs:/salary/logs
 
         restart: always
+        depends_on:
+            -   db_bot

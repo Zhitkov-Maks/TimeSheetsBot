@@ -38,7 +38,7 @@ async def ask_price(callback: CallbackQuery, state: FSMContext):
         await callback.message.answer(
             text=f"Ваши текущие настройки ⚙️🔧\n\n"
                  f"Ставка в час: {hbold(get_data_user.price)}₽\n"
-                 f"Прибавка за доп час: {hbold(get_data_user.overtime)}₽\n\n"
+                 f"Доплата: {hbold(get_data_user.overtime)}₽\n\n"
                  f"Хотите изменить данные?",
             parse_mode="HTML",
             reply_markup=confirm_menu,
@@ -68,7 +68,7 @@ async def ask_chart(message: Message, state: FSMContext):
     await state.set_state(SettingsState.overtime_price)
 
     await message.answer(
-        text="Укажите доплату за доп час")
+        text="Укажите доплату за переработку, если доплаты нет введите 0.")
 
 
 @settings_router.message(F.text.isdigit(), SettingsState.overtime_price)

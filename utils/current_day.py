@@ -30,11 +30,11 @@ async def earned_per_shift(base: float, overtime: float, user_id: int) -> float:
     :return: Заработанную сумму за месяц.
     """
     settings: Settings | Employee = await get_settings_user_by_id(user_id)
-
+    price: float = settings.price + settings.overtime
     if settings is None:
-        settings = Employee(300, 100)
+        settings = Employee(300, 50)
     return round(
-        base * settings.price + overtime * (settings.price + settings.overtime), 2
+        base * settings.price + overtime * price + (base + overtime) * 25, 2
     )
 
 
@@ -67,10 +67,12 @@ async def gen_message_for_choice_day(salary: Salary, choice_date: str) -> str:
         return f"{day_month}, нет данных."
 
     other: float = salary.other_income if salary.other_income else 0
+    northern: float = (salary.base_hours + salary.overtime) * 25
     return (
         f"{day_month}. \nВы отработали: "
         f"{salary.base_hours + salary.overtime} часов.\n"
-        f"Заработали: {salary.earned + other:,.2f}₽.\n"
+        f"Заработали: {salary.earned + other + northern:,.2f}₽.\n"
+        f"Северные: {northern}₽\n"
         f"Из них прочие доходы: {other:,.2f}₽."
     )
 
@@ -90,9 +92,10 @@ async def gen_message_day_minimal(
         return f"{day_month}, нет данных."
 
     other: float = salary.other_income if salary.other_income else 0
-    return (f"Заработано: {salary.earned + other:,.2f}₽ "
-            f"за ({salary.base_hours + salary.overtime})ч, "
-            f" доп часов: ({salary.overtime})ч.")
+    northern: float = (salary.base_hours + salary.overtime) * 25
+    return (f"{salary.earned + other:,.2f}₽ "
+            f"за {salary.base_hours + salary.overtime}ч"
+            f" / {salary.overtime}ч / {northern}")
 
 
 async def split_data(data: List[str]) -> Tuple[float, float]:
