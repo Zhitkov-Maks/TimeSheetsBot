@@ -71,7 +71,7 @@ async def gen_message_for_choice_day(salary: Salary, choice_date: str) -> str:
     return (
         f"{day_month}. \nВы отработали: "
         f"{salary.base_hours + salary.overtime} часов.\n"
-        f"Заработали: {salary.earned + other + northern:,.2f}₽.\n"
+        f"Заработали: {salary.earned + other:,.2f}₽.\n"
         f"Северные: {northern}₽\n"
         f"Из них прочие доходы: {other:,.2f}₽."
     )
