@@ -4,91 +4,117 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from aiogram.utils.markdown import hbold
 
-from crud.settings import write_settings, get_settings_user_by_id
-from database import Settings
 from handlers.bot_answer import decorator_errors
-from keywords.keyword import menu, confirm_menu, cancel_button
+from keyboards.keyword import menu, cancel_button
+from keyboards.settings import get_actions, settings_choices, SETTINGS
 from states.settings import SettingsState
+from utils.settings import (
+    actions_dict,
+    validate_data,
+    create_settings,
+    get_settings_text
+)
 
 settings_router: Router = Router()
 
+
 @settings_router.callback_query(F.data == "settings")
-@decorator_errors
-async def ask_price(callback: CallbackQuery, state: FSMContext):
-    """Обработчик для команд settings. Если у пользователя еще нет настроек,
-    то просит пользователя сразу ввести нужные данные, иначе спрашивает,
-    хочет ли пользователь изменить настройки.
+async def choice_options_settings(callback: CallbackQuery) -> None:
     """
-    await callback.message.delete_reply_markup()
-    get_data_user: Settings | None = await get_settings_user_by_id(
-        callback.from_user.id
+    Обработчик запускает работу с настройками, показывает
+    чекбокс для настроек которые интересуют пользователя.
+    """
+    text: str = await get_settings_text(callback.from_user.id)
+    await callback.message.answer(
+        text=hbold(text),
+        reply_markup=await get_actions(callback.from_user.id),
+        parse_mode="HTML"
     )
 
-    if get_data_user is None:
-        await state.update_data(chat_id=callback.from_user.id)
-        await state.update_data(update=False)
-        await state.set_state(SettingsState.price)
-        await callback.message.answer(
-            "Введите вашу почасовую ставку: ",
-            reply_markup=cancel_button,
-        )
+
+@settings_router.callback_query(lambda c: c.data.startswith("toggle-"))
+@decorator_errors
+async def toggle_action(
+    callback_query: CallbackQuery,
+    state: FSMContext
+) -> None:
+    """Реализация чекбокса в виде инлайн клавиатуры."""
+    action: str = callback_query.data.split("-")[1]
+    user_id: int = callback_query.from_user.id
+
+    if action in settings_choices[user_id]:
+        await callback_query.answer(f"Вы убрали: {SETTINGS[action]}")
+        settings_choices[user_id].pop(action)
 
     else:
-        await state.set_state(SettingsState.change_settings)
-        await callback.message.answer(
-            text=f"Ваши текущие настройки ⚙️🔧\n\n"
-                 f"Ставка в час: {hbold(get_data_user.price)}₽\n"
-                 f"Доплата: {hbold(get_data_user.overtime)}₽\n\n"
-                 f"Хотите изменить данные?",
-            parse_mode="HTML",
-            reply_markup=confirm_menu,
+        settings_choices[user_id].update({action: SETTINGS[action]})
+        await callback_query.answer(
+            f"Вы выбрали: {SETTINGS[action]}"
         )
 
+    await callback_query.message.edit_reply_markup(
+        reply_markup=await get_actions(user_id)
+    )
 
-@settings_router.callback_query(
-    F.data == "continue", SettingsState.change_settings)
+
+@settings_router.callback_query(F.data == "finish")
 @decorator_errors
-async def change_settings(callback: CallbackQuery, state: FSMContext):
-    """
-    Обрабатывает команды yes and no, при запросе на
-    обновление данных о настройках."""
-    await callback.message.delete_reply_markup()
-    await state.update_data(chat_id=callback.from_user.id)
-    await state.update_data(update=True)
-    await state.set_state(SettingsState.price)
-
-    await callback.message.answer(text="Ok, Введите вашу ставку: ")
-
-
-@settings_router.message(F.text.isdigit(), SettingsState.price)
-@decorator_errors
-async def ask_chart(message: Message, state: FSMContext):
-    """Обрабатывает введенную пользователем стоимость часа."""
-    await state.update_data(price=int(message.text))
-    await state.set_state(SettingsState.overtime_price)
-
-    await message.answer(
-        text="Укажите доплату за переработку, если доплаты нет введите 0.")
-
-
-@settings_router.message(F.text.isdigit(), SettingsState.overtime_price)
-@decorator_errors
-async def ask_price_over_time(
-        message: Message,
-        state: FSMContext
+async def finish_selection(
+        call: CallbackQuery, state: FSMContext
 ) -> None:
     """
-    Обрабатывает введенную пользователем информацию о вводе
-    стоимости о доп часе. И отправляет всю информацию на сохранение в бд.
+    Показываеться когда пользователь нажал ok, начинает спрашивать
+    ввод пользовательских настроек.
     """
-    await state.update_data(overtime=int(message.text))
-    try:
-        await write_settings(await state.get_data())
-        await message.answer(
-            text="Отлично, все готово!",
-            reply_markup=menu)
+    options: list[str] = list(settings_choices[call.from_user.id].keys())[::-1]
+    await state.update_data(options=options)
+    if len(options) == 0:
+        await call.answer(
+            text="Вы ничего не выбрали",
+            reply_markup=menu
+        )
+        return
 
-    except ValueError:
-        await message.answer(text="Ошибочка вышла((")
+    action: str = options.pop()
+    await state.update_data(action=action)
+    await state.set_state(SettingsState.action)
+    await call.message.edit_text(
+        text=actions_dict[action],
+        reply_markup=cancel_button
+    )
 
-    await state.clear()
+
+@settings_router.message(SettingsState.action)
+@decorator_errors
+async def save_account_name(mess: Message, state: FSMContext) -> None:
+    """The handler is called while there are raw fields."""
+    data: dict = await state.get_data()
+    options: list = data["options"]
+    action: str = data["action"]
+
+    if not await validate_data(action, mess.text):
+        await mess.answer(
+            hbold("Неверный формат ввода, попробуйте еще раз."),
+            reply_markup=cancel_button,
+            parse_mode="HTML"
+        )
+        return
+
+    await state.update_data({action: mess.text})
+
+    if options:
+        action = options.pop()
+        await state.update_data(action=action)
+        await mess.answer(
+            text=actions_dict[action],
+            reply_markup=cancel_button
+        )
+        return
+    data: dict = await state.get_data()
+    del data["action"]
+    del data["options"]
+    await create_settings(data, mess.from_user.id)
+    await mess.answer(
+        text="Ваши настройки сохранены.",
+        reply_markup=menu
+    )
