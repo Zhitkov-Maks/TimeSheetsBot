@@ -1,15 +1,29 @@
-from typing import Dict
-
 from database.db_conf import MongoDB
 
 
-async def write_settings(data_settings: Dict[str, str | int]) -> None:
+async def create_settings(data: dict, user_id: int) -> None:
     """
-    Функция для сохранения и обновления настроек пользователя.
-    :param data_settings: Словарь с данными для записи.
-    :return: None.
+    Создание или обновление настроек пользователя.
+
+    :param data: Словарь с введенными данными.
+    :param user_id: Идентификатор пользователя.
+    """
+    client = MongoDB()
+    collection = client.get_collection("users_settings")
+    collection.update_one(
+        {"user_id": user_id}, {"$set": {"data": data}}, upsert=True
+    )
+    client.close()
+
+
+async def get_settings_user_by_id(user_id: int) -> dict:
+    """
+    Получение настроек пользователя по идентификатору
+    телеграм ID.
+    :param user_id: Идентификатор телеграм.
     """
     client: MongoDB = MongoDB()
     collection = client.get_collection("users_settings")
-    print(data_settings)
-    collection.insert_one(data_settings)
+    data = collection.find_one({"user_id": user_id})
+    client.close()
+    return data

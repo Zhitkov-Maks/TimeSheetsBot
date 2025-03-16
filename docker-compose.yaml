@@ -1,34 +1,10 @@
 services:
 
-    db_bot:
-        image: postgres:15-alpine
-        container_name: db_bot
-        environment:
-            - "POSTGRES_USER=${DB_USER}"
-            - "POSTGRES_PASSWORD=${DB_PASS}"
-            - "POSTGRES_DB=${DB_NAME}"
-        ports:
-            - '5433:5433'
-        restart: always
-        volumes:
-            - ./db/:/var/lib/postgresql/data
-
-    telegram_bot:
-        container_name: SalaryBot
-        build: .
-
-        environment:
-            - BOT_TOKEN=${TOKEN}
-
-        env_file:
-            - .env
-
-        ports:
-            - "443:443"
-
-        volumes:
-          - ./logs:/salary/logs
-
-        restart: always
-        depends_on:
-            -   db_bot
+  mongodb:
+    image: mongo:latest
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      - "MONGO_INITDB_ROOT_USERNAME=${DB_NAME}"
+      - "MONGO_INITDB_ROOT_PASSWORD=${DB_PASS}"

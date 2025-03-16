@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import Dict
 
 from aiogram import Router, Bot
 from aiogram import types, F
@@ -9,10 +9,10 @@ from config import BOT_TOKEN
 from crud.create import delete_record, add_other_income
 from handlers.bot_answer import send_calendar_and_message, processing_data, \
     decorator_errors
-from keywords.keyword import cancel_button
+from keyboards.keyboard import cancel_button
 from loader import add_record_text
 from states.current_day import CreateState
-from utils.current_day import split_data
+from utils.current_day import valid_time
 
 create_router = Router()
 bot = Bot(token=BOT_TOKEN)
@@ -22,11 +22,11 @@ bot = Bot(token=BOT_TOKEN)
 @decorator_errors
 async def on_date_today(callback: CallbackQuery, state: FSMContext) -> None:
     """Обработчик команд для добавления или изменения записи о смене."""
-    await callback.message.delete_reply_markup()
     await state.update_data(action=callback.data, callback=callback.id)
     await state.set_state(CreateState.check_data)
-    await callback.message.answer(
-        text=add_record_text, reply_markup=cancel_button)
+    await callback.message.edit_text(
+        text=add_record_text, reply_markup=cancel_button
+    )
 
 
 @create_router.message(CreateState.check_data)
@@ -39,15 +39,11 @@ async def check_data(message: types.Message, state: FSMContext) -> None:
     """
     await state.update_data(user_id=message.from_user.id)
     data: Dict[str, str | float] = await state.get_data()
-    numbers: List[str] = message.text.split("*")
     try:
-        if len(numbers) == 1 or len(numbers) == 2:
-            time, overtime = await split_data(numbers)
-            await processing_data(
-                message.from_user.id, time, overtime, state, data
-            )
-        else:
-            raise ValueError
+        time: float = await valid_time(message.text)
+        await processing_data(
+            message.from_user.id, time, state, data
+        )
 
     except ValueError:
         await message.reply(
@@ -104,10 +100,9 @@ async def update_other_income(message: Message, state: FSMContext):
 @decorator_errors
 async def del_record(callback: CallbackQuery, state: FSMContext) -> None:
     """Отправка на удаление записи."""
-    await callback.message.delete_reply_markup()
     await state.update_data(user_id=callback.from_user.id)
     data: Dict[str, str] = await state.get_data()
 
-    await delete_record(data)
+    await delete_record(data.get("date"), callback.from_user.id)
     await callback.answer("Запись удалена!!!")
     await send_calendar_and_message(callback.from_user.id, data, state)

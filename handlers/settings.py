@@ -5,15 +5,15 @@ from aiogram.types import CallbackQuery, Message
 from aiogram.utils.markdown import hbold
 
 from handlers.bot_answer import decorator_errors
-from keyboards.keyword import menu, cancel_button
+from keyboards.keyboard import menu, cancel_button
 from keyboards.settings import get_actions, settings_choices, SETTINGS
 from states.settings import SettingsState
 from utils.settings import (
     actions_dict,
     validate_data,
-    create_settings,
     get_settings_text
 )
+from crud.settings import create_settings
 
 settings_router: Router = Router()
 
@@ -25,7 +25,7 @@ async def choice_options_settings(callback: CallbackQuery) -> None:
     чекбокс для настроек которые интересуют пользователя.
     """
     text: str = await get_settings_text(callback.from_user.id)
-    await callback.message.answer(
+    await callback.message.edit_text(
         text=hbold(text),
         reply_markup=await get_actions(callback.from_user.id),
         parse_mode="HTML"
@@ -110,10 +110,12 @@ async def save_account_name(mess: Message, state: FSMContext) -> None:
             reply_markup=cancel_button
         )
         return
+    
     data: dict = await state.get_data()
     del data["action"]
     del data["options"]
     await create_settings(data, mess.from_user.id)
+    settings_choices[mess.from_user].clear()
     await mess.answer(
         text="Ваши настройки сохранены.",
         reply_markup=menu

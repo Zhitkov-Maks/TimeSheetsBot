@@ -1,81 +1,37 @@
 from datetime import datetime
-from typing import Tuple, List
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, asc, Sequence, Select, func, extract, Row, Result
-from database.db_conf import get_async_session
-from database.models import Salary
-
-
-async def request_statistic(
-        user: int,
-        year: int
-) -> Row[List[Tuple[int]]]:
-    """
-    Запрос на получение небольшой статистики за год.
-    :param user: Id юзера.
-    :param year: Год для статистики.
-    :return: Кортеж со статистикой.
-    """
-    session: AsyncSession = await get_async_session()
-    # Запрос для получения итогового заработка за год
-    stmt: Select = (
-        select(
-            func.sum(Salary.earned),
-            func.sum(Salary.base_hours),
-            func.sum(Salary.overtime),
-            func.sum(Salary.other_income),
-        )
-        .where(Salary.user_chat_id == user)
-        .where(
-            (extract("year", func.date(Salary.date)) == year),
-        )
-    )
-    data: Result = await session.execute(stmt)
-    await session.close()
-    return data.one()
+from database.db_conf import MongoDB
 
 
 async def get_information_for_month(
-        user_id: int, year: int, month: int
-) -> Sequence[Row[tuple[Salary]]]:
-    """
-    Получение данных за выбранный месяц.
-    :param user_id: Id юзера.
-    :param year: Год.
-    :param month: Месяц.
-    :return: Возвращает данные за месяц, чтобы сформировать календарь.
-    """
-    session: AsyncSession = await get_async_session()
-    month: str = str(month) if month > 9 else f"0{month}"
-
-    stmt: Select = (
-        select(Salary)
-        .where(Salary.user_chat_id == user_id)
-        .where(func.extract("year", Salary.date) == int(year))
-        .where(func.extract("month", Salary.date) == int(month))
-        .order_by(asc(Salary.date))
-    )
-
-    data: Result = await session.execute(stmt)
-    await session.close()
-    return data.all()
+    user_id: int,
+    year: int,
+    month: int
+) -> list:
+    try:
+        client: MongoDB = MongoDB()
+        collection = client.get_collection("salaries")
+        start_date = datetime(year, month, 1)
+        end_date = datetime(year, month + 1, 1)
+        cursor = collection.find(
+            {
+                "user_id": user_id,
+                "date": {"$gte": start_date, "$lt": end_date},
+            }
+        )
+        results = cursor.to_list(length=None)
+        return results
+    finally:
+        client.close()
 
 
-async def get_info_by_date(user_id: int, date: str) -> Salary:
+async def get_info_by_date(user_id: int, date: str) -> dict:
     """
-    Показ данных за выбранное число.
-    :param user_id: Идентификатор пользователя.
-    :param date: Выбранная дата.
-    :return: Данные за выбранный месяц.
+    Функция возвращает данные за выбранную дату.
     """
-    session: AsyncSession = await get_async_session()
-    parse_date: date = datetime.strptime(date, "%Y-%m-%d")
-    stmt: Select = (
-        select(Salary)
-        .where(Salary.user_chat_id == user_id)
-        .where(Salary.date == parse_date)
-    )
-    data: Salary = await session.scalar(stmt)
-    await session.close()
+    client: MongoDB = MongoDB()
+    parse_date = datetime.strptime(date, "%Y-%m-%d")
+    collection = client.get_collection("salaries")
+    data: dict = collection.find_one({"user_id": user_id, "date": parse_date})
+    client.close()
     return data

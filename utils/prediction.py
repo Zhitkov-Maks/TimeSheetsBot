@@ -3,13 +3,11 @@ from typing import Tuple
 
 from asyncpg.pgproto.pgproto import timedelta
 
-from database import Settings
-
 
 async def get_total_price(
     first_day: int,
     days_in_month: int,
-    price: Settings,
+    price,
     count: int,
     hours: int
 ) -> int:

@@ -7,11 +7,10 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup
 
 from config import BOT_TOKEN
-from crud.create import write_salary, update_salary
 from loader import success_text
-from utils.bot_answer import write_logger_error
 from utils.current_day import earned_salary
 from utils.month import create_message
+from crud.create import write_salary
 
 bot = Bot(token=BOT_TOKEN)
 
@@ -40,8 +39,6 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
                 "никаких данных."
             )
             await bot.send_message(arg.from_user.id, mess)
-            await write_logger_error("KeyError", arg.from_user, func.__name__)
-
 
         except TelegramNetworkError:
             mess: str = (
@@ -50,13 +47,10 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
             await bot.send_message(arg.from_user.id, mess)
         except TelegramBadRequest:
             mess: str = (
-                "Что-то сломалось. Ошибка на нашей стороне, пришлите мне подробно"
-                " какие действия вы совершали."
+                "Что-то сломалось. Ошибка на нашей стороне, пришлите мне "
+                "подробно какие действия вы совершали."
             )
             await bot.send_message(arg.from_user.id, mess)
-            await write_logger_error(
-                "TelegramBadRequest", arg.from_user, func.__name__
-            )
 
     return wrapper
 
@@ -64,13 +58,12 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
 async def processing_data(
         user_id: int,
         time: float,
-        overtime: float,
         state: FSMContext,
         data: Dict[str, str | int]
 ) -> None:
     """
-    Обрабатывает данные о зарплате пользователя, вычисляет заработок и обновляет
-    записи в базе данных.
+    Обрабатывает данные о зарплате пользователя, вычисляет заработок
+    и обновляет записи в базе данных.
 
     Эта функция выполняет следующие действия:
     1. Вычисляет базовую зарплату, сверхурочные и общую заработанную сумму.
@@ -90,7 +83,7 @@ async def processing_data(
 
     :return: None
     """
-    base, overtime, earned = await earned_salary(time, overtime, user_id)
+    base, earned, earned_cold = await earned_salary(time, user_id)
     callback: str = data.get("callback")
     await bot.answer_callback_query(
         callback_query_id=callback,
@@ -98,11 +91,7 @@ async def processing_data(
         show_alert=True
     )
 
-    if data["action"] == "add":
-        await write_salary(base, overtime, earned, data)
-
-    else:
-        await update_salary(base, overtime, earned, data)
+    await write_salary(base, earned, earned_cold, data)
     await send_calendar_and_message(user_id, data, state)
 
 
@@ -133,7 +122,7 @@ async def send_calendar_and_message(
 
     await bot.send_message(
         chat_id=user,
-        text="...",
+        text="Ваш календарь",
         parse_mode="HTML",
         reply_markup=calendar,
     )

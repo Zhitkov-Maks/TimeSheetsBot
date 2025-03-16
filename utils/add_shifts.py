@@ -2,7 +2,6 @@ from datetime import datetime as dt, timedelta, datetime, date
 from typing import Tuple, List
 
 from crud.add_shift import write_salary_shift
-from database.models import Salary
 from utils.current_day import earned_salary
 
 
@@ -28,7 +27,6 @@ async def get_date(action: str) -> Tuple[int, int]:
 async def create_data_by_add_shifts(
         user_id: int,
         time: float,
-        overtime: float,
         list_dates: List[str]
 ) -> None:
     """
@@ -44,13 +42,11 @@ async def create_data_by_add_shifts(
     :return: None
     """
     # Вычисление базовой зарплаты, сверхурочных и общей заработанной суммы
-    base, overtime, earned = await earned_salary(
-        time=time, overtime=overtime, user_id=user_id
-    )
+    base, earned, earned_cold = await earned_salary(time, user_id)
 
     # Создание списка объектов Salary на основе вычисленных данных и дат
-    salary_lis: List[Salary] = await create_list_salary(
-        user_id, base, overtime, earned, list_dates
+    salary_lis = await create_list_salary(
+        user_id, base, earned, earned_cold, list_dates
     )
 
     # Запись созданных объектов Salary в базу данных
@@ -60,25 +56,15 @@ async def create_data_by_add_shifts(
 async def create_list_salary(
         user_id: int,
         base: float,
-        overtime: float,
         earned: float,
+        earned_cold: float,
         list_dates: List[str]
-) -> List[Salary]:
+):
     """
-    Создает список объектов Salary на основе предоставленных данных. Нужна для
-    добавления в бд зразу списка смен.
-
-    :param user_id: Идентификатор пользователя (чата), для которого создаются
-        записи о зарплате.
-    :param base: Основное количество часов, отработанных пользователем.
-    :param overtime: Количество сверхурочных часов, отработанных пользователем.
-    :param earned: Общая сумма, заработанная пользователем за указанный период.
-    :param list_dates: Список строковых дат в формате "YYYY-MM-DD", для которых
-        необходимо создать записи о зарплате.
-
-    :return: Список объектов Salary, созданных на основе предоставленных данных.
+    Создает список объектов Salary на основе предоставленных данных.
+    Нужна для добавления в бд зразу списка смен.
     """
-    salary_list: List[Salary] = []
+    salary_list = []
 
     for d in list_dates:
         # Определение периода (1 - первая половина месяца, 2 - вторая половина)
@@ -88,14 +74,15 @@ async def create_list_salary(
         parse_date: date = datetime.strptime(d, "%Y-%m-%d")
 
         data: dict = {
-            "user_chat_id": user_id,
-            "base_hours": float(base),
-            "overtime": float(overtime),
-            "earned": float(earned),
+            "user_id": user_id,
             "date": parse_date,
-            "period": period,
+            "data": {
+                "base_hours": float(base),
+                "earned": float(earned),
+                "period": period,
+                "earned_cold": earned_cold
+            }
         }
-        salary: Salary = Salary(**data)
-        salary_list.append(salary)
+        salary_list.append(data)
 
     return salary_list

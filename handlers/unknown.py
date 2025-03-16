@@ -3,7 +3,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram import types
 
 from handlers.bot_answer import decorator_errors
-from keywords.keyword import menu
+from keyboards.keyboard import menu
 from loader import unfamiliar_command
 
 unknown_rout = Router()

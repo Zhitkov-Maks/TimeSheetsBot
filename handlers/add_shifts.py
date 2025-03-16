@@ -8,13 +8,13 @@ from aiogram.utils.markdown import hbold
 
 from config import BOT_TOKEN
 from handlers.bot_answer import send_calendar_and_message, decorator_errors
-from keywords.add_shifts import get_days_keyboard, days_choices
-from keywords.keyword import cancel_button, menu
-from keywords.prediction import prediction_button
+from keyboards.add_shifts import get_days_keyboard, days_choices
+from keyboards.keyboard import cancel_button, menu
+from keyboards.add_shifts import prediction_button
 from loader import MONTH_DATA
 from states.add_shifts import ShiftsState
 from utils.add_shifts import get_date, create_data_by_add_shifts
-from utils.current_day import split_data
+from utils.current_day import valid_time
 
 shifts_router: Router = Router()
 bot: Bot = Bot(token=BOT_TOKEN)
@@ -74,23 +74,19 @@ async def work_with_calendar(message: Message, state: FSMContext) -> None:
     """
     data: Dict[str, str | float | list] = await state.get_data()
     year, month = int(data["year"]), int(data["month"])
-    numbers: List[str] = message.text.split("*")
     try:
-        if len(numbers) == 1 or len(numbers) == 2:
-            time, overtime = await split_data(numbers)
-            await state.update_data(time=time, overtime=overtime)
-            await message.answer(
-                text=f"Выберите все смены когда вы работаете.",
-                reply_markup=await get_days_keyboard(
-                    year, month, message.from_user.id)
-            )
-        else:
-            raise ValueError
+        time = await valid_time(message.text)
+        await state.update_data(time=time)
+        await message.answer(
+            text="Выберите все смены когда вы работаете.",
+            reply_markup=await get_days_keyboard(
+                year, month, message.from_user.id)
+        )
 
     except ValueError:
         await message.answer(
             "Введенные данные не соответствуют требованиям. \n"
-            "Пример: 6.5*5. Попробуйте еще раз.",
+            "Пример: 6.5. Попробуйте еще раз.",
             reply_markup=cancel_button,
         )
 
@@ -127,21 +123,22 @@ async def finish_add_shifts(callback: CallbackQuery, state: FSMContext) -> None:
     Обработчик выбранных дней, отправляет запрос на добавление смен в бд.
     """
     user_id: int = callback.from_user.id
-    if days_choices[user_id]:
+    if len(days_choices.get(user_id)) > 0:
         await state.update_data(user_id=user_id)
         data: Dict[str, str | float] = await state.get_data()
-        time, overtime = data["time"], data["overtime"]
+        time = data["time"]
 
         await create_data_by_add_shifts(
-            user_id, time, overtime, days_choices[user_id]
+            user_id, time, days_choices[user_id]
         )
-        await callback.answer("Записи были успешно добавлены!")
+        await callback.answer(
+            "Записи были успешно добавлены!", show_alert=True
+        )
         await send_calendar_and_message(user_id, data, state)
 
     else:
-        await callback.message.delete_reply_markup()
         await state.clear()
-        await callback.message.answer(
+        await callback.message.edit_text(
             text="Вы ничего не выбрали, открываю вам меню!",
             reply_markup=menu
         )
