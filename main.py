@@ -61,7 +61,9 @@ async def handler_dev(message: types.Message, state: FSMContext) -> None:
                     text="Мой Телеграм", url="https://t.me/Maksim1Zhitkov"),
             ]
         ]
-    keyboard: InlineKeyboardMarkup = InlineKeyboardMarkup(inline_keyboard=button)
+    keyboard: InlineKeyboardMarkup = InlineKeyboardMarkup(
+        inline_keyboard=button
+    )
     await message.answer("Меню", reply_markup=keyboard)
 
 
