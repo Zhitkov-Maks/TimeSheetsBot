@@ -11,7 +11,7 @@ async def create_settings(data: dict, user_id: int) -> None:
     client = MongoDB()
     collection = client.get_collection("users_settings")
     collection.update_one(
-        {"user_id": user_id}, {"$set": {"data": data}}, upsert=True
+        {"user_id": user_id}, {"$set": data}, upsert=True
     )
     client.close()
 
@@ -20,6 +20,7 @@ async def get_settings_user_by_id(user_id: int) -> dict:
     """
     Получение настроек пользователя по идентификатору
     телеграм ID.
+    
     :param user_id: Идентификатор телеграм.
     """
     client: MongoDB = MongoDB()
