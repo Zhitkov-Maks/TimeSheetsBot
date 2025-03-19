@@ -4,7 +4,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from loader import MENU
 
-
+# Возможные настройки для пользователя.
 SETTINGS: dict[str, str] = {
     "price_time": "Ставка в час",
     "price_overtime": "Доплата за переработку",
@@ -40,6 +40,7 @@ async def get_actions(user_id: int) -> InlineKeyboardMarkup:
 
     keyboard.append([
         InlineKeyboardButton(text="🆗", callback_data="finish"),
-        InlineKeyboardButton(text=MENU, callback_data="main")
+        InlineKeyboardButton(text=MENU, callback_data="main"),
+        InlineKeyboardButton("❌", callback_data="remove_settings")
     ])
     return InlineKeyboardMarkup(inline_keyboard=keyboard)

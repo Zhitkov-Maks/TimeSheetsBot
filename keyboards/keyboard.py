@@ -18,8 +18,13 @@ menu_button: List[List[InlineKeyboardButton]] = [
         [
             InlineKeyboardButton(text="📆", callback_data="month_current"),
             InlineKeyboardButton(text="⚙️", callback_data="settings"),
-            InlineKeyboardButton(text="🛠", callback_data="many_add"),
-            InlineKeyboardButton(text="↗", callback_data="statistic"),
+            InlineKeyboardButton(text="🛠", callback_data="many_add")
+        ],
+        [
+            InlineKeyboardButton(
+                text="Ожидаемая зп в текущем месяце",
+                callback_data="expected_salary"
+            )
         ]
     ]
 
@@ -30,4 +35,5 @@ cancel_button: InlineKeyboardMarkup = InlineKeyboardMarkup(
 confirm_menu: InlineKeyboardMarkup = InlineKeyboardMarkup(
     inline_keyboard=confirm
 )
+
 menu: InlineKeyboardMarkup = InlineKeyboardMarkup(inline_keyboard=menu_button)

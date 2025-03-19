@@ -11,13 +11,13 @@ async def get_dates(salary) -> Dict[str, int]:
     """
     Функция для формирования словаря, где ключ дата,
     а значение количество отработанных часов за выбранную дату.
+
     :param salary: Результат запроса к бд.
     :return Dict: Словарь с датами и отработанными часами.
     """
     return {
-        sal.get("date").strftime("%Y-%m-%d"): sal.get("data").get(
-            "base_hours"
-        ) for sal in salary
+        sal.get("date").strftime("%Y-%m-%d"): sal.get("base_hours")
+        for sal in salary
     }
 
 
@@ -51,7 +51,8 @@ async def generate_base_calendar(
         month: int
 ) -> None:
     """
-    Функция генерации основной части календаря. Заполняет календарь кнопками.
+    Функция генерации основной части календаря. 
+    Заполняет календарь кнопками.
 
     :param field_size: Размер поля календаря.
     :param numbers_list: Поле календаря.
@@ -79,7 +80,8 @@ async def generate_base_calendar(
                 text = f"[ {numbers_list[day]} ]"
 
             elif create_date in dates:
-                text = f"{numbers_list[day]} {UNICODE_DATA[dates[create_date]]}"
+                text = f"{numbers_list[day]} {
+                    UNICODE_DATA[dates[create_date]]}"
 
             else:
                 text = f"{numbers_list[day]} ˟"
@@ -110,6 +112,7 @@ async def create_calendar(
 
     # Создание словаря с датами и количеством отработанных часов
     dates: Dict[str, int] = await get_dates(salary)
+    
     # Получение дня недели 1 числа месяца и количества дней в месяце.
     day_week: int = date(year, month, 1).weekday()
     days_in_month: int = monthrange(year, month)[1]
