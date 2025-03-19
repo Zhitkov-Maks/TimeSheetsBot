@@ -41,6 +41,6 @@ async def get_actions(user_id: int) -> InlineKeyboardMarkup:
     keyboard.append([
         InlineKeyboardButton(text="🆗", callback_data="finish"),
         InlineKeyboardButton(text=MENU, callback_data="main"),
-        InlineKeyboardButton("❌", callback_data="remove_settings")
+        InlineKeyboardButton(text="❌", callback_data="remove_settings")
     ])
     return InlineKeyboardMarkup(inline_keyboard=keyboard)

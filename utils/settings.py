@@ -23,7 +23,8 @@ async def generate_text_of_data(data: dict) -> str:
     """
     text: str = "Ваши текущие настройки: \n"
     for item in data:
-        text += f"{SETTINGS[item]}: {data[item]}{money}.\n"
+        if "id" not in item:
+            text += f"{SETTINGS[item]}: {data[item]}{money}.\n"
     return text
 
 
@@ -38,7 +39,7 @@ async def get_settings_text(user_id: int) -> str:
     collection = client.get_collection("users_settings")
     existing_user: dict = collection.find_one({"user_id": user_id})
     if existing_user:
-        return await generate_text_of_data(existing_user.get("data"))
+        return await generate_text_of_data(existing_user)
     return "Выберите какие данные вам нужны."
 
 

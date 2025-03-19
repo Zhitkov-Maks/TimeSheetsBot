@@ -4,12 +4,13 @@ from aiogram import Router, Bot
 from aiogram import types, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
+from aiogram.utils.markdown import hbold
 
 from config import BOT_TOKEN
-from crud.create import delete_record, add_other_income
+from crud.create import delete_record
 from handlers.bot_answer import send_calendar_and_message, processing_data, \
     decorator_errors
-from keyboards.keyboard import cancel_button
+from keyboards.keyboard import cancel_button, menu
 from loader import add_record_text
 from states.current_day import CreateState
 from utils.current_day import valid_time
@@ -52,47 +53,11 @@ async def check_data(message: types.Message, state: FSMContext) -> None:
             reply_markup=cancel_button,
         )
 
-
-@create_router.callback_query(F.data == "bonus")
-@decorator_errors
-async def add_other_surcharges(
-        callback: CallbackQuery,
-        state: FSMContext
-) -> None:
-    """
-    Обработчик для добавления прочих доходов к выбранному дню. Просит ввести
-    пользователя сумму прочего дохода.
-    """
-    await callback.message.delete_reply_markup()
-    await state.set_state(CreateState.other_income)
-    await callback.message.answer(
-        text="Введите сумму прочего дохода, сюда можно добавить например "
-             "доплату за ночные часы, акционные доплаты и т.п.",
-        reply_markup=cancel_button)
-
-
-@create_router.message(CreateState.other_income)
-@decorator_errors
-async def update_other_income(message: Message, state: FSMContext):
-    """
-    Обработчик проверяет введенное пользователем число, если все хорошо,
-    то отправляет на сохранение прочего дохода в бд, и формирует заново
-    календарь за тот месяц, где было добавление.
-    """
-    try:
-        income: float = float(message.text)
-        await state.update_data(user_id=message.from_user.id)
-        data: dict = await state.get_data()
-        await add_other_income(income, data)
-        await message.answer(text=f"Прочий доход в размере "
-                                  f"{float(message.text):,.2f} "
-                                  f"был успешно добавлен!")
-        await send_calendar_and_message(message.from_user.id, data, state)
-
-    except ValueError:
-        await message.reply(
-            "Ошибка ввода, необходимо вводить либо целые числа, "
-            "либо числа с точкой, например 555.55"
+    except KeyError as err:
+        await message.answer(
+            text=hbold(str(err)),
+            reply_markup=menu,
+            parse_mode="HTML"
         )
 
 

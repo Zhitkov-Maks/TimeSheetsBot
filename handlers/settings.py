@@ -13,17 +13,25 @@ from utils.settings import (
     validate_data,
     get_settings_text
 )
-from crud.settings import create_settings
+from crud.settings import create_settings, delete_settings
 
 settings_router: Router = Router()
 
 
 @settings_router.callback_query(F.data == "settings")
-async def choice_options_settings(callback: CallbackQuery) -> None:
+@decorator_errors
+async def choice_options_settings(
+    callback: CallbackQuery, state: FSMContext
+) -> None:
     """
     Обработчик запускает работу с настройками, показывает
     чекбокс для настроек которые интересуют пользователя.
     """
+    await state.clear()
+    settings: bool = settings_choices.get(callback.from_user.id)
+    if settings:
+        settings.clear()
+
     text: str = await get_settings_text(callback.from_user.id)
     await callback.message.edit_text(
         text=hbold(text),
@@ -110,7 +118,7 @@ async def save_account_name(mess: Message, state: FSMContext) -> None:
             reply_markup=cancel_button
         )
         return
-    
+
     data: dict = await state.get_data()
     del data["action"]
     del data["options"]
@@ -119,4 +127,18 @@ async def save_account_name(mess: Message, state: FSMContext) -> None:
     await mess.answer(
         text="Ваши настройки сохранены.",
         reply_markup=menu
+    )
+
+
+@settings_router.callback_query(F.data == "remove_settings")
+@decorator_errors
+async def remove_user_settings(
+        callback: CallbackQuery, state: FSMContext
+) -> None:
+    """Обработчик для удаления текущих настроек."""
+    await delete_settings(callback.from_user.id)
+    await callback.message.edit_text(
+        text=hbold("Ваши настройки удалены."),
+        reply_markup=menu,
+        parse_mode="HTML"
     )

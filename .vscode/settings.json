@@ -1,0 +1,28 @@
+{
+    "folder-color.pathColors": [
+        {
+            "folderPath": "TimeSheetsBot/crud/",
+            "color": "foldercolorizer.color_00cccc"
+        },
+        {
+            "folderPath": "TimeSheetsBot/database/",
+            "color": "foldercolorizer.color_00cc00"
+        },
+        {
+            "folderPath": "TimeSheetsBot/handlers/",
+            "color": "foldercolorizer.color_cc0000"
+        },
+        {
+            "folderPath": "TimeSheetsBot/keyboards/",
+            "color": "foldercolorizer.color_666666"
+        },
+        {
+            "folderPath": "TimeSheetsBot/states/",
+            "color": "foldercolorizer.color_33ccff"
+        },
+        {
+            "folderPath": "TimeSheetsBot/utils/",
+            "color": "foldercolorizer.color_6666cc"
+        }
+    ]
+}

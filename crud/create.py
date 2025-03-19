@@ -44,4 +44,3 @@ async def delete_record(date: str, user_id) -> None:
         "date": parse_date
     })
     client.close()
-

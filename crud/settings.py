@@ -28,3 +28,15 @@ async def get_settings_user_by_id(user_id: int) -> dict:
     data = collection.find_one({"user_id": user_id})
     client.close()
     return data
+
+
+async def delete_settings(user_id) -> None:
+    """
+    Удаление записи из бд по ID пользователя.
+
+    :param user_id: Идентификатор пользователя.
+    """
+    client: MongoDB = MongoDB()
+    collection = client.get_collection("users_settings")
+    collection.delete_one({"user_id": user_id})
+    client.close()

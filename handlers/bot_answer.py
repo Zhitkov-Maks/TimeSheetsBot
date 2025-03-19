@@ -1,5 +1,7 @@
 from functools import wraps
+from logging.handlers import RotatingFileHandler
 from typing import Dict, Callable, ParamSpec, TypeVar
+import logging
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramNetworkError, TelegramBadRequest
@@ -13,6 +15,24 @@ from utils.month import create_message
 from crud.create import write_salary
 
 bot = Bot(token=BOT_TOKEN)
+
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+handler = RotatingFileHandler(
+    filename="/salary/logs/time_bot.log",
+    maxBytes=10 * 1024 * 1024,
+    backupCount=10,
+    encoding="utf-8",
+)
+
+handler.setFormatter(
+    logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+)
+
+# Добавляем обработчик к логгеру
+logger.addHandler(handler)
 
 
 T = TypeVar("T")
@@ -29,9 +49,22 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
         Обертка для обработки ошибок при выполнении функции.
         """
         try:
-            return await func(arg, state)
+            logger.info(
+                f"\nExecuting function: {func.__name__}\n"
+                f"User ID: {arg.from_user.id}\n"
+                f"User: {arg.from_user.full_name} - (@{arg.from_user.username})\n\n"
+            )
+            await func(arg, state)
 
         except KeyError:
+            logger.error(
+                "\nKeyError occurred\n"
+                f"Function: {func.__name__}\n"
+                f"User ID: {arg.from_user.id}\n"
+                f"User: {arg.from_user.full_name} (@{arg.from_user.username}\n",
+                exc_info=True,
+            )
+            await state.clear()
             mess: str = (
                 "I'm Sorry! Произошла ошибка при обработке данных."
                 " Возможные причина ошибки - вы нажали кнопку, "
@@ -41,11 +74,28 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
             await bot.send_message(arg.from_user.id, mess)
 
         except TelegramNetworkError:
+            logger.error(
+                "\nTelegramNetworkError\n"
+                f"Function: {func.__name__}\n"
+                f"User ID: {arg.from_user.id}\n"
+                f"User: {arg.from_user.full_name} (@{arg.from_user.username}\n",
+                exc_info=True,
+            )
+            await state.clear()
             mess: str = (
                 "У нас проблемы с интернетом, попробуйте зайти чуть позже."
             )
             await bot.send_message(arg.from_user.id, mess)
+
         except TelegramBadRequest:
+            logger.error(
+                "\nTelegramBadRequest\n"
+                f"Function: {func.__name__}\n"
+                f"User ID: {arg.from_user.id}\n"
+                f"User: {arg.from_user.full_name} (@{arg.from_user.username}\n",
+                exc_info=True,
+            )
+            await state.clear()
             mess: str = (
                 "Что-то сломалось. Ошибка на нашей стороне, пришлите мне "
                 "подробно какие действия вы совершали."
@@ -83,7 +133,7 @@ async def processing_data(
 
     :return: None
     """
-    base, earned, earned_cold = await earned_salary(time, user_id)
+    base, earned = await earned_salary(time, user_id)
     callback: str = data.get("callback")
     await bot.answer_callback_query(
         callback_query_id=callback,
@@ -91,7 +141,7 @@ async def processing_data(
         show_alert=True
     )
 
-    await write_salary(base, earned, earned_cold, data)
+    await write_salary(base, earned, data)
     await send_calendar_and_message(user_id, data, state)
 
 

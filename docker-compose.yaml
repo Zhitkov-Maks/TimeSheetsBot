@@ -8,3 +8,23 @@ services:
     environment:
       - "MONGO_INITDB_ROOT_USERNAME=${DB_NAME}"
       - "MONGO_INITDB_ROOT_PASSWORD=${DB_PASS}"
+
+  telegram_bot:
+      container_name: SalaryBot
+      build: .
+
+      environment:
+          - BOT_TOKEN=${TOKEN}
+
+      env_file:
+          - .env
+
+      ports:
+          - "443:443"
+
+      volumes:
+        - ./logs:/salary/logs/
+
+      restart: always
+      depends_on:
+          -  mongodb

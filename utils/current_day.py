@@ -4,7 +4,7 @@ from loader import MONTH_DATA
 from crud.settings import get_settings_user_by_id
 
 
-async def earned_per_shift(base: float, user_id: int) -> tuple:
+async def earned_per_shift(base: float, user_id: int) -> float:
     """
     Формируем сумму, заработанную за смену.
 
@@ -15,14 +15,14 @@ async def earned_per_shift(base: float, user_id: int) -> tuple:
     """
     settings: dict = await get_settings_user_by_id(user_id)
     if not settings:
-        return KeyError("Я не нашел ваших настроек по оплате труда.")
+        raise KeyError(
+            "Чтобы добавить запись необходимо указать ваши параметры"
+            " для расчета в настройках."
+            )
 
-    price: float = settings.get("data").get("price_time")
-    price_cold: int = settings.get("data").get("price_cold")
-
+    price: float = settings.get("price_time")
     earned: float = float(price) * base
-    earned_cold: float = base * float(price_cold)
-    return earned, earned_cold
+    return earned
 
 
 async def earned_salary(time: float, user_id: int) -> tuple:
@@ -34,8 +34,8 @@ async def earned_salary(time: float, user_id: int) -> tuple:
     :param user_id: Id пользователя.
     :return: Кортеж с временем, переработкой, заработком.
     """
-    earned, earned_cold = await earned_per_shift(time, user_id)
-    return time, earned, earned_cold
+    earned = await earned_per_shift(time, user_id)
+    return time, earned
 
 
 async def gen_message_for_choice_day(salary, choice_date: str) -> str:
@@ -53,9 +53,8 @@ async def gen_message_for_choice_day(salary, choice_date: str) -> str:
 
     return (
         f"{day_month}. \nВы отработали: "
-        f"{salary.get("data").get("base_hours")} часов.\n"
-        f"Заработали: {salary.get("data").get("earned")}₽.\n"
-        f"Доплата за холод составит: {salary.get("data").get("earned_cold")}₽\n"
+        f"{salary.get("base_hours")} часов.\n"
+        f"Заработали: {salary.get("earned")}₽.\n"
     )
 
 

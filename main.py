@@ -1,12 +1,14 @@
 import asyncio
 from typing import List
-import logging
 
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, InlineKeyboardMarkup, \
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardMarkup,
     InlineKeyboardButton
+)
 
 from config import BOT_TOKEN
 from handlers.bot_answer import decorator_errors
@@ -14,6 +16,8 @@ from handlers.settings import settings_router
 from handlers.month import month_router
 from handlers.current_day import create_router
 from handlers.add_shifts import shifts_router
+from handlers.salary import salary
+from handlers.unknown import unknown_rout
 
 from keyboards.keyboard import menu
 from loader import start_text, GUIDE, main_text
@@ -24,9 +28,8 @@ dp.include_router(settings_router)
 dp.include_router(month_router)
 dp.include_router(create_router)
 dp.include_router(shifts_router)
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+dp.include_router(salary)
+dp.include_router(unknown_rout)
 
 
 @dp.message(CommandStart())
@@ -105,12 +108,8 @@ async def guide_information(message: types.Message, state: FSMContext) -> None:
 async def main():
     """Запуск бота."""
     try:
-        logger.info("Бот запущен")
         await dp.start_polling(bot)
-    except Exception as e:
-        logger.error(f"Ошибка при запуске бота: {e}")
     finally:
-        logger.info("Бот остановлен")
         await bot.session.close()
 
 

@@ -7,7 +7,6 @@ from aiogram.types import CallbackQuery
 from aiogram import Router, Bot
 from aiogram import F
 from aiogram.utils.markdown import hbold
-from sqlalchemy import Sequence
 
 from config import BOT_TOKEN
 from crud.statistics import get_information_for_month, get_info_by_date
@@ -92,7 +91,6 @@ async def show_monthly_data(
     """
     data: Dict[str, str | int] = await state.get_data()
     year, month = data.get("year"), data.get("month")
-    print(year, month)
     message: str = await generate_str(year, month, callback.from_user.id)
     await callback.message.edit_text(
         hbold(message),
