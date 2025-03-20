@@ -30,8 +30,9 @@ async def shifts_calendar(callback: CallbackQuery, state: FSMContext) -> None:
     await callback.message.delete_reply_markup()
     await state.set_state(ShiftsState.hours)
     await callback.message.answer(
-        text="За какой месяц будем проставлять смены?",
-        reply_markup=await prediction_button()
+        text=hbold("Выберите месяц: "),
+        reply_markup=await prediction_button(),
+        parse_mode="HTML"
     )
 
 

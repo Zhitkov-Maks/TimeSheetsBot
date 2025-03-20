@@ -107,7 +107,6 @@ async def prediction_button() -> InlineKeyboardMarkup:
                 callback_data="current",
             ),
             InlineKeyboardButton(text=MENU, callback_data="main"),
-            InlineKeyboardButton(text="📅", callback_data="month_current"),
             InlineKeyboardButton(
                 text=f"{MONTH_DATA[(
                         date(year, month, 1) + timedelta(days=35)).month]}",
