@@ -37,3 +37,16 @@ confirm_menu: InlineKeyboardMarkup = InlineKeyboardMarkup(
 )
 
 menu: InlineKeyboardMarkup = InlineKeyboardMarkup(inline_keyboard=menu_button)
+
+back: InlineKeyboardMarkup = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text="Назад 🔙", callback_data="main"
+            ),
+            InlineKeyboardButton(
+                text="Кал-рь 📅", callback_data="month_current"
+            )
+        ]
+    ]
+)

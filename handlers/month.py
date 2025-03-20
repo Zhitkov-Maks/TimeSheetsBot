@@ -99,7 +99,7 @@ async def show_monthly_data(
     )
 
 
-@month_router.callback_query(F.data.in_(["next", "prev"]))
+@month_router.callback_query(F.data.in_(["next", "prev", "current"]))
 @decorator_errors
 async def next_and_prev_month(
         callback: CallbackQuery,

@@ -108,7 +108,10 @@ async def get_date(data: Dict[str, str], action: str) -> Tuple[int, int]:
 
     if action == "prev":
         find_date: date = parse_date - timedelta(days=30)
-    else:
-        find_date: date = parse_date + timedelta(days=30)
 
+    elif action == "next":
+        find_date: date = parse_date + timedelta(days=30)
+        
+    else:
+        find_date = parse_date
     return find_date.year, find_date.month

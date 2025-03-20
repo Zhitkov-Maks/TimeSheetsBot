@@ -9,10 +9,7 @@ SETTINGS: dict[str, str] = {
     "price_time": "Ставка в час",
     "price_overtime": "Доплата за переработку",
     "price_cold": "Надбавка за холод",
-    "number_hours_per_month": "Норма часов в месяц",
-    "price_line": "Стоимость строки",
-    "count_line": "Норма строк",
-    "price_line_over": "Надбавка к строке выше нормы",
+    "number_hours_per_month": "Норма часов в месяц"
 }
 
 settings_choices: dict[int, dict] = defaultdict(dict)

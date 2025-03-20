@@ -7,7 +7,7 @@ from aiogram.utils.markdown import hbold
 
 from config import BOT_TOKEN
 from handlers.bot_answer import decorator_errors
-from keyboards.keyboard import menu
+from keyboards.keyboard import back
 from utils.salary import get_message_by_expected_salary
 
 salary: Router = Router()
@@ -26,6 +26,6 @@ async def get_expected_salary(
     message: str = await get_message_by_expected_salary(callback.from_user.id)
     await callback.message.edit_text(
         text=hbold(message),
-        reply_markup=menu,
+        reply_markup=back,
         parse_mode="HTML"
     )

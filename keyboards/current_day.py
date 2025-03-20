@@ -17,7 +17,7 @@ async def get_data_choices_day(salary) -> InlineKeyboardMarkup:
                     InlineKeyboardButton(text="➕", callback_data="add"),
                     InlineKeyboardButton(text=MENU, callback_data="main"),
                     InlineKeyboardButton(
-                        text=BACK, callback_data="month_current"
+                        text=BACK, callback_data="current"
                     )
                 ],
             ]
@@ -29,9 +29,8 @@ async def get_data_choices_day(salary) -> InlineKeyboardMarkup:
                     InlineKeyboardButton(text="✘", callback_data="del"),
                     InlineKeyboardButton(text=MENU, callback_data="main"),
                     InlineKeyboardButton(text="✍", callback_data="change"),
-                    InlineKeyboardButton(text="➕", callback_data="bonus"),
                     InlineKeyboardButton(
-                        text=BACK, callback_data="month_current"
+                        text=BACK, callback_data="current"
                     )
                 ],
             ]

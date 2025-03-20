@@ -49,7 +49,7 @@ async def check_data(message: types.Message, state: FSMContext) -> None:
     except ValueError:
         await message.reply(
             "Введенные данные не соответствуют требованиям. \n"
-            "Пример: 6.5*5. Попробуйте еще раз.",
+            "Пример: 6.5. Попробуйте еще раз.",
             reply_markup=cancel_button,
         )
 
