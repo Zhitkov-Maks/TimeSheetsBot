@@ -50,9 +50,9 @@ async def create_message(
 async def create_message_for_period(
         hours: float, data: dict, period: str
 ) -> str:
-    earned: float = data.get("total_earned")
-    earned_hours: float = data.get("total_earned_hours")
-    earned_cold: float = data.get("total_earned_cold")
+    earned: float = data.get("total_earned", 0)
+    earned_hours: float = data.get("total_earned_hours", 0)
+    earned_cold: float = data.get("total_earned_cold", 0)
 
     money_cold: str = ""
     if earned_cold:
@@ -64,8 +64,7 @@ async def create_message_for_period(
 ----------------------------------------
 Отработано часов: {hours}ч.
 Итого заработано: {earned}{money}.
-{money_cold}
-"""
+{money_cold}"""
 
 
 async def generate_str(year: int, month: int, user_id: int) -> str:
