@@ -65,8 +65,7 @@ async def gen_message_for_choice_day(salary: dict, choice_date: str) -> str:
 --------------------------------------------
 Отработано часов: {salary.get("base_hours")}ч.
 Заработано: {salary.get("earned")}{money}.
-{detail_message}
-    """
+{detail_message}"""
 
 
 async def valid_time(time: str) -> float:

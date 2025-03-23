@@ -3,7 +3,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from loader import BACK, MENU
 
 
-async def get_data_choices_day(salary) -> InlineKeyboardMarkup:
+async def get_data_choices_day(salary: dict) -> InlineKeyboardMarkup:
     """
     Генерирует инлайн-клавиатуру на основе наличия данных о зарплате.
 

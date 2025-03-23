@@ -56,15 +56,18 @@ async def create_message_for_period(
 
     money_cold: str = ""
     if earned_cold:
-        money_cold += f"""Из них оплата часов: {earned_hours}{money}.
-Доплата за холод: {earned_hours}{money}."""
+        money_cold += (
+            f"\nИз них оплата часов: {earned_hours}{money}.\n"
+            f"Доплата за холод: {earned_hours}{money}."
+        )
 
-    return f"""
-Период с {period}:
-----------------------------------------
-Отработано часов: {hours}ч.
-Итого заработано: {earned}{money}.
-{money_cold}"""
+    return (
+        f"\nПериод с {period}:\n"
+        f"----------------------------------------\n"
+        f"Отработано часов: {hours}ч.\n"
+        f"Итого заработано: {earned}{money}."
+        f"{money_cold}\n"
+    )
 
 
 async def generate_str(year: int, month: int, user_id: int) -> str:
@@ -89,7 +92,7 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
 
     pay_overtime_str = ""
     if total_hours > hours:
-        pay_overtime_str = f"Доплата за переработку - {
+        pay_overtime_str = f"Доплата за переработку: {
             overtime * (total_hours - hours)}{money}\n"
 
     total_earned = period_one.get("total_earned", 0) + \
@@ -103,12 +106,13 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
         hours_2, period_two, "16-го"
     )
 
-    message += f"""
-За {MONTH_DATA[month]} {year}:
-----------------------------------------
-Отработано часов: {total_hours}ч.
-Заработано денег: {total_earned}{money}.
-"""
+    message += (
+        f"\nЗа {MONTH_DATA[month]} {year}:\n"
+        f"----------------------------------------\n"
+        f"Отработано часов: {total_hours}ч.\n"
+        f"Заработано денег: {total_earned}{money}.\n"
+    )
+    
     message += pay_overtime_str
     return message
 
