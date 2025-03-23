@@ -26,8 +26,8 @@ async def get_salary_for_prev_month(
 
     money_cold = ""
     if earned_cold:
-        money_cold += f"""Из них оплата часов: {earned_hours:,}{money}
-Доплата за холод: {earned_cold:,}"""
+        money_cold += f"""Из них оплата часов: {earned_hours:,}{money}.
+Доплата за холод: {earned_cold:,}{money}."""
         
     return f"""
 Ваша 1-я ЗП:
@@ -35,7 +35,7 @@ async def get_salary_for_prev_month(
 Заработано: {earned:,}{money}.
 Отработано часов: {hours}ч.
 {money_cold}
-    """
+"""
 
 
 async def calculation_of_surcharges(
@@ -75,22 +75,23 @@ async def generate_message_two(
     hours: float = aggregate_data.get("total_base_hours", 0)
     earned_hours: float = aggregate_data.get("total_earned_hours", 0)
     earned_cold: float = aggregate_data.get("total_earned_cold", 0)
+    earned += overtime
 
     money_cold = ""
     if earned_cold:
-        money_cold += f"""Из них оплата часов: {earned_hours:,}{money}
-Доплата за холод: {earned_cold:,}{money}"""
+        money_cold += f"""Из них оплата часов: {earned_hours:,}{money}.
+Доплата за холод: {earned_cold:,}{money}."""
 
-    message: str = f"""
-Ваша 2-я ЗП:
+    message: str = f"""Ваша 2-я ЗП:
 ------------------------------
 Заработано {earned:,}{money}."
 За: {hours} отработанных часов.
 {money_cold}
-    """
-    
+"""
+
     if overtime > 0:
         message += f"Доплата за переработку: {overtime:,}{money}\n"
+
     return message
 
 

@@ -48,21 +48,24 @@ async def create_message(
 
 
 async def create_message_for_period(
-        hours: float, earned: float, period: str, cold
-    ) -> str:
+        hours: float, data: dict, period: str
+) -> str:
+    earned: float = data.get("total_earned")
+    earned_hours: float = data.get("total_earned_hours")
+    earned_cold: float = data.get("total_earned_cold")
 
-    money_cold = ""
-    if cold:
-        money_cold += f"""Из них оплата часов: {earned - (hours * cold)}{money}
-    Доплата за холод: {hours * cold}{money}"""
-        
+    money_cold: str = ""
+    if earned_cold:
+        money_cold += f"""Из них оплата часов: {earned_hours}{money}.
+Доплата за холод: {earned_hours}{money}."""
+
     return f"""
-    Период с {period}:
-    ----------------------------------------
-    Отработано часов: {hours}ч.
-    Итого заработано: {earned}{money}.
-    {money_cold}
-    """
+Период с {period}:
+----------------------------------------
+Отработано часов: {hours}ч.
+Итого заработано: {earned}{money}.
+{money_cold}
+"""
 
 
 async def generate_str(year: int, month: int, user_id: int) -> str:
@@ -73,7 +76,7 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
     :param iterable: Объект запроса к бд.
     :return: Строку для показа пользователю.
     """
-    overtime, cold = await get_settings(user_id)
+    overtime, _ = await get_settings(user_id)
     message: str = f"Данные за {month}/{year}\n\n"
 
     period_one: dict = await aggregate_data(year, month, user_id, period=1)
@@ -94,19 +97,19 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
         period_two.get("total_earned", 0)
     
     message += await create_message_for_period(
-        hours_1, period_one.get("total_earned", 0), "1-15", cold
+        hours_1, period_one, "1-15"
     )
 
     message += await create_message_for_period(
-        hours_2, period_two.get("total_earned", 0), "16-го", cold
+        hours_2, period_two, "16-го"
     )
 
     message += f"""
-    За {MONTH_DATA[month]} {year}:
-    ----------------------------------------
-    Отработано часов: {total_hours}ч.
-    Заработано денег: {total_earned}{money}.
-    """
+За {MONTH_DATA[month]} {year}:
+----------------------------------------
+Отработано часов: {total_hours}ч.
+Заработано денег: {total_earned}{money}.
+"""
     message += pay_overtime_str
     return message
 
