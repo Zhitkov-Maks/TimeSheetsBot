@@ -25,9 +25,11 @@ async def get_settings_user_by_id(user_id: int) -> dict:
     """
     client: MongoDB = MongoDB()
     collection = client.get_collection("users_settings")
-    data = collection.find_one({"user_id": user_id})
+    data: dict | None = collection.find_one({"user_id": user_id})
     client.close()
-    return data
+    if data is not None:
+        return data
+    return {}
 
 
 async def delete_settings(user_id) -> None:

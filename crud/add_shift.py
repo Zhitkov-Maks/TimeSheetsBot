@@ -1,11 +1,11 @@
 from database.db_conf import MongoDB
 
 
-async def write_salary_shift(shifts: list[dict]) -> None:
+async def add_many_shifts(shifts: list[dict]) -> None:
     """
     Групповое добавление смет в базу данных.
 
-    :param shifts: Смены пользователя.
+    :param shifts: Список со словарямя с данными для добавленяи в бд.
     """
     client: MongoDB = MongoDB()
     collection = client.get_collection("salaries")

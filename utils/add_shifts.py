@@ -1,7 +1,7 @@
 from datetime import datetime as dt, timedelta, datetime, date, UTC
 from typing import Tuple, List
 
-from crud.add_shift import write_salary_shift
+from crud.add_shift import add_many_shifts
 from utils.current_day import earned_salary
 
 
@@ -45,7 +45,7 @@ async def create_data_by_add_shifts(
     )
 
     # Запись созданных объектов Salary в базу данных
-    await write_salary_shift(salary_lis)
+    await add_many_shifts(salary_lis)
 
 
 async def create_list_salary(
