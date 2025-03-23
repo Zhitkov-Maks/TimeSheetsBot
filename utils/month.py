@@ -58,7 +58,7 @@ async def create_message_for_period(
     if earned_cold:
         money_cold += (
             f"\nИз них оплата часов: {earned_hours}{money}.\n"
-            f"Доплата за холод: {earned_hours}{money}.\n"
+            f"Доплата за холод: {earned_cold}{money}.\n"
         )
 
     return (
