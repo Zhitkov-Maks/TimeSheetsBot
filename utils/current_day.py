@@ -1,10 +1,10 @@
 """Вспомогательный модуль для подсчета зарплаты за выбранный день."""
 
-from loader import MONTH_DATA
+from loader import MONTH_DATA, money
 from crud.settings import get_settings_user_by_id
 
 
-async def earned_per_shift(base: float, user_id: int) -> float:
+async def earned_per_shift(base: float, user_id: int) -> tuple[float, float]:
     """
     Формируем сумму, заработанную за смену.
 
@@ -20,9 +20,12 @@ async def earned_per_shift(base: float, user_id: int) -> float:
             " для расчета в настройках."
             )
 
-    price: float = settings.get("price_time")
-    earned: float = float(price) * base
-    return earned
+    price: float = settings.get("price_time", 0)
+    cold: float = settings.get("price_cold", 0)
+
+    earned_hours: float = round(base * float(price), 2)
+    earned_cold: float = round(base * float(cold), 2)
+    return earned_hours, earned_cold
 
 
 async def earned_salary(time: float, user_id: int) -> tuple:
@@ -34,11 +37,11 @@ async def earned_salary(time: float, user_id: int) -> tuple:
     :param user_id: Id пользователя.
     :return: Кортеж с временем, переработкой, заработком.
     """
-    earned = await earned_per_shift(time, user_id)
-    return time, earned
+    earned_hours, earned_cold = await earned_per_shift(time, user_id)
+    return time, earned_hours, earned_cold
 
 
-async def gen_message_for_choice_day(salary, choice_date: str) -> str:
+async def gen_message_for_choice_day(salary: dict, choice_date: str) -> str:
     """
     Генерируем простое сообщения по з/п за выбранную смену для пользователя.
 
@@ -50,12 +53,20 @@ async def gen_message_for_choice_day(salary, choice_date: str) -> str:
     day_month: str = f"{MONTH_DATA[month]} {day}"
     if not salary:
         return f"{day_month}, нет данных."
+    
+    detail_message: str = ""
+    if salary.get("earned_cold"):
+        detail_message += f"""Оплата часов: {salary.get("earned_hours")}{money}.
+Доплата за холод: {salary.get("earned_cold")}{money}.
+    """
 
-    return (
-        f"{day_month}. \nВы отработали: "
-        f"{salary.get("base_hours")} часов.\n"
-        f"Заработали: {salary.get("earned")}₽.\n"
-    )
+    return f"""
+Информация за {MONTH_DATA[month]} {day}.
+--------------------------------------------
+Отработано часов: {salary.get("base_hours")}ч.
+Заработано: {salary.get("earned")}{money}.
+{detail_message}
+    """
 
 
 async def valid_time(time: str) -> float:

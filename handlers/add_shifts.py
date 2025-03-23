@@ -1,5 +1,5 @@
 from datetime import date
-from typing import List, Dict
+from typing import Dict
 
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
@@ -27,9 +27,8 @@ async def shifts_calendar(callback: CallbackQuery, state: FSMContext) -> None:
     Обработчик команды для групповой отметки смен. Отправляет пользователю
     инлайн клавиатуру для выбора месяца.
     """
-    await callback.message.delete_reply_markup()
     await state.set_state(ShiftsState.hours)
-    await callback.message.answer(
+    await callback.message.edit_text(
         text=hbold("Выберите месяц: "),
         reply_markup=await prediction_button(),
         parse_mode="HTML"
@@ -38,7 +37,7 @@ async def shifts_calendar(callback: CallbackQuery, state: FSMContext) -> None:
 
 @shifts_router.callback_query(
     ShiftsState.hours,
-    F.data.in_(["current", "next_month"]))
+    F.data.in_(["cur", "next_month"]))
 @decorator_errors
 async def input_selection_hours(
         callback: CallbackQuery,
@@ -48,7 +47,6 @@ async def input_selection_hours(
     Обработчик обрабатывает выбранный месяц. И запрашивает у пользователя по
     сколько часов проставить смены.
     """
-    await callback.message.delete_reply_markup()
     year, month = await get_date(callback.data)
     current_date: date = date(year, month, 1)
 
@@ -57,7 +55,7 @@ async def input_selection_hours(
     )
 
     await state.set_state(ShiftsState.month)
-    await callback.message.answer(
+    await callback.message.edit_text(
         text=f"Отлично! Вы выбрали {hbold(MONTH_DATA[month])}. "
              f"\nВведите по сколько часов вам проставить смены?",
         reply_markup=cancel_button,

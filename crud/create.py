@@ -3,7 +3,9 @@ from datetime import datetime
 from database.db_conf import MongoDB
 
 
-async def write_salary(base: float, earned: float, data_: dict) -> None:
+async def write_salary(
+        base: float, earned_hours, earned_cold: float, data_: dict
+) -> None:
     """
     Функция для сохранения и обновления настроек пользователя.
 
@@ -13,11 +15,14 @@ async def write_salary(base: float, earned: float, data_: dict) -> None:
     period: int = 1 if int(data_["date"][-2:]) <= 15 else 2
     parse_date = datetime.strptime(data_["date"], "%Y-%m-%d")
     user_id = data_["user_id"]
+    earned = earned_hours + earned_cold
 
     data: dict = {
         "base_hours": float(base),
         "earned": float(earned),
-        "period": period
+        "earned_hours": earned_hours,
+        "earned_cold": earned_cold,
+        "period": period, 
     }
 
     collection = client.get_collection("salaries")

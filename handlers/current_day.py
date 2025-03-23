@@ -1,7 +1,7 @@
 from typing import Dict
 
 from aiogram import Router, Bot
-from aiogram import types, F
+from aiogram import F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from aiogram.utils.markdown import hbold
@@ -32,7 +32,7 @@ async def on_date_today(callback: CallbackQuery, state: FSMContext) -> None:
 
 @create_router.message(CreateState.check_data)
 @decorator_errors
-async def check_data(message: types.Message, state: FSMContext) -> None:
+async def check_data(message: Message, state: FSMContext) -> None:
     """
     Сохранение и проверка введенного отработанного времени. Если проверка
     проходит, то отправляем на расчет заработка и добавление записи в бд.

@@ -104,7 +104,7 @@ async def prediction_button() -> InlineKeyboardMarkup:
         [
             InlineKeyboardButton(
                 text=f"{MONTH_DATA[dt.now().month]}",
-                callback_data="current",
+                callback_data="cur",
             ),
             InlineKeyboardButton(text=MENU, callback_data="main"),
             InlineKeyboardButton(

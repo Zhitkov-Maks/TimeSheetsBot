@@ -114,7 +114,9 @@ async def aggregate_data(
             "$group": {
                 "_id": None,
                 "total_base_hours": {"$sum": "$base_hours"},
-                "total_earned": {"$sum": "$earned"}
+                "total_earned": {"$sum": "$earned"},
+                "total_earned_hours": {"$sum": "$earned_hours"},
+                "total_earned_cold": {"$sum": "$earned_cold"},
             }
         }
     ]

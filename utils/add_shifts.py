@@ -1,4 +1,4 @@
-from datetime import datetime as dt, timedelta, datetime, date
+from datetime import datetime as dt, timedelta, datetime, date, UTC
 from typing import Tuple, List
 
 from crud.add_shift import write_salary_shift
@@ -12,8 +12,7 @@ async def get_date(action: str) -> Tuple[int, int]:
     :param action: Строка, определяющая действие.
     :return: Кортеж из двух целых чисел: (год, месяц).
     """
-    date_current: dt = dt.now()
-    year, month = date_current.year, date_current.month
+    year, month = dt.now().year, dt.now().month
 
     if action == "next_month":
         next_date: date = date(year, month, 1) + timedelta(days=35)
@@ -38,11 +37,11 @@ async def create_data_by_add_shifts(
     :return: None.
     """
     # Вычисление базовой зарплаты и общей заработанной суммы.
-    base, earned = await earned_salary(time, user_id)
+    base, earned_hours, earned_cold = await earned_salary(time, user_id)
 
     # Создание списка объектов Salary на основе вычисленных данных и дат
     salary_lis = await create_list_salary(
-        user_id, base, earned, list_dates
+        user_id, base, earned_hours, earned_cold, list_dates
     )
 
     # Запись созданных объектов Salary в базу данных
@@ -52,7 +51,8 @@ async def create_data_by_add_shifts(
 async def create_list_salary(
         user_id: int,
         base: float,
-        earned: float,
+        earned_hours: float,
+        earned_cold: float,
         list_dates: List[str]
 ) -> list[dict]:
     """
@@ -67,12 +67,15 @@ async def create_list_salary(
 
         # Преобразование строки даты в объект datetime
         parse_date: date = datetime.strptime(d, "%Y-%m-%d")
+        earned: float = earned_hours + earned_cold
 
         data: dict = {
             "user_id": user_id,
             "date": parse_date,
             "base_hours": float(base),
             "earned": float(earned),
+            "earned_hours": earned_hours,
+            "earned_cold": earned_cold,
             "period": period,
         }
         salary_list.append(data)

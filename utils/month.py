@@ -9,7 +9,7 @@ from states.month import MonthState
 from crud.statistics import get_information_for_month, aggregate_data
 from crud.settings import get_settings_user_by_id
 
-from loader import money
+from loader import money, MONTH_DATA
 
 
 async def get_settings(user_id: int) -> float:
@@ -19,7 +19,6 @@ async def get_settings(user_id: int) -> float:
     """
     settings = await get_settings_user_by_id(user_id)
     return (
-        float(settings.get("number_hours_per_month", 0)),
         float(settings.get("price_overtime", 0)),
         float(settings.get("price_cold", 0))
     )
@@ -48,6 +47,24 @@ async def create_message(
     return await create_calendar(result, year, month)
 
 
+async def create_message_for_period(
+        hours: float, earned: float, period: str, cold
+    ) -> str:
+
+    money_cold = ""
+    if cold:
+        money_cold += f"""Из них оплата часов: {earned - (hours * cold)}{money}
+    Доплата за холод: {hours * cold}{money}"""
+        
+    return f"""
+    Период с {period}:
+    ----------------------------------------
+    Отработано часов: {hours}ч.
+    Итого заработано: {earned}{money}.
+    {money_cold}
+    """
+
+
 async def generate_str(year: int, month: int, user_id: int) -> str:
     """
     Генерация сообщения с подробной информацией за месяц
@@ -56,42 +73,41 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
     :param iterable: Объект запроса к бд.
     :return: Строку для показа пользователю.
     """
-    hours_min, overtime, cold = await get_settings(user_id)
+    overtime, cold = await get_settings(user_id)
     message: str = f"Данные за {month}/{year}\n\n"
+
     period_one: dict = await aggregate_data(year, month, user_id, period=1)
     period_two: dict = await aggregate_data(year, month, user_id, period=2)
+    hours = 190 if month != 2 else 180 # Норма часов в месяц.
 
-    total_hours = period_one.get("total_base_hours", 0) + \
-        period_two.get("total_base_hours", 0)
+    hours_1 = period_one.get("total_base_hours", 0)
+    hours_2 = period_two.get("total_base_hours", 0)
+
+    total_hours =  hours_1 + hours_2
 
     pay_overtime_str = ""
-    if hours_min > 0 and total_hours > hours_min:
+    if total_hours > hours:
         pay_overtime_str = f"Доплата за переработку - {
-            overtime * (total_hours - hours_min)}{money}\n"
-
-    pay_cold_str = ""
-    if cold > 0:
-        pay_cold_str = f"Доплата за холод - {total_hours * cold}{money}\n"
+            overtime * (total_hours - hours)}{money}\n"
 
     total_earned = period_one.get("total_earned", 0) + \
         period_two.get("total_earned", 0)
+    
+    message += await create_message_for_period(
+        hours_1, period_one.get("total_earned", 0), "1-15", cold
+    )
 
-    message += f"Период с 1-15: \nOтработано часов - {
-            period_one.get("total_base_hours", 0)
-        }ч\n" + f"Заработано денег - {
-                period_one.get("total_earned", 0)}{money}\n\n"
+    message += await create_message_for_period(
+        hours_2, period_two.get("total_earned", 0), "16-го", cold
+    )
 
-    message += f"Период с 16-31: \nOтработано часов - {
-        period_two.get("total_base_hours", 0)
-        }ч\n" + f"Заработано денег - {
-            period_two.get("total_earned", 0)}{money}\n\n"
-
-    message += f"За весь месяц: \nOтработано часов - {total_hours}ч\n" \
-               f"Заработано денег - {total_earned}{money}\n"
-
+    message += f"""
+    За {MONTH_DATA[month]} {year}:
+    ----------------------------------------
+    Отработано часов: {total_hours}ч.
+    Заработано денег: {total_earned}{money}.
+    """
     message += pay_overtime_str
-    message += pay_cold_str
-
     return message
 
 

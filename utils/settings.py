@@ -9,8 +9,7 @@ number_pattern = r'^-?\d+(\.\d+)?$'
 actions_dict: dict[str, str] = {
     "price_time": "Введите вышу почасовую оплату труда.",
     "price_overtime": "Ввдедите доплату за переработку.",
-    "price_line": "Введите стоимость оплаты строки.",
-    "number_hours_per_month": "Норма часов за месяц"
+    "price_cold": "Введите доплату за холод."
 }
 
 

@@ -8,8 +8,7 @@ from loader import MENU
 SETTINGS: dict[str, str] = {
     "price_time": "Ставка в час",
     "price_overtime": "Доплата за переработку",
-    "price_cold": "Надбавка за холод",
-    "number_hours_per_month": "Норма часов в месяц"
+    "price_cold": "Надбавка за холод"
 }
 
 settings_choices: dict[int, dict] = defaultdict(dict)

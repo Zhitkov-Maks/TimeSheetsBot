@@ -123,15 +123,15 @@ async def processing_data(
     :param data: Словарь, содержащий дополнительные данные.
     :return: None
     """
-    base, earned = await earned_salary(time, user_id)
+    base, earned_hours, earned_cold = await earned_salary(time, user_id)
     callback: str = data.get("callback")
     await bot.answer_callback_query(
         callback_query_id=callback,
-        text=success_text.format(data["date"], earned),
+        text=success_text.format(data["date"], earned_hours + earned_cold),
         show_alert=True
     )
 
-    await write_salary(base, earned, data)
+    await write_salary(base, earned_hours, earned_cold, data)
     await send_calendar_and_message(user_id, data, state)
 
 
