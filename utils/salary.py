@@ -27,15 +27,15 @@ async def get_salary_for_prev_month(
     money_cold = ""
     if earned_cold:
         money_cold += f"""Из них оплата часов: {earned_hours:,}{money}.
-Доплата за холод: {earned_cold:,}{money}."""
+Доплата за холод: {earned_cold:,}{money}.
+"""
         
     return f"""
 Ваша 1-я ЗП:
 ------------------------------
 Заработано: {earned:,}{money}.
 Отработано часов: {hours}ч.
-{money_cold}
-"""
+{money_cold}"""
 
 
 async def calculation_of_surcharges(
@@ -82,7 +82,8 @@ async def generate_message_two(
         money_cold += f"""Из них оплата часов: {earned_hours:,}{money}.
 Доплата за холод: {earned_cold:,}{money}."""
 
-    message: str = f"""Ваша 2-я ЗП:
+    message: str = f"""
+Ваша 2-я ЗП:
 ------------------------------
 Заработано {earned:,}{money}."
 За: {hours} отработанных часов.
