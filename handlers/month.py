@@ -12,7 +12,7 @@ from config import BOT_TOKEN
 from crud.statistics import get_information_for_month, get_info_by_date
 from handlers.bot_answer import decorator_errors
 from keyboards.current_day import get_data_choices_day
-from keyboards.month import create_calendar
+from keyboards.month import create_calendar, get_month_menu
 from keyboards.keyboard import menu
 from loader import date_pattern
 from states.month import MonthState
@@ -94,7 +94,7 @@ async def show_monthly_data(
     message: str = await generate_str(year, month, callback.from_user.id)
     await callback.message.edit_text(
         hbold(message),
-        reply_markup=menu,
+        reply_markup=await get_month_menu(),
         parse_mode="HTML"
     )
 
