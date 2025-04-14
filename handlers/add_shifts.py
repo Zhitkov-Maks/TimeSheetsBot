@@ -133,6 +133,7 @@ async def finish_add_shifts(callback: CallbackQuery, state: FSMContext) -> None:
         await callback.answer(
             "Записи были успешно добавлены!", show_alert=True
         )
+        days_choices[user_id].clear()
         await send_calendar_and_message(user_id, data, state)
 
     else:
