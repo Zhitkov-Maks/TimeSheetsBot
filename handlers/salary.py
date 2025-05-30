@@ -1,5 +1,3 @@
-from typing import List, Tuple
-
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
@@ -20,7 +18,7 @@ async def get_expected_salary(
     callback: CallbackQuery, state: FSMContext
 ) -> None:
     """
-    Обработчик команды получения ожидаемых 
+    Обработчик команды получения ожидаемых
     денежных поступлений в текущем месяце.
     """
     message: str = await get_message_by_expected_salary(callback.from_user.id)

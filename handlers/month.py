@@ -111,7 +111,6 @@ async def next_and_prev_month(
     """
     data: Dict[str, str | int] = await state.get_data()
     year, month = await get_date(data, callback.data)
-
     result = await get_information_for_month(
         callback.from_user.id, year, month
     )

@@ -16,11 +16,12 @@ async def get_information_for_month(
     :param year: Переданный год.
     :param month: Переданный месяц.
     """
+    
     try:
         client: MongoDB = MongoDB()
         collection = client.get_collection("salaries")
         start_date = datetime(year, month, 1)
-        end_date = datetime(year, month + 1, 1)
+        end_date = datetime(year, (month % 12) + 1, 1)
         cursor = collection.find(
             {
                 "user_id": user_id,
@@ -54,7 +55,7 @@ async def aggregate_data_worked_hours(
     user_id: int
 ) -> dict:
     """
-    Функция для получения отработанных часов за месяц. Эти данные 
+    Функция для получения отработанных часов за месяц. Эти данные
     нужны при вычислении ожидаемой зп, для вычисления разного рода доплат.
 
     :param user_id: Идентификатор пользователя.
@@ -89,7 +90,7 @@ async def aggregate_data(
     year: int, month: int, user_id: int, period: int,
 ) -> dict:
     """
-    Функция для агрегации данных за месяц и период. Вычисляется сумма 
+    Функция для агрегации данных за месяц и период. Вычисляется сумма
     отработанных часов за период и сумма оплаты за часы.
 
     :param user_id: Идентификатор пользователя.

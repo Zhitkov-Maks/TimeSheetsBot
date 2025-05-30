@@ -2,6 +2,7 @@ from functools import wraps
 from logging.handlers import RotatingFileHandler
 from typing import Dict, Callable, ParamSpec, TypeVar
 import logging
+import os
 
 from aiogram import Bot
 from aiogram.exceptions import TelegramNetworkError, TelegramBadRequest
