@@ -133,8 +133,7 @@ async def get_other_sum(
         result = collection.aggregate(pipeline).to_list()
 
         return result[0] if result else {}
-    except Exception as e:
-        logger.error(f"Error in get_other_sum: {e}")
+    except Exception:
         return {}
     finally:
         if client:

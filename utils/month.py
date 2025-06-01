@@ -105,9 +105,9 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
     pay_overtime_str = ""
 
     total_earned = period_one.get("total_earned", 0) + \
-                   period_two.get("total_earned", 0) + \
-                   sum_other_income.get("total_sum", 0) -\
-                   sum_expences.get("total_sum", 0)
+        period_two.get("total_earned", 0) + \
+        sum_other_income.get("total_sum", 0) -\
+        sum_expences.get("total_sum", 0)
 
     if total_hours > hours:
         total_earned += overtime * (total_hours - hours)
@@ -127,7 +127,7 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
         f"Отработано часов: {total_hours}ч.\n"
         f"Заработано денег: {total_earned}{money}.\n"
     )
-    
+
     message += pay_overtime_str
     message += f"Прочие доходы: {sum_other_income.get("total_sum", 0)}{money}\n"
     message += f"Списание под зп: {sum_expences.get("total_sum", 0)}{money}\n"
@@ -150,7 +150,7 @@ async def get_date(data: Dict[str, str], action: str) -> Tuple[int, int]:
 
     elif action == "next":
         find_date: date = parse_date + timedelta(days=30)
-        
+
     else:
         find_date = parse_date
     return find_date.year, find_date.month
