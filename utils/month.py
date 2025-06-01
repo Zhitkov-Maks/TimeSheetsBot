@@ -1,12 +1,17 @@
 from datetime import date, timedelta
 from typing import Tuple, Dict
+import asyncio
 
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup
 
 from keyboards.month import create_calendar
 from states.month import MonthState
-from crud.statistics import get_information_for_month, aggregate_data
+from crud.statistics import (
+    get_information_for_month,
+    aggregate_data,
+    get_other_sum
+)
 from crud.settings import get_settings_user_by_id
 
 from loader import money, MONTH_DATA
@@ -81,8 +86,15 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
     overtime, _ = await get_settings(user_id)
     message: str = f"Данные за {month}/{year}\n\n"
 
-    period_one: dict = await aggregate_data(year, month, user_id, period=1)
-    period_two: dict = await aggregate_data(year, month, user_id, period=2)
+    period_one, period_two, sum_other_income, sum_expences = (
+        await asyncio.gather(
+            aggregate_data(year, month, user_id, period=1),
+            aggregate_data(year, month, user_id, period=2),
+            get_other_sum(year, month, user_id, "income"),
+            get_other_sum(year, month, user_id, "expence"),
+            return_exceptions=False
+        )
+    )
     hours = 190 if month != 2 else 180 # Норма часов в месяц.
 
     hours_1 = period_one.get("total_base_hours", 0)
@@ -92,16 +104,21 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
 
     pay_overtime_str = ""
     if total_hours > hours:
-        pay_overtime_str = f"Доплата за переработку: {
-            overtime * (total_hours - hours)}{money}\n"
+        pay_overtime_str = "Доплата за переработку:" + \
+            f"{overtime * (total_hours - hours)}{money}\n"
 
     total_earned = period_one.get("total_earned", 0) + \
         period_two.get("total_earned", 0)
-    
+
+    if total_hours > hours:
+        total_earned += overtime * (total_hours - hours)
+
+    total_earned += sum_other_income.get("total_sum", 0) - \
+        sum_expences.get("total_sum", 0)
+
     message += await create_message_for_period(
         hours_1, period_one, "1-15"
     )
-
     message += await create_message_for_period(
         hours_2, period_two, "16-го"
     )
@@ -114,6 +131,8 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
     )
     
     message += pay_overtime_str
+    message += f"Прочие доходы: {sum_other_income.get("total_sum", 0)}{money}\n"
+    message += f"Списание под зп: {sum_expences.get("total_sum", 0)}{money}\n"
     return message
 
 

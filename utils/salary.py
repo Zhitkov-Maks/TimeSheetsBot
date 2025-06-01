@@ -7,7 +7,8 @@ from loader import money, MONTH_DATA
 
 async def get_salary_for_prev_month(year: int, month: int, user_id: int) -> str:
     """
-    Получение первой зарплаты, которая оплачивается как количество часов за второй период предыдущего месяца.
+    Получение первой зарплаты, которая оплачивается как количество часов
+    за второй период предыдущего месяца.
 
     :param year: Год для агрегации.
     :param month: Месяц для агрегации.
@@ -124,6 +125,7 @@ async def get_message_by_expected_salary(user_id: int) -> str:
     current_month_one_period = await aggregate_data(
         c_year, c_month, user_id, period=1
     )
+
     money_overtime: float = await calculation_of_surcharges(
         p_year, p_month, user_id
     )

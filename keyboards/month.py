@@ -80,8 +80,7 @@ async def generate_base_calendar(
                 text = f"[ {numbers_list[day]} ]"
 
             elif create_date in dates:
-                text = f"{numbers_list[day]} {
-                    UNICODE_DATA[dates[create_date]]}"
+                text = f"{numbers_list[day]} {UNICODE_DATA[dates[create_date]]}"
 
             else:
                 text = f"{numbers_list[day]} ˟"
@@ -194,6 +193,18 @@ async def get_month_menu() -> InlineKeyboardMarkup:
                 InlineKeyboardButton(
                     text=MENU,
                     callback_data="main"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="Добавить прочий доход",
+                    callback_data="other_income"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="Списание в счет ЗП",
+                    callback_data="expences"
                 )
             ]
         ]

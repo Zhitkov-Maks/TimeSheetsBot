@@ -126,3 +126,53 @@ async def aggregate_data(
     if len(result) != 0:
         return result[0]
     return {}
+
+
+async def get_other_sum(
+    year: int,
+    month: int,
+    user_id: int,
+    type_operation: str
+) -> dict:
+    """
+    Функция для агрегации данных прочих доходов/расходов за месяц.
+
+    :param user_id: Идентификатор пользователя
+    :param year: Год для выборки
+    :param month: Месяц для выборки
+    :param type_operation: Тип операции ('income' для доходов, иначе - расходы)
+    :return: Словарь с ключом 'total_sum' и суммой, либо пустой словарь
+    """
+    try:
+        client = MongoDB()
+        collection = (
+            client.get_collection("other_income")
+            if type_operation == "income"
+            else client.get_collection("expences")
+        )
+
+        pipeline = [
+            {
+                "$match": {
+                    "user_id": user_id,
+                    "year": year,
+                    "month": month
+                }
+            },
+            {
+            "$group": {
+                "_id": None,
+                "total_sum": {"$sum": "$amount"}
+                }
+            }
+        ]
+
+        result = collection.aggregate(pipeline).to_list()
+
+        return result[0] if result else {}
+    except Exception as e:
+        logger.error(f"Error in get_other_sum: {e}")
+        return {}
+    finally:
+        if client:
+            client.close()

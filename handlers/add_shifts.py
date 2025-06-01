@@ -28,6 +28,9 @@ async def shifts_calendar(callback: CallbackQuery, state: FSMContext) -> None:
     инлайн клавиатуру для выбора месяца.
     """
     await state.set_state(ShiftsState.hours)
+    user_exists = days_choices.get(callback.from_user.dict)
+    if user_exists:
+        days_choices.get(callback.from_user.id).clear()
     await callback.message.edit_text(
         text=hbold("Выберите месяц: "),
         reply_markup=await prediction_button(),

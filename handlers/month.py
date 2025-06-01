@@ -87,7 +87,7 @@ async def show_monthly_data(
 ) -> None:
     """
     Обработчик кнопки при нажатии на месяц в календаре. Показывает общую
-    информацию за выбранный месяц в виде всплывающего уведомления.
+    информацию за выбранный месяц в виде сообщения.
     """
     data: Dict[str, str | int] = await state.get_data()
     year, month = data.get("year"), data.get("month")

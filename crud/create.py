@@ -5,6 +5,45 @@ import pymongo
 from database.db_conf import MongoDB
 
 
+async def write_other(data: dict, user: int) -> bool:
+    """
+    Добавляет новую запись о доходе (без обновления существующих).
+
+    :param data: Данные для записи
+    :param user: ID пользователя
+    :return: True при успехе, False при ошибке
+    """
+    type_operation = data.get("type_")
+    required = {"amount", "description", "month", "year"}
+    if not all(field in data for field in required):
+        return False
+
+    client = MongoDB()
+    try:
+        if type_operation == "income":
+            collection = client.get_collection("other_income")
+        else:
+            collection = client.get_collection("expences")
+
+        # Генерируем уникальный ID для каждой записи
+        record = {
+            "user_id": user,
+            "amount": float(data["amount"]),
+            "description": data["description"],
+            "month": int(data["month"]),
+            "year": int(data["year"]),
+            "created_at": datetime.utcnow()
+        }
+
+        result = collection.insert_one(record)
+        return result.acknowledged
+
+    except Exception as e:
+        return False
+    finally:
+        client.close()
+
+
 async def write_salary(
         base: float, earned_hours, earned_cold: float, data_: dict
 ) -> None:
@@ -44,8 +83,6 @@ async def write_salary(
             upsert=True
         )
     except pymongo.errors.DuplicateKeyError:
-        # Обработка случая, когда запись уже существует
-        # (хотя с upsert=True это маловероятно)
         pass
     finally:
         client.close()
