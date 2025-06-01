@@ -49,43 +49,6 @@ async def get_info_by_date(user_id: int, date: str) -> dict:
     return data
 
 
-async def aggregate_data_worked_hours(
-    year: int,
-    month: int,
-    user_id: int
-) -> dict:
-    """
-    Функция для получения отработанных часов за месяц. Эти данные
-    нужны при вычислении ожидаемой зп, для вычисления разного рода доплат.
-
-    :param user_id: Идентификатор пользователя.
-    :param year: Переданный год.
-    :param month: Переданный месяц.
-    """
-    client: MongoDB = MongoDB()
-    collection = client.get_collection("salaries")
-    start_date = datetime(year, month, 1)
-    end_date = datetime(year, month + 1, 1)
-    pipeline = [
-        {
-            "$match": {
-                "user_id": user_id,
-                "date": {"$gte": start_date, "$lt": end_date},
-            }
-        },
-        {
-            "$group": {
-                "_id": None,
-                "total_base_hours": {"$sum": "$base_hours"}
-            }
-        }
-    ]
-    result = collection.aggregate(pipeline).to_list()
-    if len(result) != 0:
-        return result[0]
-    return {}
-
-
 async def aggregate_data(
     year: int, month: int, user_id: int, period: int,
 ) -> dict:

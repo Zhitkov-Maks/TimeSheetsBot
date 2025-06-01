@@ -6,29 +6,11 @@ from aiogram.utils.markdown import hbold
 from config import BOT_TOKEN
 from handlers.bot_answer import decorator_errors
 from keyboards.keyboard import back, menu
-from utils.salary import get_message_by_expected_salary
-from states.salary import SalaryState
 from crud.create import write_other
+from states.salary import SalaryState
 
 salary: Router = Router()
 bot = Bot(token=BOT_TOKEN)
-
-
-@salary.callback_query(F.data == "expected_salary")
-@decorator_errors
-async def get_expected_salary(
-    callback: CallbackQuery, state: FSMContext
-) -> None:
-    """
-    Обработчик команды получения ожидаемых
-    денежных поступлений в текущем месяце.
-    """
-    message: str = await get_message_by_expected_salary(callback.from_user.id)
-    await callback.message.edit_text(
-        text=hbold(message),
-        reply_markup=back,
-        parse_mode="HTML"
-    )
 
 
 @salary.callback_query(F.data.in_(["other_income", "expences"]))

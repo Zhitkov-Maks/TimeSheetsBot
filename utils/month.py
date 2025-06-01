@@ -103,18 +103,16 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
     total_hours =  hours_1 + hours_2
 
     pay_overtime_str = ""
-    if total_hours > hours:
-        pay_overtime_str = "Доплата за переработку:" + \
-            f"{overtime * (total_hours - hours)}{money}\n"
 
     total_earned = period_one.get("total_earned", 0) + \
-        period_two.get("total_earned", 0)
+                   period_two.get("total_earned", 0) + \
+                   sum_other_income.get("total_sum", 0) -\
+                   sum_expences.get("total_sum", 0)
 
     if total_hours > hours:
         total_earned += overtime * (total_hours - hours)
-
-    total_earned += sum_other_income.get("total_sum", 0) - \
-        sum_expences.get("total_sum", 0)
+        pay_overtime_str = "Доплата за переработку:" + \
+            f"{overtime * (total_hours - hours)}{money}\n"
 
     message += await create_message_for_period(
         hours_1, period_one, "1-15"
