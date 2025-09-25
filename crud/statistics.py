@@ -140,6 +140,8 @@ async def get_other_sum(
     """
     try:
         client = MongoDB()
+        start_date = datetime(year, month, 1)
+        end_date = datetime(year, (month % 12) + 1, 1)
         collection = (
             client.get_collection("other_income")
             if type_operation == "income"
@@ -150,14 +152,13 @@ async def get_other_sum(
             {
                 "$match": {
                     "user_id": user_id,
-                    "year": year,
-                    "month": month
+                    "created_at": {"$gte": start_date, "$lt": end_date},
                 }
             },
             {
-            "$group": {
-                "_id": None,
-                "total_sum": {"$sum": "$amount"}
+                "$group": {
+                    "_id": None,
+                    "total_sum": {"$sum": "$amount"}
                 }
             }
         ]

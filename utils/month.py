@@ -95,12 +95,12 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
             return_exceptions=False
         )
     )
-    hours = 190 if month != 2 else 180 # Норма часов в месяц.
+    hours = 190 if month != 2 else 180  # Норма часов в месяц.
 
     hours_1 = period_one.get("total_base_hours", 0)
     hours_2 = period_two.get("total_base_hours", 0)
 
-    total_hours =  hours_1 + hours_2
+    total_hours = hours_1 + hours_2
 
     pay_overtime_str = ""
 

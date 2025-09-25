@@ -63,11 +63,10 @@ async def write_salary(
         "earned": float(earned),
         "earned_hours": earned_hours,
         "earned_cold": earned_cold,
-        "period": period, 
+        "period": period,
     }
 
     collection = client.get_collection("salaries")
-
 
     # Создаем уникальный индекс (если его еще нет)
     collection.create_index(
