@@ -1,7 +1,7 @@
 import asyncio
 from typing import List
 
-from aiogram import Bot, Dispatcher, types, F
+from aiogram import Dispatcher, types, F
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
@@ -10,7 +10,7 @@ from aiogram.types import (
     InlineKeyboardButton
 )
 
-from config import BOT_TOKEN
+from config import bot
 from handlers.bot_answer import decorator_errors
 from handlers.settings import settings_router
 from handlers.month import month_router
@@ -22,8 +22,8 @@ from handlers.unknown import unknown_rout
 from keyboards.keyboard import menu
 from loader import start_text, GUIDE, main_text
 
-bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher()
+
+dp = Dispatcher(bot=bot)
 dp.include_router(settings_router)
 dp.include_router(month_router)
 dp.include_router(create_router)

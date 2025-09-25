@@ -191,6 +191,14 @@ async def get_month_menu() -> InlineKeyboardMarkup:
                     callback_data="current"
                 ),
                 InlineKeyboardButton(
+                    text="📈",
+                    callback_data="list_incomes"
+                ),
+                InlineKeyboardButton(
+                    text="📉",
+                    callback_data="list_expenses"
+                ),
+                InlineKeyboardButton(
                     text=MENU,
                     callback_data="main"
                 )

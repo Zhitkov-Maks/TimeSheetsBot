@@ -2,6 +2,8 @@ from typing import List
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+from loader import BACK
+
 
 cancel: List[List[InlineKeyboardButton]] = [
     [InlineKeyboardButton(text="Отмена", callback_data="main")]
@@ -44,3 +46,13 @@ back: InlineKeyboardMarkup = InlineKeyboardMarkup(
         ]
     ]
 )
+
+
+async def back_to_information() -> InlineKeyboardMarkup:
+    buttons: list[list[InlineKeyboardButton]] = [
+        [
+            InlineKeyboardButton(text=BACK, callback_data="calendar"),
+            InlineKeyboardButton(text="Меню", callback_data="main")
+        ]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)

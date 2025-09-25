@@ -1,16 +1,41 @@
-from aiogram import Router, F, Bot
+from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from aiogram.utils.markdown import hbold
 
-from config import BOT_TOKEN
 from handlers.bot_answer import decorator_errors
-from keyboards.keyboard import back, menu
+from keyboards.keyboard import back, menu, back_to_information
 from crud.create import write_other
+from crud.statistics import get_other_incomes_expenses
 from states.salary import SalaryState
+from utils.month import get_date
+from utils.common import parse_income_expense
 
 salary: Router = Router()
-bot = Bot(token=BOT_TOKEN)
+
+
+@salary.callback_query(F.data.in_(["list_incomes", "list_expenses"]))
+@decorator_errors
+async def get_list_transaction(
+    callback: CallbackQuery,
+    state: FSMContext
+) -> None:
+    """Обработчик просмотра прочих доходов и списаний(Штрафы и т.д)."""
+    income = False if callback.data == "list_expenses" else True
+    data = await state.get_data()
+    year, month = await get_date(data, data)
+    result = await get_other_incomes_expenses(
+        callback.from_user.id,
+        year,
+        month,
+        income
+    )
+    message: str = await parse_income_expense(result, income)
+    await callback.message.edit_text(
+        text=hbold(message),
+        reply_markup=await back_to_information(),
+        parse_mode="HTML"
+    )
 
 
 @salary.callback_query(F.data.in_(["other_income", "expences"]))

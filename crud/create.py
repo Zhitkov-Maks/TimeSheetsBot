@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 
 import pymongo
 
@@ -32,13 +32,13 @@ async def write_other(data: dict, user: int) -> bool:
             "description": data["description"],
             "month": int(data["month"]),
             "year": int(data["year"]),
-            "created_at": datetime.utcnow()
+            "created_at": datetime.now(UTC)
         }
 
         result = collection.insert_one(record)
         return result.acknowledged
 
-    except Exception as e:
+    except Exception:
         return False
     finally:
         client.close()

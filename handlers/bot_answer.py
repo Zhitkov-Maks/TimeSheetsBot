@@ -2,20 +2,16 @@ from functools import wraps
 from logging.handlers import RotatingFileHandler
 from typing import Dict, Callable, ParamSpec, TypeVar
 import logging
-import os
 
-from aiogram import Bot
 from aiogram.exceptions import TelegramNetworkError, TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup
 
-from config import BOT_TOKEN
 from loader import success_text
 from utils.current_day import earned_salary
 from utils.month import create_message
 from crud.create import write_salary
-
-bot = Bot(token=BOT_TOKEN)
+from config import bot
 
 
 logger = logging.getLogger(__name__)

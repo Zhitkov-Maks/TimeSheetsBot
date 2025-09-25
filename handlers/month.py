@@ -4,23 +4,19 @@ from typing import Dict
 
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
-from aiogram import Router, Bot
+from aiogram import Router
 from aiogram import F
 from aiogram.utils.markdown import hbold
-
-from config import BOT_TOKEN
 from crud.statistics import get_information_for_month, get_info_by_date
 from handlers.bot_answer import decorator_errors
 from keyboards.current_day import get_data_choices_day
 from keyboards.month import create_calendar, get_month_menu
-from keyboards.keyboard import menu
 from loader import date_pattern
 from states.month import MonthState
 from utils.current_day import gen_message_for_choice_day
 from utils.month import get_date, generate_str
 
 month_router = Router()
-bot = Bot(token=BOT_TOKEN)
 
 
 @month_router.callback_query(F.data == "month_current")

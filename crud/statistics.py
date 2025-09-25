@@ -3,6 +3,38 @@ from datetime import datetime
 from database.db_conf import MongoDB
 
 
+async def get_other_incomes_expenses(
+    user_id: int,
+    year: int,
+    month: int,
+    income: bool
+) -> list:
+    """
+    Получение прочих данных за выбранный месяц. Эти данные нужны для
+    отображения информации за ткущий месяц.
+
+    :param user_id: Идентификатор пользователя.
+    :param year: Переданный год.
+    :param month: Переданный месяц.
+    """
+    type_ = "other_income" if income else "expences"
+    try:
+        client: MongoDB = MongoDB()
+        collection = client.get_collection(type_)
+        start_date = datetime(year, month, 1)
+        end_date = datetime(year, (month % 12) + 1, 1)
+        cursor = collection.find(
+            {
+                "user_id": user_id,
+                "created_at": {"$gte": start_date, "$lt": end_date},
+            }
+        )
+        results = cursor.to_list(length=None)
+        return results
+    finally:
+        client.close()
+
+
 async def get_information_for_month(
     user_id: int,
     year: int,
