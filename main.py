@@ -18,6 +18,7 @@ from handlers.current_day import create_router
 from handlers.add_shifts import shifts_router
 from handlers.salary import salary
 from handlers.unknown import unknown_rout
+from handlers.valute import money
 
 from keyboards.keyboard import menu
 from loader import start_text, GUIDE, main_text
@@ -29,6 +30,7 @@ dp.include_router(month_router)
 dp.include_router(create_router)
 dp.include_router(shifts_router)
 dp.include_router(salary)
+dp.include_router(money)
 dp.include_router(unknown_rout)
 
 

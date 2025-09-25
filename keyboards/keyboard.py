@@ -21,6 +21,12 @@ menu_button: List[List[InlineKeyboardButton]] = [
             InlineKeyboardButton(text="📆", callback_data="month_current"),
             InlineKeyboardButton(text="⚙️", callback_data="settings"),
             InlineKeyboardButton(text="🛠", callback_data="many_add")
+        ],
+        [
+            InlineKeyboardButton(
+                text="Курсы валют",
+                callback_data="valute"
+            )
         ]
     ]
 
