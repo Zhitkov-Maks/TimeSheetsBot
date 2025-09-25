@@ -102,3 +102,18 @@ async def delete_record(date: str, user_id) -> None:
         "date": parse_date
     })
     client.close()
+
+
+async def remove_other_income_expese(collections: str, id_: str) -> None:
+    """
+    Удаление записи из бд по ID записи.
+
+    :param collections: Тип коллекции(прочие доходы или расходы).
+    :param id_: Идентификатор записи.
+    """
+    client: MongoDB = MongoDB()
+    collection = client.get_collection(collections)
+    collection.delete_one({
+        "_id": id_
+    })
+    client.close()

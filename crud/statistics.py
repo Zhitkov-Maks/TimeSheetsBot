@@ -21,12 +21,11 @@ async def get_other_incomes_expenses(
     try:
         client: MongoDB = MongoDB()
         collection = client.get_collection(type_)
-        start_date = datetime(year, month, 1)
-        end_date = datetime(year, (month % 12) + 1, 1)
         cursor = collection.find(
             {
                 "user_id": user_id,
-                "created_at": {"$gte": start_date, "$lt": end_date},
+                "year": year,
+                "month": month
             }
         )
         results = cursor.to_list(length=None)

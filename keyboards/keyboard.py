@@ -54,11 +54,26 @@ back: InlineKeyboardMarkup = InlineKeyboardMarkup(
 )
 
 
-async def back_to_information() -> InlineKeyboardMarkup:
+async def back_to_information(next: bool, prev: bool) -> InlineKeyboardMarkup:
     buttons: list[list[InlineKeyboardButton]] = [
         [
             InlineKeyboardButton(text=BACK, callback_data="calendar"),
             InlineKeyboardButton(text="Меню", callback_data="main")
+        ],
+        [
+            InlineKeyboardButton(
+                text="Удалить запись",
+                callback_data="remove_transaction"
+            )
         ]
     ]
+    if next:
+        buttons[0].append(
+            InlineKeyboardButton(text=">>", callback_data="next_tr")
+        )
+    if prev:
+        buttons[0].insert(
+            0,
+            InlineKeyboardButton(text="<<", callback_data="prev_tr")
+        )
     return InlineKeyboardMarkup(inline_keyboard=buttons)
