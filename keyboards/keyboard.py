@@ -26,6 +26,10 @@ menu_button: List[List[InlineKeyboardButton]] = [
             InlineKeyboardButton(
                 text="Курсы валют",
                 callback_data="valute"
+            ),
+            InlineKeyboardButton(
+                text="Срок годности",
+                callback_data="expiration_date"
             )
         ]
     ]
