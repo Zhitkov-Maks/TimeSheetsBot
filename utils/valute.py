@@ -27,25 +27,29 @@ async def get_valute_info() -> str:
     message = "*" * 40 + "\n\n"
     message += f"Курс рубля на {data["Date"][:10]}.\n\n"
     message += (
-        f"{data["Valute"]["BYN"]["Name"]}: {data["Valute"]["BYN"]["Value"]}Br.\n"
+        f"{data['Valute']['BYN']['Nominal']}Br "
+        f"{data['Valute']['BYN']['Name']}: "
+        f"{data['Valute']['BYN']['Value']}₽.\n"
     )
     message += (
-        f"{data["Valute"]["USD"]["Name"]}: {data["Valute"]["USD"]["Value"]}$.\n"
+        f"{data['Valute']['USD']['Nominal']}$ "
+        f"{data["Valute"]["USD"]["Name"]}: "
+        f"{data["Valute"]["USD"]["Value"]}₽.\n"
     )
     message += (
-        f"{data["Valute"]["EUR"]["Name"]}: {data["Valute"]["EUR"]["Value"]}€.\n"
+        f"{data['Valute']['EUR']['Nominal']}€ "
+        f"{data["Valute"]["EUR"]["Name"]}: "
+        f"{data["Valute"]["EUR"]["Value"]}₽.\n"
     )
     message += (
-        f"{data["Valute"]["CNY"]["Name"]}: {data["Valute"]["BYN"]["Value"]}¥.\n"
+        f"{data['Valute']['CNY']['Nominal']}¥ "
+        f"{data["Valute"]["CNY"]["Name"]}: "
+        f"{data["Valute"]["CNY"]["Value"]}₽.\n"
     )
     message += (
+        f"{data['Valute']['UZS']['Nominal']:,}Soʻm "
         f"{data["Valute"]["UZS"]["Name"]}: "
-        f"{
-            round(
-                data["Valute"]["UZS"]["Value"] /
-                data["Valute"]["UZS"]["Nominal"], 5
-            )
-        }Soʻm.\n\n"
+        f"{data["Valute"]["UZS"]["Value"]}₽.\n\n"
     )
     message += "*" * 40 + "\n"
     return message
