@@ -2,6 +2,7 @@
 
 from loader import MONTH_DATA, money
 from crud.settings import get_settings_user_by_id
+from crud.get_data import get_salary_for_day, update_salary
 
 
 async def earned_per_shift(base: float, user_id: int) -> tuple[float, float]:
@@ -56,16 +57,22 @@ async def gen_message_for_choice_day(salary: dict, choice_date: str) -> str:
     
     detail_message: str = ""
     if salary.get("earned_cold"):
-        detail_message += f"""Оплата часов: {salary.get("earned_hours")}{money}.
-Доплата за холод: {salary.get("earned_cold")}{money}.
-    """
+        detail_message += (
+            f"Доплата за холод: {salary.get("earned_cold")}{money}.\n"
+        )
+    if salary.get("award_amount"):
+        detail_message += (
+            f"Примия: {salary.get("award_amount")}{money}.\n"
+        )
 
-    return f"""
-Информация за {MONTH_DATA[month]} {day}.
---------------------------------------------
-Отработано часов: {salary.get("base_hours")}ч.
-Заработано: {salary.get("earned")}{money}.
-{detail_message}"""
+    return (
+        f"Информация за {MONTH_DATA[month]} {day}.\n"
+        f"--------------------------------------------\n"
+        f"Отработано часов: {salary.get("base_hours")}ч.\n"
+        f"Заработано: {salary.get("earned")}{money}.\n"
+        f"Оплата часов: {salary.get('earned_hours')}{money}.\n"
+        f"{detail_message}"
+    )
 
 
 async def valid_time(time: str) -> float:
@@ -78,3 +85,32 @@ async def valid_time(time: str) -> float:
     if float(time) > 24 or float(time) < 1:
         raise ValueError
     return float(time)
+
+
+async def earned_for_award(
+    count_operations: int,
+    user_id: int,
+    day_id: str,
+) -> str:
+    """Посчитай премию и обнови запись о зп."""
+    settings: dict = await get_settings_user_by_id(user_id)
+    cost_award = settings.get("price_award")
+    if cost_award is None:
+        raise ValueError("Нет данных о стоимости операции!")
+
+    earned_award: float = round(count_operations * float(cost_award), 2)
+    current_day: dict = await get_salary_for_day(day_id)
+
+    if current_day.get("award_amount"):
+        earned = (
+            current_day["earned"] - current_day["award_amount"] + earned_award
+        )
+    else:
+        earned = earned_award + current_day["earned"]
+
+    current_day.update(
+        award_amount=earned_award,
+        earned=earned
+    )
+    await update_salary(day_id, current_day)
+    return current_day

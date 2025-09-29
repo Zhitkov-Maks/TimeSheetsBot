@@ -58,20 +58,25 @@ async def create_message_for_period(
     earned: float = data.get("total_earned", 0)
     earned_hours: float = data.get("total_earned_hours", 0)
     earned_cold: float = data.get("total_earned_cold", 0)
+    award: float | None = data.get("total_award")
 
-    money_cold: str = ""
+    _money: str = ""
     if earned_cold:
-        money_cold += (
-            f"\nИз них оплата часов: {earned_hours:,}{money}.\n"
+        _money += (
             f"Доплата за холод: {earned_cold:,}{money}.\n"
+        )
+    if award:
+        _money += (
+            f"Премия: {award:,}{money}.\n"
         )
 
     return (
         f"\nПериод с {period}:\n"
         f"----------------------------------------\n"
         f"Отработано часов: {hours}ч.\n"
-        f"Итого заработано: {earned:,}{money}."
-        f"{money_cold}\n"
+        f"Итого заработано: {earned:,}{money}.\n"
+        f"Из них оплата часов: {earned_hours:,}{money}.\n"
+        f"{_money}\n"
     )
 
 
@@ -96,14 +101,16 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
         )
     )
     hours = 190 if month != 2 else 180  # Норма часов в месяц.
-
     hours_1 = period_one.get("total_base_hours", 0)
     hours_2 = period_two.get("total_base_hours", 0)
-
     total_hours = hours_1 + hours_2
 
-    pay_overtime_str = ""
+    award_one: float = period_one.get("total_award", 0)
+    award_two: float = period_two.get("total_award", 0)
+    award = award_two + award_one
+    award_message = f"Премия: {award}{money}\n" if award > 0 else ""
 
+    pay_overtime_str = ""
     total_earned = period_one.get("total_earned", 0) + \
         period_two.get("total_earned", 0) + \
         sum_other_income.get("total_sum", 0) -\
@@ -126,6 +133,7 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
         f"----------------------------------------\n"
         f"Отработано часов: {total_hours:,}ч.\n"
         f"Заработано денег: {total_earned:,}{money}.\n"
+        f"{award_message}"
     )
 
     message += pay_overtime_str

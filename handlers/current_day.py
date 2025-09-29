@@ -13,7 +13,9 @@ from handlers.bot_answer import send_calendar_and_message, processing_data, \
 from keyboards.keyboard import cancel_button, menu
 from loader import add_record_text
 from states.current_day import CreateState
-from utils.current_day import valid_time
+from utils.current_day import valid_time, earned_for_award
+from utils.current_day import gen_message_for_choice_day
+from keyboards.current_day import get_data_choices_day
 
 create_router = Router()
 bot = Bot(token=BOT_TOKEN)
@@ -71,3 +73,42 @@ async def del_record(callback: CallbackQuery, state: FSMContext) -> None:
     await delete_record(data.get("date"), callback.from_user.id)
     await callback.answer("Запись удалена!!!")
     await send_calendar_and_message(callback.from_user.id, data, state)
+
+
+@create_router.callback_query(F.data == "award")
+@decorator_errors
+async def add_award(callback: CallbackQuery, state: FSMContext) -> None:
+    await state.set_state(CreateState.award)
+    await callback.message.answer(
+        text=hbold("Введите количество выполненных операция за смену: "),
+        reply_markup=cancel_button,
+        parse_mode="HTML"
+    )
+
+
+@create_router.message(CreateState.award)
+@decorator_errors
+async def create_award(message: Message, state: FSMContext) -> None:
+    try:
+        count_operation: int = int(message.text)
+        data: dict = await state.get_data()
+        current_id: str = data.get("current_day").get("_id")
+        _date, info_for_date = data.get("date"), data.get("current_day")
+        update_current_day: dict = await earned_for_award(
+            count_operation, message.from_user.id, current_id
+        )
+        text: str = await gen_message_for_choice_day(
+            update_current_day, _date
+        )
+        await message.answer(
+            text=text,
+            parse_mode="HTML",
+            reply_markup=await get_data_choices_day(info_for_date)
+        )
+
+    except TypeError:
+        await message.answer(
+            text=hbold("Неверный ввод, нужно ввести целое число!"),
+            reply_markup=cancel_button,
+            parse_mode="HTML"
+        )

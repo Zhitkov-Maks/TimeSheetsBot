@@ -7,3 +7,4 @@ class CreateState(StatesGroup):
     StatesGroup используется для группировки состояний, связанных с одной задачей.
     """
     check_data: State = State()
+    award: State = State()

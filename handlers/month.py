@@ -60,11 +60,10 @@ async def choice_day_on_month(
     сообщение с данными и предложением добавить, изменить или удалить данные.
     """
     choice_date: str = callback.data
-    await state.update_data(date=choice_date)
     info_for_date = await get_info_by_date(
         callback.from_user.id, choice_date
     )
-
+    await state.update_data(current_day=info_for_date, date=choice_date)
     message: str = await gen_message_for_choice_day(
         info_for_date, choice_date
     )
