@@ -12,6 +12,7 @@ from utils.current_day import earned_salary
 from utils.month import create_message
 from crud.create import write_salary
 from config import bot
+from keyboards.keyboard import menu
 
 
 logger = logging.getLogger(__name__)
@@ -64,7 +65,7 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
             )
             await state.clear()
             mess: str = str(err)
-            await bot.send_message(arg.from_user.id, mess)
+            await bot.send_message(arg.from_user.id, mess, reply_markup=menu)
 
         except TelegramNetworkError:
             logger.error(
@@ -78,7 +79,7 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
             mess: str = (
                 "У нас проблемы с интернетом, попробуйте зайти чуть позже."
             )
-            await bot.send_message(arg.from_user.id, mess)
+            await bot.send_message(arg.from_user.id, mess, reply_markup=menu)
 
         except TelegramBadRequest:
             logger.error(
@@ -93,7 +94,7 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
                 "Что-то сломалось. Ошибка на нашей стороне, пришлите мне "
                 "подробно какие действия вы совершали."
             )
-            await bot.send_message(arg.from_user.id, mess)
+            await bot.send_message(arg.from_user.id, mess, reply_markup=menu)
 
     return wrapper
 
