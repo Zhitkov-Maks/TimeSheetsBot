@@ -3,6 +3,40 @@ from datetime import datetime
 from database.db_conf import MongoDB
 
 
+async def get_other_incomes_for_year(
+    user_id: int,
+    year: int
+) -> list:
+    """
+    Получение прочих данных за выбранный год. Эти данные нужны для
+    отображения статистики.
+
+    :param user_id: Идентификатор пользователя.
+    :param year: Переданный год.
+    """
+    client: MongoDB = MongoDB()
+    collection = client.get_collection("other_income")
+    pipeline = [
+        {
+            "$match": {
+                "user_id": user_id,
+                "year": year
+            }
+        },
+        {
+            "$group": {
+                "_id": None,
+                "total_other_amount": {"$sum": "$amount"}
+            }
+        }
+    ]
+
+    result = collection.aggregate(pipeline).to_list()
+    if len(result) != 0:
+        return result[0]
+    return {}
+
+
 async def get_other_incomes_expenses(
     user_id: int,
     year: int,
@@ -78,6 +112,43 @@ async def get_info_by_date(user_id: int, date: str) -> dict:
     data: dict = collection.find_one({"user_id": user_id, "date": parse_date})
     client.close()
     return data
+
+
+async def statistics_for_year(year: int, user_id: int) -> dict:
+    """
+    Аггрегирует данные за год. Вычисляется сумма
+    отработанных часов и заработок.
+
+    :param user_id: Идентификатор пользователя.
+    :param year: Переданный год.
+    :param month: Переданный месяц.
+    :param period: 1-й или 2-й периоды.
+    """
+    client: MongoDB = MongoDB()
+    collection = client.get_collection("salaries")
+    start_date = datetime(year, 1, 1)
+    end_date = datetime(year + 1, 1, 1)
+    # Пайплайн агрегации
+    pipeline = [
+        {
+            "$match": {
+                "user_id": user_id,
+                "date": {"$gte": start_date, "$lt": end_date}
+            }
+        },
+        {
+            "$group": {
+                "_id": None,
+                "total_hours": {"$sum": "$base_hours"},
+                "total_earned": {"$sum": "$earned"}
+            }
+        }
+    ]
+
+    result = collection.aggregate(pipeline).to_list()
+    if len(result) != 0:
+        return result[0]
+    return {}
 
 
 async def aggregate_data(

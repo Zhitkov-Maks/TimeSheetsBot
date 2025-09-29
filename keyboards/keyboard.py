@@ -1,4 +1,5 @@
 from typing import List
+from datetime import datetime as dt, UTC
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
@@ -30,6 +31,12 @@ menu_button: List[List[InlineKeyboardButton]] = [
             InlineKeyboardButton(
                 text="Срок годности",
                 callback_data="expiration_date"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                text="Статистика за год",
+                callback_data="statistics"
             )
         ]
     ]
@@ -79,5 +86,28 @@ async def back_to_information(next: bool, prev: bool) -> InlineKeyboardMarkup:
         buttons[0].insert(
             0,
             InlineKeyboardButton(text="<<", callback_data="prev_tr")
+        )
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+async def next_prev_year(year) -> InlineKeyboardMarkup:
+    buttons: list[list[InlineKeyboardButton]] = [
+        [
+            InlineKeyboardButton(
+                text="<<",
+                callback_data="prev_year",
+            ),
+            InlineKeyboardButton(
+                text="Menu",
+                callback_data="main"
+            )
+        ]
+    ]
+    if year < dt.now(UTC).year:
+        buttons[0].append(
+            InlineKeyboardButton(
+                text=">>",
+                callback_data="next_year"
+            )
         )
     return InlineKeyboardMarkup(inline_keyboard=buttons)

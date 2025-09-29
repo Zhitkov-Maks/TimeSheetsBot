@@ -20,6 +20,7 @@ from handlers.salary import salary
 from handlers.unknown import unknown_rout
 from handlers.valute import money
 from handlers.expiration import date_router
+from handlers.statistic import statistick_router
 
 from keyboards.keyboard import menu
 from loader import start_text, GUIDE, main_text
@@ -33,6 +34,7 @@ dp.include_router(shifts_router)
 dp.include_router(salary)
 dp.include_router(money)
 dp.include_router(date_router)
+dp.include_router(statistick_router)
 dp.include_router(unknown_rout)
 
 
