@@ -54,7 +54,7 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
             )
             await func(arg, state)
 
-        except KeyError:
+        except (KeyError, ValueError) as err:
             logger.error(
                 "\nKeyError occurred\n"
                 f"Function: {func.__name__}\n"
@@ -63,12 +63,7 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
                 exc_info=True,
             )
             await state.clear()
-            mess: str = (
-                "I'm Sorry! Произошла ошибка при обработке данных."
-                " Возможные причина ошибки - вы нажали кнопку, "
-                "которая с течением времени уже не содержит "
-                "никаких данных."
-            )
+            mess: str = str(err)
             await bot.send_message(arg.from_user.id, mess)
 
         except TelegramNetworkError:
