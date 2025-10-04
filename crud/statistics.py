@@ -121,8 +121,6 @@ async def statistics_for_year(year: int, user_id: int) -> dict:
 
     :param user_id: Идентификатор пользователя.
     :param year: Переданный год.
-    :param month: Переданный месяц.
-    :param period: 1-й или 2-й периоды.
     """
     client: MongoDB = MongoDB()
     collection = client.get_collection("salaries")
