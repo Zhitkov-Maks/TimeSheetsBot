@@ -6,6 +6,7 @@ import logging
 from aiogram.exceptions import TelegramNetworkError, TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup
+from aiogram.exceptions import TelegramNetworkError
 
 from loader import success_text
 from utils.current_day import earned_salary
@@ -39,7 +40,7 @@ P = ParamSpec("P")
 
 def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
     """
-    Декоратор для функции обработки колбеков и сообщений.
+    Декоратор для функции обработки колбэков и сообщений.
     """
     @wraps(func)
     async def wrapper(arg: P, state: FSMContext) -> None:
@@ -93,6 +94,21 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
             mess: str = (
                 "Что-то сломалось. Ошибка на нашей стороне, пришлите мне "
                 "подробно какие действия вы совершали."
+            )
+            await bot.send_message(arg.from_user.id, mess, reply_markup=menu)
+
+        # Если произошло что-то неожиданное.
+        except Exception as e:
+            logger.error(
+                f"\n{e}\n"
+                f"Function: {func.__name__}\n"
+                f"User ID: {arg.from_user.id}\n"
+                f"User: {arg.from_user.full_name} (@{arg.from_user.username}\n",
+                exc_info=True,
+            )
+            await state.clear()
+            mess: str = (
+                "Сбой. Попробуйте еще раз."
             )
             await bot.send_message(arg.from_user.id, mess, reply_markup=menu)
 
