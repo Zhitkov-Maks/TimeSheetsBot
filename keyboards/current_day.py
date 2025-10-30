@@ -35,6 +35,16 @@ async def get_data_choices_day(salary: dict) -> InlineKeyboardMarkup:
                 ],
                 [
                     InlineKeyboardButton(
+                        text="Добавить 📝",
+                        callback_data="add_note"
+                    ),
+                    InlineKeyboardButton(
+                        text="Показать 📝",
+                        callback_data="show_note"
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
                         text="Рассчет и добавление премии.",
                         callback_data="award"
                     )

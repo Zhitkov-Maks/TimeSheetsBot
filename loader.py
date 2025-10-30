@@ -155,3 +155,7 @@ unfamiliar_command: str = (
 GUIDE: tuple = (
     greeting, settings, calendar, prediction, shifts_group, finish
 )
+
+notes_empty = (
+    "Добавьте запись о том что вы считаете важным сохранить на всякий случай."
+)

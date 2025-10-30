@@ -21,6 +21,7 @@ from handlers.unknown import unknown_rout
 from handlers.valute import money
 from handlers.expiration import date_router
 from handlers.statistic import statistick_router
+from handlers.note import note_rout
 
 from keyboards.keyboard import menu
 from loader import start_text, GUIDE, main_text
@@ -35,6 +36,7 @@ dp.include_router(salary)
 dp.include_router(money)
 dp.include_router(date_router)
 dp.include_router(statistick_router)
+dp.include_router(note_rout)
 dp.include_router(unknown_rout)
 
 
@@ -49,8 +51,8 @@ async def handler_start(message: types.Message, state: FSMContext) -> None:
 @dp.message(F.text == "/main")
 @decorator_errors
 async def handle_help_command(
-        message: types.Message,
-        state: FSMContext
+    message: types.Message,
+    state: FSMContext
 ) -> None:
     """Обработчик команды main."""
     await state.clear()

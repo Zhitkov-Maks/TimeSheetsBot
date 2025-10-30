@@ -106,12 +106,16 @@ async def get_info_by_date(user_id: int, date: str) -> dict:
     :param user_id: Идентификатор пользователя.
     :param date: Конкретная дата для показа пользователю.
     """
-    client: MongoDB = MongoDB()
-    parse_date = datetime.strptime(date, "%Y-%m-%d")
-    collection = client.get_collection("salaries")
-    data: dict = collection.find_one({"user_id": user_id, "date": parse_date})
-    client.close()
-    return data
+    try:
+        client: MongoDB = MongoDB()
+        parse_date = datetime.strptime(date, "%Y-%m-%d")
+        collection = client.get_collection("salaries")
+        data: dict = collection.find_one(
+            {"user_id": user_id, "date": parse_date}
+        )
+        return data
+    finally:
+        client.close()
 
 
 async def statistics_for_year(year: int, user_id: int) -> dict:

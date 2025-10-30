@@ -6,7 +6,6 @@ import logging
 from aiogram.exceptions import TelegramNetworkError, TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup
-from aiogram.exceptions import TelegramNetworkError
 
 from loader import success_text
 from utils.current_day import earned_salary
