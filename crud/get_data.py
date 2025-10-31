@@ -5,9 +5,9 @@ import pymongo
 
 async def get_salary_for_day(day_id: str) -> None:
     """
-    Функция для получения данных за день.
+    Get the data for the day.
 
-    :param daн_id: Идентификатор записи.
+    :param daн_id: The ID of the record.
     """
     try:
         client = MongoDB()
@@ -22,10 +22,10 @@ async def update_salary(
     day_id: int, data: dict
 ) -> None:
     """
-    Функция обновления зарплаты за день.
+    Update your salary for the day.
 
-    :param day_id: Идентификатор дня.
-    :param data: Словарь с данными для записи.
+    :param day_id: ID of the day.
+    :param data: Dictionary with data to record.
     """
     client: MongoDB = MongoDB()
     collection = client.get_collection("salaries")

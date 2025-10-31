@@ -3,10 +3,10 @@ from database.db_conf import MongoDB
 
 async def create_settings(data: dict, user_id: int) -> None:
     """
-    Создание или обновление настроек пользователя.
+    Create or update the user's settings.
 
-    :param data: Словарь с введенными данными.
-    :param user_id: Идентификатор пользователя.
+    :param data: A dictionary with the entered data.
+    :param user_id: The user's ID.
     """
     client = MongoDB()
     collection = client.get_collection("users_settings")
@@ -18,10 +18,9 @@ async def create_settings(data: dict, user_id: int) -> None:
 
 async def get_settings_user_by_id(user_id: int) -> dict:
     """
-    Получение настроек пользователя по идентификатору
-    телеграм ID.
+    Get the user's settings.
     
-    :param user_id: Идентификатор телеграм.
+    :param user_id: The telegram ID.
     """
     client: MongoDB = MongoDB()
     collection = client.get_collection("users_settings")
@@ -34,9 +33,9 @@ async def get_settings_user_by_id(user_id: int) -> dict:
 
 async def delete_settings(user_id) -> None:
     """
-    Удаление записи из бд по ID пользователя.
+    Delete the records from the database by user ID.
 
-    :param user_id: Идентификатор пользователя.
+    :param user_id: The telegram ID.
     """
     client: MongoDB = MongoDB()
     collection = client.get_collection("users_settings")

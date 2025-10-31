@@ -8,11 +8,10 @@ async def get_other_incomes_for_year(
     year: int
 ) -> list:
     """
-    Получение прочих данных за выбранный год. Эти данные нужны для
-    отображения статистики.
+    Get other data for the selected year.
 
-    :param user_id: Идентификатор пользователя.
-    :param year: Переданный год.
+    :param user_id: The user's ID.
+    :param year: The transmitted year.
     """
     client: MongoDB = MongoDB()
     collection = client.get_collection("other_income")
@@ -44,12 +43,11 @@ async def get_other_incomes_expenses(
     income: bool
 ) -> list:
     """
-    Получение прочих данных за выбранный месяц. Эти данные нужны для
-    отображения информации за ткущий месяц.
+    Get other data for the selected month.
 
-    :param user_id: Идентификатор пользователя.
-    :param year: Переданный год.
-    :param month: Переданный месяц.
+    :param user_id: The user's ID.
+    :param year:    The transmitted year.
+    :param month: The transferred month.
     """
     type_ = "other_income" if income else "expences"
     try:
@@ -74,12 +72,11 @@ async def get_information_for_month(
     month: int
 ) -> list:
     """
-    Получение данных за выбранный месяц. Эти данные нужны для
-    отображения в календаре.
+    Get the data for the selected month.
 
-    :param user_id: Идентификатор пользователя.
-    :param year: Переданный год.
-    :param month: Переданный месяц.
+    :param user_id: The user's ID.
+    :param year: The transmitted year.
+    :param month: The transferred month.
     """
     
     try:
@@ -101,10 +98,10 @@ async def get_information_for_month(
 
 async def get_info_by_date(user_id: int, date: str) -> dict:
     """
-    Функция возвращает данные за конкретную выбранную дату.
+    Get the data for a specific selected date.
 
-    :param user_id: Идентификатор пользователя.
-    :param date: Конкретная дата для показа пользователю.
+    :param user_id: The user's ID.
+    :param date: A specific date to show to the user.
     """
     try:
         client: MongoDB = MongoDB()
@@ -120,17 +117,16 @@ async def get_info_by_date(user_id: int, date: str) -> dict:
 
 async def statistics_for_year(year: int, user_id: int) -> dict:
     """
-    Аггрегирует данные за год. Вычисляется сумма
-    отработанных часов и заработок.
+    Aggregate the data for the year.
 
-    :param user_id: Идентификатор пользователя.
-    :param year: Переданный год.
+    :param user_id: The user's ID.
+    :param year: The transmitted year.
     """
     client: MongoDB = MongoDB()
     collection = client.get_collection("salaries")
     start_date = datetime(year, 1, 1)
     end_date = datetime(year + 1, 1, 1)
-    # Пайплайн агрегации
+
     pipeline = [
         {
             "$match": {
@@ -157,19 +153,19 @@ async def aggregate_data(
     year: int, month: int, user_id: int, period: int,
 ) -> dict:
     """
-    Функция для агрегации данных за месяц и период. Вычисляется сумма
-    отработанных часов за период и сумма оплаты за часы.
+    Calculate the amount of hours worked for the period 
+    and the amount of payment for the hours.
 
-    :param user_id: Идентификатор пользователя.
-    :param year: Переданный год.
-    :param month: Переданный месяц.
-    :param period: 1-й или 2-й периоды.
+    :param user_id: The user's ID.
+    :param year: The transmitted year.
+    :param month: The transferred month.
+    :param period: 1st or 2nd periods.
     """
     client: MongoDB = MongoDB()
     collection = client.get_collection("salaries")
     start_date = datetime(year, month, 1)
     end_date = datetime(year, month + 1, 1)
-    # Пайплайн агрегации
+
     pipeline = [
         {
             "$match": {
@@ -203,13 +199,15 @@ async def get_other_sum(
     type_operation: str
 ) -> dict:
     """
-    Функция для агрегации данных прочих доходов/расходов за месяц.
+    Aggregate the data on other income/expenses for the month.
 
-    :param user_id: Идентификатор пользователя
-    :param year: Год для выборки
-    :param month: Месяц для выборки
-    :param type_operation: Тип операции ('income' для доходов, иначе - расходы)
-    :return: Словарь с ключом 'total_sum' и суммой, либо пустой словарь
+    :param user_id: User ID.
+    :param year: Year for the sample.
+    :param month: The month for the sample.
+    :param type_operation: Type of operation 
+                            ('income' for income, otherwise - expenses)
+    :return: A dictionary with the key 'total_sum' and the sum, 
+                or an empty dictionary
     """
     try:
         client = MongoDB()
