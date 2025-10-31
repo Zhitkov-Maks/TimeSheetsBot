@@ -1,4 +1,5 @@
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 from database.db_conf import MongoDB
 
@@ -83,7 +84,7 @@ async def get_information_for_month(
         client: MongoDB = MongoDB()
         collection = client.get_collection("salaries")
         start_date = datetime(year, month, 1)
-        end_date = datetime(year, (month % 12) + 1, 1)
+        end_date = start_date + relativedelta(months=1)
         cursor = collection.find(
             {
                 "user_id": user_id,
@@ -164,7 +165,7 @@ async def aggregate_data(
     client: MongoDB = MongoDB()
     collection = client.get_collection("salaries")
     start_date = datetime(year, month, 1)
-    end_date = datetime(year, month + 1, 1)
+    end_date = start_date + relativedelta(months=1)
 
     pipeline = [
         {

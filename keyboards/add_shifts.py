@@ -93,6 +93,13 @@ async def get_days_keyboard(
     return InlineKeyboardMarkup(inline_keyboard=month_keyword)
 
 
+async def next_month_date(days, year, month) -> str:
+    return (
+        f"{(date(year, month, 1) + timedelta(days=days)).year}-"
+        f"{(date(year, month, 1) + timedelta(days=days)).month}"
+    )
+
+
 async def prediction_button() -> InlineKeyboardMarkup:
     """
     Генерирует инлайн-кнопки для выбора текущего и следующего месяца.
@@ -104,13 +111,40 @@ async def prediction_button() -> InlineKeyboardMarkup:
         [
             InlineKeyboardButton(
                 text=f"{MONTH_DATA[dt.now().month]}",
-                callback_data="cur",
+                callback_data=f"{dt.now().year}-{dt.now().month}",
             ),
-            InlineKeyboardButton(text=MENU, callback_data="main"),
             InlineKeyboardButton(
                 text=f"{MONTH_DATA[(
                         date(year, month, 1) + timedelta(days=35)).month]}",
-                callback_data="next_month",
+                callback_data=await next_month_date(35, year, month),
+            ),
+            InlineKeyboardButton(
+                text=f"{MONTH_DATA[(
+                        date(year, month, 1) + timedelta(days=65)).month]}",
+                callback_data=await next_month_date(65, year, month),
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text=f"{MONTH_DATA[(
+                        date(year, month, 1) + timedelta(days=96)).month]}",
+                callback_data=await next_month_date(96, year, month),
+            ),
+            InlineKeyboardButton(
+                text=f"{MONTH_DATA[(
+                        date(year, month, 1) + timedelta(days=126)).month]}",
+                callback_data=await next_month_date(126, year, month),
+            ),
+            InlineKeyboardButton(
+                text=f"{MONTH_DATA[(
+                        date(year, month, 1) + timedelta(days=157)).month]}",
+                callback_data=await next_month_date(156, year, month),
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text="Вернуться в меню",
+                callback_data="main"
             ),
         ]
     ])

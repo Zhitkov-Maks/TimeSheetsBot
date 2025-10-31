@@ -12,12 +12,7 @@ async def get_date(action: str) -> Tuple[int, int]:
     :param action: Строка, определяющая действие.
     :return: Кортеж из двух целых чисел: (год, месяц).
     """
-    year, month = dt.now().year, dt.now().month
-
-    if action == "next_month":
-        next_date: date = date(year, month, 1) + timedelta(days=35)
-        year, month = next_date.year, next_date.month
-
+    year, month = int(action.split("-")[0]), int(action.split("-")[1])
     return year, month
 
 

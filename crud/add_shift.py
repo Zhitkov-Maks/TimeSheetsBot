@@ -18,9 +18,17 @@ async def add_many_shifts(shifts: list[dict]) -> None:
         name="unique_user_date"
     )
     
-    try:
-        collection.insert_many(shifts)
-    except pymongo.errors.DuplicateKeyError:
-        pass
-    finally:
-        client.close()
+    operations = []
+    for shift in shifts:
+        operations.append(
+            pymongo.UpdateOne(
+                {'user_id': shift['user_id'], 'date': shift['date']},
+                {'$set': shift},
+                upsert=True
+            )
+        )
+    
+    if operations:
+        collection.bulk_write(operations)
+    
+    client.close()

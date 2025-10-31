@@ -22,8 +22,8 @@ month_router = Router()
 @month_router.callback_query(F.data == "month_current")
 @decorator_errors
 async def handle_info_current_month(
-        callback: CallbackQuery,
-        state: FSMContext
+    callback: CallbackQuery,
+    state: FSMContext
 ) -> None:
     """
     Обработчик для команды month_current. Получает информацию
@@ -87,6 +87,7 @@ async def show_monthly_data(
     data: Dict[str, str | int] = await state.get_data()
     year, month = data.get("year"), data.get("month")
     message: str = await generate_str(year, month, callback.from_user.id)
+    
     await callback.message.edit_text(
         hbold(message),
         reply_markup=await get_month_menu(),

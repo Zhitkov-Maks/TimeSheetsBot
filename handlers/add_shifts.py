@@ -22,15 +22,20 @@ bot: Bot = Bot(token=BOT_TOKEN)
 
 @shifts_router.callback_query(F.data == "many_add")
 @decorator_errors
-async def shifts_calendar(callback: CallbackQuery, state: FSMContext) -> None:
+async def shifts_calendar(
+    callback: CallbackQuery,
+    state: FSMContext
+) -> None:
     """
-    Обработчик команды для групповой отметки смен. Отправляет пользователю
-    инлайн клавиатуру для выбора месяца.
+    Send the user an inline keyboard to select 
+    the days for adding shifts in a group.
     """
     await state.set_state(ShiftsState.hours)
     user_exists = days_choices.get(callback.from_user.dict)
+
     if user_exists:
         days_choices.get(callback.from_user.id).clear()
+        
     await callback.message.edit_text(
         text=hbold("Выберите месяц: "),
         reply_markup=await prediction_button(),
@@ -38,9 +43,7 @@ async def shifts_calendar(callback: CallbackQuery, state: FSMContext) -> None:
     )
 
 
-@shifts_router.callback_query(
-    ShiftsState.hours,
-    F.data.in_(["cur", "next_month"]))
+@shifts_router.callback_query(ShiftsState.hours)
 @decorator_errors
 async def input_selection_hours(
         callback: CallbackQuery,
