@@ -159,3 +159,15 @@ GUIDE: tuple = (
 notes_empty = (
     "Добавьте запись о том что вы считаете важным сохранить на всякий случай."
 )
+
+BAX = "$"
+EURO = "€"
+YENA = "¥"
+SOM = "Soʻm"
+
+CURRENCY_SYMBOL = {
+    "dollar": BAX,
+    "euro": EURO,
+    "yena": YENA,
+    "som": SOM
+}

@@ -10,6 +10,7 @@ from aiogram.types import InlineKeyboardMarkup
 from loader import success_text
 from utils.current_day import earned_salary
 from utils.month import create_message
+from utils.valute import get_valute_info
 from crud.create import write_salary
 from config import bot
 from keyboards.keyboard import menu
@@ -29,7 +30,7 @@ handler.setFormatter(
     logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 )
 
-# Добавляем обработчик к логгеру
+# Adding a handler to the logger
 logger.addHandler(handler)
 
 
@@ -39,12 +40,13 @@ P = ParamSpec("P")
 
 def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
     """
-    Декоратор для функции обработки колбэков и сообщений.
+    A decorator for callback and message processing functions.
     """
     @wraps(func)
     async def wrapper(arg: P, state: FSMContext) -> None:
         """
-        Обертка для обработки ошибок при выполнении функции.
+        Handle possible errors when using the bot. 
+        And write them to a file.
         """
         try:
             logger.info(
@@ -91,12 +93,11 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
             )
             await state.clear()
             mess: str = (
-                "Что-то сломалось. Ошибка на нашей стороне, пришлите мне "
-                "подробно какие действия вы совершали."
+                "Сбой работы приложения. Попробуйте еще раз."
             )
             await bot.send_message(arg.from_user.id, mess, reply_markup=menu)
 
-        # Если произошло что-то неожиданное.
+        # If something unexpected has happened.
         except Exception as e:
             logger.error(
                 f"\n{e}\n"
@@ -121,14 +122,13 @@ async def processing_data(
         data: Dict[str, str | int]
 ) -> None:
     """
-    Обрабатывает данные о зарплате пользователя, вычисляет заработок
-    и обновляет записи в базе данных.
+    Collect all the necessary data, send it to the database for saving, 
+    and send the data for display to the user.
 
-    :param user_id: Идентификатор пользователя.
-    :param time: Общее количество отработанных часов.
-    :param state: Контекст состояния для управления состоянием пользователя
-                    в FSM.
-    :param data: Словарь, содержащий дополнительные данные.
+    :param user_id: The user's ID.
+    :param time: The total number of hours worked.
+    :param state: A state context for managing the user's state in the FSM.
+    :param data: A dictionary containing additional data.
     :return: None
     """
     base, earned_hours, earned_cold = await earned_salary(time, user_id)
@@ -138,8 +138,8 @@ async def processing_data(
         text=success_text.format(data["date"], earned_hours + earned_cold),
         show_alert=True
     )
-
-    await write_salary(base, earned_hours, earned_cold, data)
+    valute_data: dict[str, tuple[int, float]] = await get_valute_info()
+    await write_salary(base, earned_hours, earned_cold, data, valute_data)
     await send_calendar_and_message(user_id, data, state)
 
 
@@ -149,14 +149,12 @@ async def send_calendar_and_message(
         state: FSMContext
 ) -> None:
     """
-    Отправляет пользователю текущий календарь после добавления записи за
-    выбранный день.
+    Send a message to the user.
 
-    :param user: Идентификатор пользователя (чата).
-    :param data: Словарь, содержащий данные, необходимые для генерации
-                    сообщения и календаря..
-    :param state: Контекст состояния для управления состоянием пользователя
-                    в FSM (Finite State Machine).
+    :param user: The ID of the user (chat).
+    :param data: A dictionary containing the data needed to generate
+                    messages and calendar.
+    :param state: A state context for managing the user's state in the FSM.
     :return: None
     """
     calendar: InlineKeyboardMarkup = await create_message(

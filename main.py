@@ -14,12 +14,10 @@ from config import bot
 from handlers.bot_answer import decorator_errors
 from handlers.settings import settings_router
 from handlers.month import month_router
-from handlers.current_day import create_router
+from handlers.current_day import day_router
 from handlers.add_shifts import shifts_router
 from handlers.salary import salary
 from handlers.unknown import unknown_rout
-from handlers.valute import money
-from handlers.expiration import date_router
 from handlers.statistic import statistick_router
 from handlers.note import note_rout
 
@@ -30,11 +28,9 @@ from loader import start_text, GUIDE, main_text
 dp = Dispatcher(bot=bot)
 dp.include_router(settings_router)
 dp.include_router(month_router)
-dp.include_router(create_router)
+dp.include_router(day_router)
 dp.include_router(shifts_router)
 dp.include_router(salary)
-dp.include_router(money)
-dp.include_router(date_router)
 dp.include_router(statistick_router)
 dp.include_router(note_rout)
 dp.include_router(unknown_rout)

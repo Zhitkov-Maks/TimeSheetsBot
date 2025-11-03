@@ -40,9 +40,9 @@ async def generate_base_calendar(
             if numbers_list[day] == " ":
                 text = " "
             else:
-                text = f"{numbers_list[day]} ˟" \
+                text = f"{numbers_list[day]} ○" \
                     if create_date not in days_choices[user_chat_id] \
-                    else f"{numbers_list[day]} ˯"
+                    else f"{numbers_list[day]} ●"
 
             row.append(
                 InlineKeyboardButton(

@@ -11,20 +11,23 @@ from crud.create import delete_record
 from handlers.bot_answer import send_calendar_and_message, processing_data, \
     decorator_errors
 from keyboards.keyboard import cancel_button, menu
-from loader import add_record_text
+from loader import add_record_text, CURRENCY_SYMBOL
 from states.current_day import CreateState
 from utils.current_day import valid_time, earned_for_award
 from utils.current_day import gen_message_for_choice_day
+from utils.valute import gen_text
 from keyboards.current_day import get_data_choices_day
 
-create_router = Router()
+day_router = Router()
 bot = Bot(token=BOT_TOKEN)
 
 
-@create_router.callback_query(F.data.in_(["change", "add"]))
+@day_router.callback_query(F.data.in_(["change", "add"]))
 @decorator_errors
 async def on_date_today(callback: CallbackQuery, state: FSMContext) -> None:
-    """Обработчик команд для добавления или изменения записи о смене."""
+    """
+    Ask the user for the number of hours worked.
+    """
     await state.update_data(action=callback.data, callback=callback.id)
     await state.set_state(CreateState.check_data)
     await callback.message.edit_text(
@@ -32,13 +35,11 @@ async def on_date_today(callback: CallbackQuery, state: FSMContext) -> None:
     )
 
 
-@create_router.message(CreateState.check_data)
+@day_router.message(CreateState.check_data)
 @decorator_errors
 async def check_data(message: Message, state: FSMContext) -> None:
     """
-    Сохранение и проверка введенного отработанного времени. Если проверка
-    проходит, то отправляем на расчет заработка и добавление записи в бд.
-    А затем заново открывает календарь.
+    Save the data entered by the user if the data is correct.
     """
     await state.update_data(user_id=message.from_user.id)
     data: Dict[str, str | float] = await state.get_data()
@@ -50,9 +51,9 @@ async def check_data(message: Message, state: FSMContext) -> None:
 
     except ValueError:
         await message.reply(
-            "Введенные данные не соответствуют требованиям. \n"
-            "Пример: 6.5. Попробуйте еще раз.",
+            text=hbold("Некорректные данные. Попробуйте еще раз"),
             reply_markup=cancel_button,
+            parse_mode="HTML"
         )
 
     except KeyError as err:
@@ -63,10 +64,10 @@ async def check_data(message: Message, state: FSMContext) -> None:
         )
 
 
-@create_router.callback_query(F.data == "del")
+@day_router.callback_query(F.data == "del")
 @decorator_errors
 async def del_record(callback: CallbackQuery, state: FSMContext) -> None:
-    """Отправка на удаление записи."""
+    """Delete the entries for the selected day."""
     await state.update_data(user_id=callback.from_user.id)
     data: Dict[str, str] = await state.get_data()
 
@@ -75,9 +76,10 @@ async def del_record(callback: CallbackQuery, state: FSMContext) -> None:
     await send_calendar_and_message(callback.from_user.id, data, state)
 
 
-@create_router.callback_query(F.data == "award")
+@day_router.callback_query(F.data == "award")
 @decorator_errors
 async def add_award(callback: CallbackQuery, state: FSMContext) -> None:
+    """Delete the entries for the selected day."""
     await state.set_state(CreateState.award)
     await callback.message.answer(
         text=hbold("Введите количество выполненных операция за смену: "),
@@ -86,9 +88,10 @@ async def add_award(callback: CallbackQuery, state: FSMContext) -> None:
     )
 
 
-@create_router.message(CreateState.award)
+@day_router.message(CreateState.award)
 @decorator_errors
 async def create_award(message: Message, state: FSMContext) -> None:
+    """Save the data if the data is correct."""
     try:
         count_operation: int = int(message.text)
         data: dict = await state.get_data()
@@ -112,3 +115,20 @@ async def create_award(message: Message, state: FSMContext) -> None:
             reply_markup=cancel_button,
             parse_mode="HTML"
         )
+
+
+@day_router.callback_query(F.data.in_(["dollar", "euro", "yena", "som"]))
+async def get_earned_in_valute(
+    callback: CallbackQuery, 
+    state: FSMContext
+) -> None:
+    """
+    Show the user the data of his earnings 
+    in the currency of his choice.
+    """
+    name: str = callback.data
+    text: str = await gen_text(state, name)
+    await callback.answer(
+        text=text,
+        show_alert=True
+    )

@@ -2,12 +2,18 @@ import json
 
 import aiohttp
 
+from loader import CURRENCY_SYMBOL
+from utils import current_day
+from utils.calculate import calc_valute
 
+# the address for requesting the ruble exchange rate
 URL = "https://www.cbr-xml-daily.ru/daily_json.js"
 
 
 async def request_valute_info() -> str:
-    """Запроси данные о курсе рубля."""
+    """
+    Request information about the ruble exchange rate.
+    """
     async with aiohttp.ClientSession(
             timeout=aiohttp.ClientTimeout(60)) as client:
         async with client.get(
@@ -19,37 +25,50 @@ async def request_valute_info() -> str:
                 raise aiohttp.ClientResponseError
 
                 
-async def get_valute_info() -> str:
+async def get_valute_info() -> dict[str, tuple[int, float]]:
     """
-    Верни строку с информацией о некоторых валутах.
+    Return the dictionary with information 
+    about the value of currencies.
     """
     data = json.loads(await request_valute_info())
-    message = "*" * 40 + "\n\n"
-    message += f"Курс рубля на {data["Date"][:10]}.\n\n"
-    message += (
-        f"{data['Valute']['BYN']['Nominal']}Br "
-        f"{data['Valute']['BYN']['Name']}: "
-        f"{data['Valute']['BYN']['Value']}₽.\n"
-    )
-    message += (
-        f"{data['Valute']['USD']['Nominal']}$ "
-        f"{data["Valute"]["USD"]["Name"]}: "
-        f"{data["Valute"]["USD"]["Value"]}₽.\n"
-    )
-    message += (
-        f"{data['Valute']['EUR']['Nominal']}€ "
-        f"{data["Valute"]["EUR"]["Name"]}: "
-        f"{data["Valute"]["EUR"]["Value"]}₽.\n"
-    )
-    message += (
-        f"{data['Valute']['CNY']['Nominal']}¥ "
-        f"{data["Valute"]["CNY"]["Name"]}: "
-        f"{data["Valute"]["CNY"]["Value"]}₽.\n"
-    )
-    message += (
-        f"{data['Valute']['UZS']['Nominal']:,}Soʻm "
-        f"{data["Valute"]["UZS"]["Name"]}: "
-        f"{data["Valute"]["UZS"]["Value"]}₽.\n\n"
-    )
-    message += "*" * 40 + "\n"
+    return {
+        "dollar": (
+            int(data['Valute']['USD']['Nominal']),
+            float(data["Valute"]["USD"]["Value"])
+        ),
+        "euro": (
+            int(data['Valute']['EUR']['Nominal']),
+            float(data["Valute"]["EUR"]["Value"])
+        ),
+        "yena": (
+            int(data['Valute']['CNY']['Nominal']),
+            float(data["Valute"]["CNY"]["Value"])
+        ),
+        "som": (
+            int(data['Valute']['UZS']['Nominal']),
+            float(data["Valute"]["UZS"]["Value"])
+        )
+    }
+
+
+async def gen_text(state: dict, name: str) -> str:
+    """
+    Create a message on earnings in the currency, 
+    if you have the data.
+    
+    :param state: A dictionary with all the data.
+    :param name: Name of the currency.
+    """
+    data: dict = await state.get_data()
+    current_day: dict = data.get("current_day", {})
+    get_sum_valute: float = current_day.get("valute", {}).get(name, 0)
+    symbol: str = CURRENCY_SYMBOL[name]
+    message = ""
+
+    if  get_sum_valute:
+        date_write = str(current_day.get("date_write"))[:10]
+        message += f"{get_sum_valute}{symbol}\nПо курсу на {date_write}."
+    
+    else:
+        message = "Нет данных, обновите запись."
     return message

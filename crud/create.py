@@ -3,6 +3,7 @@ from datetime import datetime, UTC
 import pymongo
 
 from database.db_conf import MongoDB
+from utils.calculate import calc_valute
 
 
 async def write_other(data: dict, user: int) -> bool:
@@ -47,7 +48,8 @@ async def write_salary(
         base: float,
         earned_hours,
         earned_cold: float,
-        data_: dict
+        data_: dict,
+        valute_data: dict[str, tuple[int, float]]
 ) -> None:
     """
     Save or update the user's settings.
@@ -56,21 +58,23 @@ async def write_salary(
     :param earned_hours: Earned in hours.
     :param earned_cold: Additional payment for the cold.
     :param data_: Dictionary with data to record.
+    :param valute_data: Information about the ruble exchange rate.
     """
     client: MongoDB = MongoDB()
     period: int = 1 if int(data_["date"][-2:]) <= 15 else 2
     parse_date = datetime.strptime(data_["date"], "%Y-%m-%d")
     user_id = data_["user_id"]
     earned = earned_hours + earned_cold
-
+    earned_in_valute = await calc_valute(earned, valute_data)
     data: dict = {
         "base_hours": float(base),
         "earned": float(earned),
         "earned_hours": earned_hours,
         "earned_cold": earned_cold,
         "period": period,
+        "valute": earned_in_valute,
+        "date_write": datetime.now(UTC)
     }
-
     collection = client.get_collection("salaries")
 
     collection.create_index(

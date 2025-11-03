@@ -3,6 +3,8 @@ from typing import Tuple, List
 
 from crud.add_shift import add_many_shifts
 from utils.current_day import earned_salary
+from utils.valute import get_valute_info
+from utils.calculate import calc_valute
 
 
 async def get_date(action: str) -> Tuple[int, int]:
@@ -55,6 +57,7 @@ async def create_list_salary(
     Нужна для добавления в бд зразу списка смен.
     """
     salary_list = []
+    valute_data: dict[str, tuple[int, float]] = await get_valute_info()
 
     for d in list_dates:
         # Определение периода (1 - первая половина месяца, 2 - вторая половина)
@@ -63,6 +66,7 @@ async def create_list_salary(
         # Преобразование строки даты в объект datetime
         parse_date: date = datetime.strptime(d, "%Y-%m-%d")
         earned: float = earned_hours + earned_cold
+        earned_in_valute = await calc_valute(earned, valute_data)
 
         data: dict = {
             "user_id": user_id,
@@ -72,6 +76,8 @@ async def create_list_salary(
             "earned_hours": earned_hours,
             "earned_cold": earned_cold,
             "period": period,
+            "valute": earned_in_valute,
+            "date_write": dt.now(UTC)
         }
         salary_list.append(data)
 

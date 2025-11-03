@@ -1,14 +1,14 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
-from loader import BACK, MENU
+from loader import BACK, MENU, BAX, EURO, YENA, SOM
 
 
 async def get_data_choices_day(salary: dict) -> InlineKeyboardMarkup:
     """
-    Генерирует инлайн-клавиатуру на основе наличия данных о зарплате.
+    Generate a keyboard to display data for a specific day.
 
-    :param salary: Словарь, содержащий информацию о зарплате.
-    :return: Инлайн-клавиатура с кнопками для взаимодействия с пользователем.
+    :param salary: A dictionary containing salary information.
+    :return: An inline keyboard with buttons for user interaction.
     """
     if not salary:
         return InlineKeyboardMarkup(
@@ -34,19 +34,35 @@ async def get_data_choices_day(salary: dict) -> InlineKeyboardMarkup:
                     )
                 ],
                 [
-                    InlineKeyboardButton(
-                        text="Добавить 📝",
-                        callback_data="add_note"
-                    ),
-                    InlineKeyboardButton(
-                        text="Показать 📝",
-                        callback_data="show_note"
-                    )
+                  InlineKeyboardButton(
+                      text=BAX,
+                      callback_data="dollar"
+                  ),
+                  InlineKeyboardButton(
+                      text=EURO,
+                      callback_data="euro"
+                  ),
+                  InlineKeyboardButton(
+                      text=YENA,
+                      callback_data="yena"
+                  ),
+                  InlineKeyboardButton(
+                      text=SOM,
+                      callback_data="som"
+                  )
                 ],
                 [
                     InlineKeyboardButton(
-                        text="Рассчет и добавление премии.",
+                        text="+ 📝",
+                        callback_data="add_note"
+                    ),
+                    InlineKeyboardButton(
+                        text="💵",
                         callback_data="award"
+                    ),
+                    InlineKeyboardButton(
+                        text="👀 📝",
+                        callback_data="show_note"
                     )
                 ]
             ]

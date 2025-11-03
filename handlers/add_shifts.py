@@ -49,10 +49,7 @@ async def input_selection_hours(
         callback: CallbackQuery,
         state: FSMContext
 ) -> None:
-    """
-    Обработчик обрабатывает выбранный месяц. И запрашивает у пользователя по
-    сколько часов проставить смены.
-    """
+    """Ask the user for the number of hours per shift."""
     year, month = await get_date(callback.data)
     current_date: date = date(year, month, 1)
 
@@ -72,11 +69,7 @@ async def input_selection_hours(
 @shifts_router.message(ShiftsState.month)
 @decorator_errors
 async def work_with_calendar(message: Message, state: FSMContext) -> None:
-    """
-    Обработчик введенных часов, получает число в зависимости от
-    пользовательского ввода. Показывает пользователю календарь за выбранный
-    месяц, чтобы выбрать дни для добавления смен.
-    """
+    """Show the user a calendar for choosing shifts."""
     data: Dict[str, str | float | list] = await state.get_data()
     year, month = int(data["year"]), int(data["month"])
     try:
@@ -90,8 +83,7 @@ async def work_with_calendar(message: Message, state: FSMContext) -> None:
 
     except ValueError:
         await message.answer(
-            "Введенные данные не соответствуют требованиям. \n"
-            "Пример: 6.5. Попробуйте еще раз.",
+            text=hbold("Некорректные данные.")
             reply_markup=cancel_button,
         )
 
@@ -100,8 +92,7 @@ async def work_with_calendar(message: Message, state: FSMContext) -> None:
 @decorator_errors
 async def toggle_day(callback: CallbackQuery, state: FSMContext) -> None:
     """
-    Обработчик выбранных дней. Добавляет или убирает дни в словарь, где ключ
-    идентификатор пользователя, значение множество выбранных дней.
+    Add or remove a shift from the collection.
     """
     day: str = callback.data.split("_")[1]
     data: dict = await state.get_data()
@@ -125,7 +116,7 @@ async def toggle_day(callback: CallbackQuery, state: FSMContext) -> None:
 @decorator_errors
 async def finish_add_shifts(callback: CallbackQuery, state: FSMContext) -> None:
     """
-    Обработчик выбранных дней, отправляет запрос на добавление смен в бд.
+    Save the marked days in the database.
     """
     user_id: int = callback.from_user.id
     if len(days_choices.get(user_id)) > 0:
