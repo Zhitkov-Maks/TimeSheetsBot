@@ -8,8 +8,11 @@ from aiogram.utils.markdown import hbold
 
 from config import BOT_TOKEN
 from crud.create import delete_record
-from handlers.bot_answer import send_calendar_and_message, processing_data, \
+from handlers.bot_answer import (
+    send_calendar_and_message,
+    processing_data,
     decorator_errors
+)
 from keyboards.keyboard import cancel_button, menu
 from loader import add_record_text, CURRENCY_SYMBOL
 from states.current_day import CreateState
@@ -96,12 +99,15 @@ async def create_award(message: Message, state: FSMContext) -> None:
         count_operation: int = int(message.text)
         data: dict = await state.get_data()
         current_id: str = data.get("current_day").get("_id")
-        _date, info_for_date = data.get("date"), data.get("current_day")
+        date_, info_for_date = data.get("date"), data.get("current_day")
+        
         update_current_day: dict = await earned_for_award(
-            count_operation, message.from_user.id, current_id
+            count_operation,
+            message.from_user.id,
+            current_id
         )
         text: str = await gen_message_for_choice_day(
-            update_current_day, _date
+            update_current_day, date_
         )
         await message.answer(
             text=text,

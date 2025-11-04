@@ -22,9 +22,7 @@ async def add_note(
     callback: CallbackQuery,
     state: FSMContext
 ) -> None:
-    """
-    Запроси у пользователя заметку и отправь на сохранение.
-    """
+    """Ask the user for a note."""
     data = await state.get_data()
     current_notes: str | None = data.get("current_day", {}).get("notes")
     await state.set_state(NoteState.description)
@@ -33,6 +31,7 @@ async def add_note(
         current_notes = notes_empty
     else:
         current_notes += f"\n\nДобавте еще запись:"
+
     await callback.message.answer(
         text=hbold(current_notes),
         reply_markup=back,
@@ -46,7 +45,7 @@ async def save_description(
     message: Message,
     state: FSMContext
 ) -> None:
-    """Сохрани заметку о выбранном дне."""
+    """Save the note."""
     input_note = message.text
     data = await state.get_data()
     
@@ -69,6 +68,7 @@ async def save_description(
 async def show_notes(
     callback: CallbackQuery, state: FSMContext
 ) -> None:
+    """Show a note for the selected day."""
     data = await state.get_data()
     current_notes: str | None = data.get("current_day", {}).get("notes")
     keyboard = note_action
@@ -90,7 +90,8 @@ async def back_by_current_day(
     callback: CallbackQuery,
     state: FSMContext
 ) -> None:
-    data = await state.get_data()
+    """Bring the user back to the selected day."""
+    data: dict = await state.get_data()
     current_day: str | None = data.get("current_day", {})
     await answer_after_operation(callback, current_day, "")
 
@@ -101,10 +102,11 @@ async def remove_note(
     callback: CallbackQuery,
     state: FSMContext
 ) -> None:
-    data = await state.get_data()
+    """Delete the note for the selected day."""
+    data: dict = await state.get_data()
     current_day: dict = data.get("current_day", {})
     current_day["notes"] = None
-    day_id = current_day.get("_id")
+    day_id: str = current_day.get("_id")
     await update_salary(day_id=day_id, data=current_day)
     
     action = "Заметки за выбранный день удалены.\n"

@@ -4,7 +4,17 @@ from typing import Dict, List, Tuple
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from loader import UNICODE_DATA, MONTH_DATA, DAYS_LIST, MENU, BACK
+from loader import (
+    UNICODE_DATA,
+    MONTH_DATA,
+    DAYS_LIST,
+    MENU,
+    BACK,
+    BAX,
+    EURO,
+    YENA,
+    SOM
+)
 
 
 async def get_dates(salary) -> Dict[str, int]:
@@ -201,6 +211,24 @@ async def get_month_menu() -> InlineKeyboardMarkup:
                 InlineKeyboardButton(
                     text=MENU,
                     callback_data="main"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text=BAX,
+                    callback_data="dollar_m"
+                ),
+                InlineKeyboardButton(
+                    text=EURO,
+                    callback_data="euro_m"
+                ),
+                InlineKeyboardButton(
+                    text=YENA,
+                    callback_data="yena_m"
+                ),
+                InlineKeyboardButton(
+                    text=SOM,
+                    callback_data="som_m"
                 )
             ],
             [

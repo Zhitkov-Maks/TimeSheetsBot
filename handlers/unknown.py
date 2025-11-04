@@ -14,11 +14,7 @@ unknown_rout = Router()
 async def handler_message_unknown(
         message: types.Message, state: FSMContext
 ) -> None:
-    """
-    Обрабатывает либо неизвестные команды, либо неправильный ввод,
-    когда например, нужно ввести число, а пользователь вводит строку, то
-    пользователь попадет сюда.
-    """
+    """Show the user that it is impossible to process his command."""
     await state.clear()
     await message.answer(text=unfamiliar_command, reply_markup=menu)
 
@@ -28,10 +24,5 @@ async def handler_message_unknown(
 async def handler_callback_unknown(
         callback: types.CallbackQuery, state: FSMContext
 ) -> None:
-    """
-    Обрабатывает кнопки, которые не содержат на себе никаких данных.
-    """
-    await callback.answer(
-        text="На меня не нужно нажимать, на мне нет никакой информации. "
-             "Надеюсь на понимание.", show_alert=True
-    )
+    """Show the user that it is impossible to process his command."""
+    await callback.answer(text=unfamiliar_command, show_alert=True)

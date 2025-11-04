@@ -3,7 +3,7 @@ from datetime import datetime as dt, UTC
 
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from loader import BACK
+from loader import BACK, BAX, YENA, EURO, SOM
 
 
 cancel: List[List[InlineKeyboardButton]] = [
@@ -82,6 +82,24 @@ async def back_to_information(next: bool, prev: bool) -> InlineKeyboardMarkup:
 
 async def next_prev_year(year) -> InlineKeyboardMarkup:
     buttons: list[list[InlineKeyboardButton]] = [
+        [
+            InlineKeyboardButton(
+                text=BAX,
+                callback_data="dollar_y"
+            ),
+            InlineKeyboardButton(
+                text=EURO,
+                callback_data="euro_y"
+            ),
+            InlineKeyboardButton(
+                text=YENA,
+                callback_data="yena_y"
+            ),
+            InlineKeyboardButton(
+                text=SOM,
+                callback_data="som_y"
+            )
+        ],
         [
             InlineKeyboardButton(
                 text="<<",

@@ -23,10 +23,7 @@ settings_router: Router = Router()
 async def choice_options_settings(
     callback: CallbackQuery, state: FSMContext
 ) -> None:
-    """
-    Обработчик запускает работу с настройками, показывает
-    чекбокс для настроек которые интересуют пользователя.
-    """
+    """Show the user's current settings."""
     await state.clear()
     settings: bool = settings_choices.get(callback.from_user.id)
     if settings:
@@ -46,7 +43,7 @@ async def toggle_action(
     callback_query: CallbackQuery,
     state: FSMContext
 ) -> None:
-    """Реализация чекбокса в виде инлайн клавиатуры."""
+    """Show me the keyboard in the form of a checkbox."""
     action: str = callback_query.data.split("-")[1]
     user_id: int = callback_query.from_user.id
 
@@ -70,10 +67,7 @@ async def toggle_action(
 async def finish_selection(
         call: CallbackQuery, state: FSMContext
 ) -> None:
-    """
-    Показываеться когда пользователь нажал ok, начинает спрашивать
-    ввод пользовательских настроек.
-    """
+    """Add or remove a check mark from the keyboard."""
     options: list[str] = list(settings_choices[call.from_user.id].keys())[::-1]
     await state.update_data(options=options)
     if len(options) == 0:
@@ -95,7 +89,7 @@ async def finish_selection(
 @settings_router.message(SettingsState.action)
 @decorator_errors
 async def save_account_name(mess: Message, state: FSMContext) -> None:
-    """The handler is called while there are raw fields."""
+    """Ask the user for input while there are still raw fields.."""
     data: dict = await state.get_data()
     options: list = data["options"]
     action: str = data["action"]
@@ -135,7 +129,7 @@ async def save_account_name(mess: Message, state: FSMContext) -> None:
 async def remove_user_settings(
         callback: CallbackQuery, state: FSMContext
 ) -> None:
-    """Обработчик для удаления текущих настроек."""
+    """Delete the current settings."""
     await delete_settings(callback.from_user.id)
     await callback.message.edit_text(
         text=hbold("Ваши настройки удалены."),

@@ -1,10 +1,12 @@
 import json
 
 import aiohttp
+from aiogram.fsm.context import FSMContext
 
 from loader import CURRENCY_SYMBOL
 from utils import current_day
 from utils.calculate import calc_valute
+from crud.statistics import aggregate_valute
 
 # the address for requesting the ruble exchange rate
 URL = "https://www.cbr-xml-daily.ru/daily_json.js"
@@ -58,6 +60,7 @@ async def gen_text(state: dict, name: str) -> str:
     
     :param state: A dictionary with all the data.
     :param name: Name of the currency.
+    :return str: A line with information in the selected currency.
     """
     data: dict = await state.get_data()
     current_day: dict = data.get("current_day", {})
@@ -72,3 +75,25 @@ async def gen_text(state: dict, name: str) -> str:
     else:
         message = "Нет данных, обновите запись."
     return message
+
+
+async def get_valute_for_month(
+    year: int,
+    month: int,
+    user_id: int,
+    state: FSMContext,
+    name: str
+) -> str:
+    """
+    Get the currency data.
+    
+    :param year: The year for the request.
+    :param month: The month for the request.
+    :param user_id: The user's ID.
+    :param state: It is needed to reduce the number of requests.
+    :prama name: The name of the currency.
+    :param str: A message to the user.
+    """
+    data: dict[str: float] = await aggregate_valute(year, month, user_id)
+    await state.update_data(valute_data=data)
+    return f"{data[name]:,}{CURRENCY_SYMBOL[name]}"

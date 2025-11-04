@@ -20,11 +20,11 @@ async def get_list_transaction(
     callback: CallbackQuery,
     state: FSMContext
 ) -> None:
-    """Обработчик просмотра прочих доходов и списаний(Штрафы и т.д)."""
-    income = False if callback.data == "list_expenses" else True
-    data = await state.get_data()
+    """Show other income or expenses."""
+    income: bool = False if callback.data == "list_expenses" else True
+    data: dict = await state.get_data()
     year, month = data["year"], data["month"]
-    result = await get_other_incomes_expenses(
+    result: list = await get_other_incomes_expenses(
         callback.from_user.id,
         year,
         month,
@@ -34,9 +34,9 @@ async def get_list_transaction(
         result, income, page=1
     )
     if message is None:
-        await callback.message.answer(
+        await callback.answer(
             text="Записей не найдено!",
-            reply_markup=menu
+            show_alert=True
         )
     else:
         await state.update_data(
@@ -54,7 +54,8 @@ async def get_list_transaction(
 async def next_page_transaction(
     callback: CallbackQuery, state: FSMContext
 ) -> None:
-    data = await state.get_data()
+    """Show the previous or next page."""
+    data: dict = await state.get_data()
     page, result, income = data["page"], data["transaction"], data["income"]
 
     if callback.data == "next_tr":
@@ -77,14 +78,15 @@ async def next_page_transaction(
 async def remove_transaction(
     callback: CallbackQuery, state: FSMContext
 ) -> None:
-    data = await state.get_data()
+    """Delete the transaction."""
+    data: dict = await state.get_data()
     income, _id, year, month = (
         data["income"], data["id"], int(data["year"]), int(data["month"])
     )
-    collections = "other_income" if income else "expences"
+    collections: str = "other_income" if income else "expences"
     await remove_other_income_expese(collections, _id)
     year, month = await get_date(data, data)
-    result = await get_other_incomes_expenses(
+    result: list = await get_other_incomes_expenses(
         callback.from_user.id,
         year,
         month,
@@ -94,9 +96,9 @@ async def remove_transaction(
         result, income, page=1
     )
     if message is None:
-        await callback.message.answer(
+        await callback.answer(
             text="Записей не найдено!",
-            reply_markup=menu
+            show_alert=True
         )
     else:
         await state.update_data(
@@ -115,7 +117,7 @@ async def create_other_income(
     callback: CallbackQuery,
     state: FSMContext
 ) -> None:
-    """Обработчик добавления прочего дохода."""
+    """Add other income or expense."""
     if callback.data == "other_income":
         await state.update_data(type_="income")
         text = "Введите сумму прочего дохода"
@@ -124,7 +126,7 @@ async def create_other_income(
         text = "Введите сумму расхода"
 
     await state.set_state(SalaryState.amount)
-    await callback.message.answer(
+    await callback.message.edit_text(
         text=text,
         reply_markup=back,
         parse_mode="HTML"
@@ -136,6 +138,7 @@ async def create_description_income(
     message: Message,
     state: FSMContext
 ) -> None:
+    """Add a description to the transaction."""
     try:
         await state.update_data(amount=float(message.text))
         await state.set_state(SalaryState.description)
@@ -157,9 +160,10 @@ async def write_other_income(
     message: Message,
     state: FSMContext
 ) -> None:
+    """Save the transaction."""
     await state.update_data(description=message.text)
-    data = await state.get_data()
-    result = await write_other(data, message.from_user.id)
+    data: dict = await state.get_data()
+    result: bool = await write_other(data, message.from_user.id)
     if result:
         await message.answer(
             text="Запись успешно добавлена.",

@@ -139,7 +139,23 @@ async def statistics_for_year(year: int, user_id: int) -> dict:
             "$group": {
                 "_id": None,
                 "total_hours": {"$sum": "$base_hours"},
-                "total_earned": {"$sum": "$earned"}
+                "total_earned": {"$sum": "$earned"},
+                "total_award": {"$sum": "$award_amount"},
+                "dollar": {"$sum": "$valute.dollar"},
+                "euro": {"$sum": "$valute.euro"},
+                "yena": {"$sum": "$valute.yena"},
+                "som": {"$sum": "$valute.som"}
+            }
+        },
+        {
+            "$project": {
+                "total_hours": {"$round": ["$total_hours", 2]},
+                "total_earned": {"$round": ["$total_earned", 2]},
+                "total_award": {"$round": ["$total_award", 2]},
+                "dollar": {"$round": ["$dollar", 2]},
+                "euro": {"$round": ["$euro", 2]},
+                "yena": {"$round": ["$yena", 2]},
+                "som": {"$round": ["$som", 2]}
             }
         }
     ]
@@ -182,7 +198,8 @@ async def aggregate_data(
                 "total_earned": {"$sum": "$earned"},
                 "total_earned_hours": {"$sum": "$earned_hours"},
                 "total_earned_cold": {"$sum": "$earned_cold"},
-                "total_award": {"$sum": "$award_amount"}
+                "total_award": {"$sum": "$award_amount"},
+                "total_operations": {"$sum": "$count_operations"}
             }
         }
     ]
@@ -242,3 +259,51 @@ async def get_other_sum(
     finally:
         if client:
             client.close()
+
+
+async def aggregate_valute(
+    year: int, month: int, user_id: int
+) -> dict:
+    """
+    Calculate the amount of hours worked for the period 
+    and the amount of payment for the hours.
+
+    :param user_id: The user's ID.
+    :param year: The transmitted year.
+    :param month: The transferred month.
+    """
+    client: MongoDB = MongoDB()
+    collection = client.get_collection("salaries")
+    start_date = datetime(year, month, 1)
+    end_date = start_date + relativedelta(months=1)
+
+    pipeline = [
+        {
+            "$match": {
+                "user_id": user_id,
+                "date": {"$gte": start_date, "$lt": end_date}
+            }
+        },
+        {
+            "$group": {
+                "_id": None,
+                "dollar": {"$sum": "$valute.dollar"},
+                "euro": {"$sum": "$valute.euro"},
+                "yena": {"$sum": "$valute.yena"},
+                "som": {"$sum": "$valute.som"}
+            }
+        },
+        {
+        "$project": {
+            "dollar": {"$round": ["$dollar", 2]},
+            "euro": {"$round": ["$euro", 2]},
+            "yena": {"$round": ["$yena", 2]},
+            "som": {"$round": ["$som", 2]}
+            }
+        }
+    ]
+
+    result = collection.aggregate(pipeline).to_list()
+    if len(result) != 0:
+        return result[0]
+    return {}

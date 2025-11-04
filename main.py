@@ -39,7 +39,7 @@ dp.include_router(unknown_rout)
 @dp.message(CommandStart())
 @decorator_errors
 async def handler_start(message: types.Message, state: FSMContext) -> None:
-    """Обработчик команды старт."""
+    """The handler for the start command."""
     await state.clear()
     await message.answer(text=start_text, reply_markup=menu)
 
@@ -50,7 +50,7 @@ async def handle_help_command(
     message: types.Message,
     state: FSMContext
 ) -> None:
-    """Обработчик команды main."""
+    """The handler for the main command."""
     await state.clear()
     await message.answer(main_text, reply_markup=menu)
 
@@ -58,7 +58,7 @@ async def handle_help_command(
 @dp.message(F.text == "/dev")
 @decorator_errors
 async def handler_dev(message: types.Message, state: FSMContext) -> None:
-    """Обработчик команды main."""
+    """The handler for the dev command."""
     await state.clear()
     button: List[List[InlineKeyboardButton]] = [
             [
@@ -80,6 +80,7 @@ async def process_email_button(
         callback_query: types.CallbackQuery,
         state: FSMContext
 ) -> None:
+    """Show the user the email."""
     await state.clear()
     await callback_query.message.answer(
         text="[m-zhitkov@inbox.ru](mailto:m-zhitkov@inbox.ru)",
@@ -91,7 +92,7 @@ async def process_email_button(
 @dp.callback_query(F.data == "main")
 @decorator_errors
 async def handler_help(callback: CallbackQuery, state: FSMContext) -> None:
-    """Обработчик команды main."""
+    """The handler for the main command."""
     await state.clear()
     await callback.message.edit_text(main_text, reply_markup=menu)
 
@@ -99,7 +100,7 @@ async def handler_help(callback: CallbackQuery, state: FSMContext) -> None:
 @dp.message(F.text == "/info")
 @decorator_errors
 async def guide_information(message: types.Message, state: FSMContext) -> None:
-    """Обработчик для команды info"""
+    """The handler for the info command."""
     await state.clear()
     for mess in GUIDE:
         await message.answer(text=mess)
@@ -110,7 +111,7 @@ async def guide_information(message: types.Message, state: FSMContext) -> None:
 
 
 async def main():
-    """Запуск бота."""
+    """Launch the bot."""
     try:
         await dp.start_polling(bot)
     finally:

@@ -1,4 +1,4 @@
-"""Вспомогательный модуль для подсчета зарплаты за выбранный день."""
+"""Auxiliary module for calculating salaries for a selected day."""
 
 from loader import MONTH_DATA, money
 from crud.settings import get_settings_user_by_id
@@ -7,19 +7,16 @@ from crud.get_data import get_salary_for_day, update_salary
 
 async def earned_per_shift(base: float, user_id: int) -> tuple[float, float]:
     """
-    Формируем сумму, заработанную за смену.
+    Generate the amount earned per shift..
 
-    :param base: Базовая ставка.
-    :param overtime: Доплата за переработку.
-    :param user_id: Id юзера.
-    :return: Заработанную сумму за месяц.
+    :param base: The base rate.
+    :param overtime: Additional payment for processing.
+    :param user_id: The user's ID.
+    :return: The earned amount for the month.
     """
     settings: dict = await get_settings_user_by_id(user_id)
     if not settings:
-        raise KeyError(
-            "Чтобы добавить запись необходимо указать ваши параметры"
-            " для расчета в настройках."
-            )
+        raise KeyError("Нет настроек для рассчета.")
 
     price: float = settings.get("price_time", 0)
     cold: float = settings.get("price_cold", 0)
@@ -31,12 +28,11 @@ async def earned_per_shift(base: float, user_id: int) -> tuple[float, float]:
 
 async def earned_salary(time: float, user_id: int) -> tuple:
     """
-    Промежуточная функция, для получения нужных нам данных
-    для вывода сообщения.
-    :param time: Отработанное время.
-    :param overtime: Переработано.
-    :param user_id: Id пользователя.
-    :return: Кортеж с временем, переработкой, заработком.
+    Return the data for display to the user.
+    
+    :param time: Time worked.
+    :param user_id: The user's ID.
+    :return: A tuple with time, processing, and earnings.
     """
     earned_hours, earned_cold = await earned_per_shift(time, user_id)
     return time, earned_hours, earned_cold
@@ -44,11 +40,11 @@ async def earned_salary(time: float, user_id: int) -> tuple:
 
 async def gen_message_for_choice_day(salary: dict, choice_date: str) -> str:
     """
-    Генерируем простое сообщения по з/п за выбранную смену для пользователя.
+    Generate salary messages for the selected shift for the user.
 
-    :param choice_date: Переданная дата из календаря.
-    :param salary: Заработок за определенный день.
-    :return: Сообщение для пользователя.
+    :param choice_date: The transmitted date from the calendar.
+    :param salary: Earnings for a certain day.
+    :return: A message for the user.
     """
     month, day = int(choice_date[5:7]), choice_date[8:]
     day_month: str = f"{MONTH_DATA[month]} {day}"
@@ -60,9 +56,10 @@ async def gen_message_for_choice_day(salary: dict, choice_date: str) -> str:
         detail_message += (
             f"Доплата за холод: {salary.get("earned_cold")}{money}.\n"
         )
-    if salary.get("award_amount"):
+    if salary.get("award_amount") is not None:
+        count: int = int(salary.get("count_operations", 0))
         detail_message += (
-            f"Примия: {salary.get("award_amount")}{money}.\n"
+            f"Премия: {salary.get("award_amount")}{money}({count})\n"
         )
 
     return (
@@ -77,10 +74,10 @@ async def gen_message_for_choice_day(salary: dict, choice_date: str) -> str:
 
 async def valid_time(time: str) -> float:
     """
-    Небольшая проверка входных данных.
+    Check the input data.
 
-    :param time: Строка с вводом от пользователя.
-    :return: Число типа флоат.
+    :param time: A string with user input.
+    :return: A float type number.
     """
     if float(time) > 24 or float(time) < 1:
         raise ValueError
@@ -91,8 +88,15 @@ async def earned_for_award(
     count_operations: int,
     user_id: int,
     day_id: str,
-) -> str:
-    """Посчитай премию и обнови запись о зп."""
+) -> dict:
+    """
+    Calculate the bonus and update the salary record.
+    
+    :param count_operations: The number of operations performed by the user.
+    :param user_id: The user's ID.
+    :param day_id: ID of the day.
+    :return dict: Dictionary with shift data.
+    """
     settings: dict = await get_settings_user_by_id(user_id)
     cost_award = settings.get("price_award")
     if cost_award is None:
@@ -110,6 +114,7 @@ async def earned_for_award(
 
     current_day.update(
         award_amount=earned_award,
+        count_operations=count_operations,
         earned=earned
     )
     await update_salary(day_id, current_day)

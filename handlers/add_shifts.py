@@ -83,8 +83,9 @@ async def work_with_calendar(message: Message, state: FSMContext) -> None:
 
     except ValueError:
         await message.answer(
-            text=hbold("Некорректные данные.")
+            text=hbold("Некорректные данные."),
             reply_markup=cancel_button,
+            parse_mode="HTML"
         )
 
 

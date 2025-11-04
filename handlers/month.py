@@ -11,10 +11,11 @@ from crud.statistics import get_information_for_month, get_info_by_date
 from handlers.bot_answer import decorator_errors
 from keyboards.current_day import get_data_choices_day
 from keyboards.month import create_calendar, get_month_menu
-from loader import date_pattern
+from loader import CURRENCY_SYMBOL, date_pattern
 from states.month import MonthState
 from utils.current_day import gen_message_for_choice_day
 from utils.month import get_date, generate_str
+from utils.valute import get_valute_for_month
 
 month_router = Router()
 
@@ -25,11 +26,7 @@ async def handle_info_current_month(
     callback: CallbackQuery,
     state: FSMContext
 ) -> None:
-    """
-    Обработчик для команды month_current. Получает информацию
-    о текущем месяце и формирует календарь пользователю, в котором
-    отмечены его смены.
-    """
+    """Show the calendar for the current month."""
     year: int = datetime.now().year
     month: int = datetime.now().month
     result = await get_information_for_month(
@@ -51,13 +48,11 @@ async def handle_info_current_month(
 )
 @decorator_errors
 async def choice_day_on_month(
-        callback: CallbackQuery,
-        state: FSMContext
+    callback: CallbackQuery,
+    state: FSMContext
 ) -> None:
     """
-    Обрабатывает выбранный день в календаре. При первом нажатии показывает
-    уведомление с данными за выбранный день, при повторном нажатии показывает
-    сообщение с данными и предложением добавить, изменить или удалить данные.
+    Show me the information for the day.
     """
     choice_date: str = callback.data
     info_for_date = await get_info_by_date(
@@ -81,8 +76,7 @@ async def show_monthly_data(
     state: FSMContext
 ) -> None:
     """
-    Обработчик кнопки при нажатии на месяц в календаре. Показывает общую
-    информацию за выбранный месяц в виде сообщения.
+    Show the information for the month.
     """
     data: Dict[str, str | int] = await state.get_data()
     year, month = data.get("year"), data.get("month")
@@ -98,16 +92,15 @@ async def show_monthly_data(
 @month_router.callback_query(F.data.in_(["next", "prev", "current"]))
 @decorator_errors
 async def next_and_prev_month(
-        callback: CallbackQuery,
-        state: FSMContext
+    callback: CallbackQuery,
+    state: FSMContext
 ) -> None:
     """
-    Обрабатывает команды на предыдущий или следующий месяц. Формирует календари
-    в зависимости от месяца.
+    Show the previous or next month.
     """
     data: Dict[str, str | int] = await state.get_data()
     year, month = await get_date(data, callback.data)
-    result = await get_information_for_month(
+    result: list = await get_information_for_month(
         callback.from_user.id, year, month
     )
     await state.update_data(year=year, month=month, result=result)
@@ -116,3 +109,34 @@ async def next_and_prev_month(
         text=f"Ваши данные за {month}/{year}",
         reply_markup=await create_calendar(result, year, month)
     )
+
+
+@month_router.callback_query(
+    F.data.in_(["dollar_m", "euro_m", "yena_m", "som_m"])
+)
+async def get_earned_in_valute_for_month(
+    callback: CallbackQuery, 
+    state: FSMContext
+) -> None:
+    """
+    Show the user the data of his earnings 
+    in the currency of month.
+    """
+    data: Dict[str, str | int] = await state.get_data()
+    name: str = callback.data.split("_")[0]
+    valute = data.get("valute_data", False)
+    if valute:
+        await callback.answer(
+            text=f"{valute[name]:,}{CURRENCY_SYMBOL[name]}",
+            show_alert=True
+        )
+    else:
+        name: str = callback.data.split("_")[0]
+        year, month = data.get("year"), data.get("month")
+        text: str = await get_valute_for_month(
+            year, month, callback.from_user.id, state, name
+        )
+        await callback.answer(
+            text=text,
+            show_alert=True
+        )
