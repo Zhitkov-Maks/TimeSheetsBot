@@ -85,7 +85,7 @@ async def add_award(callback: CallbackQuery, state: FSMContext) -> None:
     """Delete the entries for the selected day."""
     await state.set_state(CreateState.award)
     await callback.message.answer(
-        text=hbold("Введите количество выполненных операция за смену: "),
+        text=hbold("Введите количество выполненных операций за смену: "),
         reply_markup=cancel_button,
         parse_mode="HTML"
     )

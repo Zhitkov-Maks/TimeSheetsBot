@@ -3,6 +3,8 @@
 from loader import MONTH_DATA, money
 from crud.settings import get_settings_user_by_id
 from crud.get_data import get_salary_for_day, update_salary
+from utils.valute import get_valute_info
+from utils.calculate import calc_valute
 
 
 async def earned_per_shift(base: float, user_id: int) -> tuple[float, float]:
@@ -84,6 +86,11 @@ async def valid_time(time: str) -> float:
     return float(time)
 
 
+async def calc_in_currency(earned: float) -> float:
+    current_valute: dict[str, float] = await get_valute_info()
+    return await calc_valute(earned, current_valute)
+
+
 async def earned_for_award(
     count_operations: int,
     user_id: int,
@@ -111,11 +118,13 @@ async def earned_for_award(
         )
     else:
         earned = earned_award + current_day["earned"]
-
+        
+    currency: float = await calc_in_currency(earned)
     current_day.update(
         award_amount=earned_award,
         count_operations=count_operations,
-        earned=earned
+        earned=earned,
+        valute=currency
     )
     await update_salary(day_id, current_day)
     return current_day
