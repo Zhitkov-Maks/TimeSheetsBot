@@ -106,6 +106,7 @@ async def create_award(message: Message, state: FSMContext) -> None:
             message.from_user.id,
             current_id
         )
+        await state.update_data(current_day=update_current_day)
         text: str = await gen_message_for_choice_day(
             update_current_day, date_
         )
