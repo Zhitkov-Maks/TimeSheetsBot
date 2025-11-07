@@ -3,7 +3,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram import types
 
 from handlers.bot_answer import decorator_errors
-from keyboards.keyboard import menu
+from keyboards.keyboard import back
 from loader import unfamiliar_command
 
 unknown_rout = Router()
@@ -16,7 +16,7 @@ async def handler_message_unknown(
 ) -> None:
     """Show the user that it is impossible to process his command."""
     await state.clear()
-    await message.answer(text=unfamiliar_command, reply_markup=menu)
+    await message.answer(text=unfamiliar_command, reply_markup=back)
 
 
 @unknown_rout.callback_query(F.data)

@@ -9,11 +9,11 @@ from aiogram.types import InlineKeyboardMarkup
 
 from loader import success_text
 from utils.current_day import earned_salary
-from utils.month import create_message
+from utils.month.month import create_message
 from utils.valute import get_valute_info
 from crud.create import write_salary
 from config import bot
-from keyboards.keyboard import menu
+from keyboards.keyboard import back
 
 
 logger = logging.getLogger(__name__)
@@ -67,7 +67,7 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
             )
             await state.clear()
             mess: str = str(err)
-            await bot.send_message(arg.from_user.id, mess, reply_markup=menu)
+            await bot.send_message(arg.from_user.id, mess, reply_markup=back)
 
         except TelegramNetworkError:
             logger.error(
@@ -81,7 +81,7 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
             mess: str = (
                 "У нас проблемы с интернетом, попробуйте зайти чуть позже."
             )
-            await bot.send_message(arg.from_user.id, mess, reply_markup=menu)
+            await bot.send_message(arg.from_user.id, mess, reply_markup=back)
 
         except TelegramBadRequest:
             logger.error(
@@ -95,7 +95,7 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
             mess: str = (
                 "Сбой работы приложения. Попробуйте еще раз."
             )
-            await bot.send_message(arg.from_user.id, mess, reply_markup=menu)
+            await bot.send_message(arg.from_user.id, mess, reply_markup=back)
 
         # If something unexpected has happened.
         except Exception as e:
@@ -110,7 +110,7 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
             mess: str = (
                 "Сбой. Попробуйте еще раз."
             )
-            await bot.send_message(arg.from_user.id, mess, reply_markup=menu)
+            await bot.send_message(arg.from_user.id, mess, reply_markup=back)
 
     return wrapper
 

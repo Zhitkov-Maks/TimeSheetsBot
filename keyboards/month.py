@@ -86,14 +86,11 @@ async def generate_base_calendar(
             if numbers_list[day] == " ":
                 text = " "
 
-            elif create_date == current_date:
-                text = f"[ {numbers_list[day]} ]"
-
             elif create_date in dates:
                 text = f"{numbers_list[day]} {UNICODE_DATA[dates[create_date]]}"
 
             else:
-                text = f"{numbers_list[day]} 𝅽"
+                text = f"{{ {numbers_list[day]} }}"
 
             row.append(
                 InlineKeyboardButton(text=text, callback_data=create_date)
@@ -106,7 +103,8 @@ async def generate_base_calendar(
 async def create_calendar(
         salary,
         year: int,
-        month: int
+        month: int,
+        data: tuple[tuple]
 ) -> InlineKeyboardMarkup:
     """
     Генерирует календарь за указанный месяц.
@@ -137,23 +135,42 @@ async def create_calendar(
         day_week, days_in_month, days
     )
 
-    # Добавление заголовка месяца в клавиатуру
-    month_keyword.append(
-        [
-            InlineKeyboardButton(text=f"{MONTH_DATA[month]} {year}г",
-                                 callback_data="calendar")]
-    )
-
     # Формирование строк с днями недели и их значениями
     await generate_base_calendar(
         field_size, numbers_list, dates, month_keyword, year, month
+    )
+    
+    # Добавление информации о зп за периоды.
+    month_keyword.append(
+        [
+            InlineKeyboardButton(
+                text=f"{data[0][0]:,}₽/{data[0][1]}ч",
+                callback_data="period1"
+            ),
+            InlineKeyboardButton(
+                text=f"{data[1][0]:,}₽/{data[1][1]}ч",
+                callback_data="period2"
+            ),
+        ]
     )
 
     # Добавление кнопок навигации внизу календаря
     month_keyword.append(
         [
-            InlineKeyboardButton(text="<<", callback_data="prev"),
-            InlineKeyboardButton(text=MENU, callback_data="main"),
+            InlineKeyboardButton(
+                text=f"Итого: {data[2][0]:,}₽ / {data[2][1]}ч.",
+                callback_data="total_amount"
+            )
+        ]
+    )
+    
+    # Добавление заголовка месяца в клавиатуру
+    month_keyword.append(
+        [   InlineKeyboardButton(text="<<", callback_data="prev"),
+            InlineKeyboardButton(
+                text=f"{MONTH_DATA[month]} {year}г",
+                callback_data="calendar"
+            ),
             InlineKeyboardButton(text=">>", callback_data="next"),
         ]
     )

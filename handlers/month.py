@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Dict
 
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from aiogram import Router
 from aiogram import F
 from aiogram.utils.markdown import hbold
@@ -14,30 +14,40 @@ from keyboards.month import create_calendar, get_month_menu
 from loader import CURRENCY_SYMBOL, date_pattern
 from states.month import MonthState
 from utils.current_day import gen_message_for_choice_day
-from utils.month import get_date, generate_str
+from utils.month.month import get_date, generate_str
+from utils.month.period import (
+    get_amount_and_hours_for_month,
+    get_message_for_period
+)
 from utils.valute import get_valute_for_month
 
 month_router = Router()
 
 
-@month_router.callback_query(F.data == "month_current")
+@month_router.message(F.text == "/main")
 @decorator_errors
 async def handle_info_current_month(
-    callback: CallbackQuery,
+    message: Message,
     state: FSMContext
 ) -> None:
     """Show the calendar for the current month."""
     year: int = datetime.now().year
     month: int = datetime.now().month
     result = await get_information_for_month(
-        callback.from_user.id, year, month
+        message.from_user.id, year, month
+    )
+    
+    data: tuple[tuple] = (
+        await get_amount_and_hours_for_month(
+            year, month, message.from_user.id, state
+        )
     )
 
     await state.set_state(MonthState.choice)
     await state.update_data(year=year, month=month, result=result)
-    await callback.message.edit_text(
-        text=f"Ваши данные за {month}/{year}",
-        reply_markup=await create_calendar(result, year, month),
+    await message.answer(
+        text=hbold("Ваши смены на календаре."),
+        reply_markup=await create_calendar(result, year, month, data),
         parse_mode="HTML"
     )
 
@@ -63,7 +73,7 @@ async def choice_day_on_month(
         info_for_date, choice_date
     )
     await callback.message.edit_text(
-        text=message,
+        text=hbold(message),
         parse_mode="HTML",
         reply_markup=await get_data_choices_day(info_for_date)
     )
@@ -105,15 +115,24 @@ async def next_and_prev_month(
     )
     await state.update_data(year=year, month=month, result=result)
     await state.set_state(MonthState.choice)
+    
+    data: tuple = (
+        await get_amount_and_hours_for_month(
+            year, month, callback.from_user.id, state
+        )
+    )
+    
     await callback.message.edit_text(
-        text=f"Ваши данные за {month}/{year}",
-        reply_markup=await create_calendar(result, year, month)
+        text=hbold("Ваши смены на календаре!"),
+        reply_markup=await create_calendar(result, year, month, data),
+        parse_mode="HTML"
     )
 
 
 @month_router.callback_query(
     F.data.in_(["dollar_m", "euro_m", "yena_m", "som_m"])
 )
+@decorator_errors
 async def get_earned_in_valute_for_month(
     callback: CallbackQuery, 
     state: FSMContext
@@ -140,3 +159,26 @@ async def get_earned_in_valute_for_month(
             text=text,
             show_alert=True
         )
+
+
+@month_router.callback_query(
+    F.data.in_(["period1", "period2", "total_amount"])
+)
+@decorator_errors
+async def get_information_for_period(
+    callback: CallbackQuery,
+    state: FSMContext
+ ) -> None:
+    """Show more detailed information for the period or month."""
+    data: dict = await state.get_data()
+    period: str = callback.data
+    if "total" not in period:
+         data_ = data.get(period)
+    else:
+        data_ = data.get("for_month")
+        
+    mess: str = await get_message_for_period(data_, period)
+    await callback.answer(
+         text=mess,
+         show_alert=True,
+    )

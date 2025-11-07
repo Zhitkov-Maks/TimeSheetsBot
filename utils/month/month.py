@@ -1,4 +1,4 @@
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime, UTC
 from typing import Tuple, Dict
 import asyncio
 
@@ -13,6 +13,7 @@ from crud.statistics import (
     get_other_sum
 )
 from crud.settings import get_settings_user_by_id
+from .calc import data_calculation
 
 from loader import money, MONTH_DATA
 
@@ -98,61 +99,6 @@ async def get_data_from_db(year: int, month: int, user_id: int) -> tuple:
             return_exceptions=False
         )
     )
-    
-
-async def calculation_by_part(data: dict) -> tuple[float]:
-    """
-    Return the tuple with the necessary data.
-    
-    :param data: A dictionary with input data.
-    :return list: A list with calculation data.
-    """
-    earned: float = data.get("total_earned", 0)
-    hours: float = data.get("total_base_hours", 0)
-    earned_hours: float = data.get("total_earned_hours")
-    award: float = data.get("total_award", 0)
-    count_operations: float = data.get("total_operations", 0)
-    earned_cold: float = data.get("total_earned_cold", 0)
-    return (
-        earned,
-        hours,
-        award,
-        count_operations,
-        earned_cold,
-        earned_hours
-    )
-
-    
-async def data_calculation(
-    data: tuple
-) -> list[tuple | float]:
-    """
-    Collect the data for further work with them.
-    
-    :param data: A tuple with data.
-    :return list: A list with data.
-    """
-    period_1: tuple = await calculation_by_part(data[0])
-    period_2: tuple = await calculation_by_part(data[1])
-    
-    hours: float = period_1[1] + period_2[1]
-    income: float = data[2].get("total_sum", 0)
-    expense: float = data[3].get("total_sum", 0)
-    award: float = period_1[2] + period_2[2]
-    operations: float = period_1[3] + period_2[3]
-    total_earned: float = (
-        period_1[0] + period_2[0] + award + income - expense
-    )
-    return [
-        period_1,
-        period_2,
-        income,
-        expense,
-        award,
-        operations,
-        total_earned,
-        hours
-    ]
 
 
 async def generate_str(year: int, month: int, user_id: int) -> str:
@@ -208,8 +154,12 @@ async def get_date(data: Dict[str, str], action: str) -> Tuple[int, int]:
     :param action: The selected action is prev or next.
     :return: Year and month.
     """
-    parse_date: date = date(int(data["year"]), int(data["month"]), 5)
-
+    year, month = data.get("year"), data.get("month")
+    if year is None and month is None:
+        current_date = datetime.now(UTC)
+        return current_date.year, current_date.month
+    
+    parse_date: date = date(int(year), int(month), 5)
     if action == "prev":
         find_date: date = parse_date - timedelta(days=30)
 

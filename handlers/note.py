@@ -4,8 +4,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.utils.markdown import hbold
 
 from handlers.bot_answer import decorator_errors
-from keyboards import keyboard
-from keyboards.keyboard import cancel_button, menu
 from keyboards.note import note_action, back
 from states.note import NoteState
 from crud.get_data import update_salary

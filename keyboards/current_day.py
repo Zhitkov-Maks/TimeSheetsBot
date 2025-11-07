@@ -15,24 +15,13 @@ async def get_data_choices_day(salary: dict) -> InlineKeyboardMarkup:
             inline_keyboard=[
                 [
                     InlineKeyboardButton(text="➕", callback_data="add"),
-                    InlineKeyboardButton(text=MENU, callback_data="main"),
-                    InlineKeyboardButton(
-                        text=BACK, callback_data="current"
-                    )
+                    InlineKeyboardButton(text=BACK, callback_data="current")
                 ],
             ]
         )
     else:
         return InlineKeyboardMarkup(
             inline_keyboard=[
-                [
-                    InlineKeyboardButton(text="✘", callback_data="del"),
-                    InlineKeyboardButton(text=MENU, callback_data="main"),
-                    InlineKeyboardButton(text="✍", callback_data="change"),
-                    InlineKeyboardButton(
-                        text=BACK, callback_data="current"
-                    )
-                ],
                 [
                   InlineKeyboardButton(
                       text=BAX,
@@ -50,6 +39,11 @@ async def get_data_choices_day(salary: dict) -> InlineKeyboardMarkup:
                       text=SOM,
                       callback_data="som"
                   )
+                ],
+                [
+                    InlineKeyboardButton(text="✘", callback_data="del"),
+                    InlineKeyboardButton(text="✍", callback_data="change"),
+                    InlineKeyboardButton(text=BACK, callback_data="current")
                 ],
                 [
                     InlineKeyboardButton(

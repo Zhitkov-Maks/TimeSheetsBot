@@ -9,7 +9,7 @@ from aiogram.utils.markdown import hbold
 from config import BOT_TOKEN
 from handlers.bot_answer import send_calendar_and_message, decorator_errors
 from keyboards.add_shifts import get_days_keyboard, days_choices
-from keyboards.keyboard import cancel_button, menu
+from keyboards.keyboard import cancel_button, back
 from keyboards.add_shifts import prediction_button
 from loader import MONTH_DATA
 from states.add_shifts import ShiftsState
@@ -137,6 +137,6 @@ async def finish_add_shifts(callback: CallbackQuery, state: FSMContext) -> None:
     else:
         await state.clear()
         await callback.message.edit_text(
-            text="Вы ничего не выбрали, открываю вам меню!",
-            reply_markup=menu
+            text="Вы ничего не выбрали, открываю вам календарь!",
+            reply_markup=back
         )

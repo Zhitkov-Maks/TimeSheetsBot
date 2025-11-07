@@ -87,7 +87,6 @@ async def get_days_keyboard(
 
     month_keyword.append([
         InlineKeyboardButton(text="🆗", callback_data="shift_finish"),
-        InlineKeyboardButton(text=MENU, callback_data="main"),
         InlineKeyboardButton(text="📅", callback_data="month_current")
     ])
     return InlineKeyboardMarkup(inline_keyboard=month_keyword)
@@ -143,8 +142,8 @@ async def prediction_button() -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton(
-                text="Вернуться в меню",
-                callback_data="main"
+                text="Календарь",
+                callback_data="current"
             ),
         ]
     ])

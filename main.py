@@ -4,11 +4,7 @@ from typing import List
 from aiogram import Dispatcher, types, F
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import (
-    CallbackQuery,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton
-)
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from config import bot
 from handlers.bot_answer import decorator_errors
@@ -21,7 +17,6 @@ from handlers.unknown import unknown_rout
 from handlers.statistic import statistick_router
 from handlers.note import note_rout
 
-from keyboards.keyboard import menu
 from loader import start_text, GUIDE, main_text
 
 
@@ -42,17 +37,6 @@ async def handler_start(message: types.Message, state: FSMContext) -> None:
     """The handler for the start command."""
     await state.clear()
     await message.answer(text=start_text, reply_markup=menu)
-
-
-@dp.message(F.text == "/main")
-@decorator_errors
-async def handle_help_command(
-    message: types.Message,
-    state: FSMContext
-) -> None:
-    """The handler for the main command."""
-    await state.clear()
-    await message.answer(main_text, reply_markup=menu)
 
 
 @dp.message(F.text == "/dev")
@@ -87,14 +71,6 @@ async def process_email_button(
         parse_mode="Markdown",
         reply_markup=menu
     )
-
-
-@dp.callback_query(F.data == "main")
-@decorator_errors
-async def handler_help(callback: CallbackQuery, state: FSMContext) -> None:
-    """The handler for the main command."""
-    await state.clear()
-    await callback.message.edit_text(main_text, reply_markup=menu)
 
 
 @dp.message(F.text == "/info")

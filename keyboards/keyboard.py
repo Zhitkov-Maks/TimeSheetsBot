@@ -7,30 +7,15 @@ from loader import BACK, BAX, YENA, EURO, SOM
 
 
 cancel: List[List[InlineKeyboardButton]] = [
-    [InlineKeyboardButton(text="Отмена", callback_data="main")]
+    [InlineKeyboardButton(text="Отмена", callback_data="current")]
 ]
 
 confirm: List[List[InlineKeyboardButton]] = [
     [
-        InlineKeyboardButton(text="Отмена", callback_data="main"),
+        InlineKeyboardButton(text="Отмена", callback_data="current"),
         InlineKeyboardButton(text="Продолжить", callback_data="continue"),
     ]
 ]
-
-menu_button: List[List[InlineKeyboardButton]] = [
-        [
-            InlineKeyboardButton(text="📆", callback_data="month_current"),
-            InlineKeyboardButton(text="⚙️", callback_data="settings"),
-            InlineKeyboardButton(text="🛠", callback_data="many_add")
-        ],
-        [
-            InlineKeyboardButton(
-                text="Статистика за год",
-                callback_data="statistics"
-            )
-        ]
-    ]
-
 
 cancel_button: InlineKeyboardMarkup = InlineKeyboardMarkup(
     inline_keyboard=cancel
@@ -39,16 +24,11 @@ confirm_menu: InlineKeyboardMarkup = InlineKeyboardMarkup(
     inline_keyboard=confirm
 )
 
-menu: InlineKeyboardMarkup = InlineKeyboardMarkup(inline_keyboard=menu_button)
-
 back: InlineKeyboardMarkup = InlineKeyboardMarkup(
     inline_keyboard=[
         [
             InlineKeyboardButton(
-                text="Назад 🔙", callback_data="main"
-            ),
-            InlineKeyboardButton(
-                text="Кал-рь 📅", callback_data="month_current"
+                text="Кал-рь 📅", callback_data="current"
             )
         ]
     ]
@@ -59,7 +39,7 @@ async def back_to_information(next: bool, prev: bool) -> InlineKeyboardMarkup:
     buttons: list[list[InlineKeyboardButton]] = [
         [
             InlineKeyboardButton(text=BACK, callback_data="calendar"),
-            InlineKeyboardButton(text="Меню", callback_data="main")
+            InlineKeyboardButton(text="календарь", callback_data="current")
         ],
         [
             InlineKeyboardButton(
@@ -106,8 +86,8 @@ async def next_prev_year(year) -> InlineKeyboardMarkup:
                 callback_data="prev_year",
             ),
             InlineKeyboardButton(
-                text="Menu",
-                callback_data="main"
+                text="Календарь",
+                callback_data="current"
             )
         ]
     ]

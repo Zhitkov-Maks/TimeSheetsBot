@@ -13,7 +13,7 @@ from handlers.bot_answer import (
     processing_data,
     decorator_errors
 )
-from keyboards.keyboard import cancel_button, menu
+from keyboards.keyboard import cancel_button, back
 from loader import add_record_text, CURRENCY_SYMBOL
 from states.current_day import CreateState
 from utils.current_day import valid_time, earned_for_award
@@ -62,7 +62,7 @@ async def check_data(message: Message, state: FSMContext) -> None:
     except KeyError as err:
         await message.answer(
             text=hbold(str(err)),
-            reply_markup=menu,
+            reply_markup=back,
             parse_mode="HTML"
         )
 
