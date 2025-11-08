@@ -45,11 +45,10 @@ async def write_other(data: dict, user: int) -> bool:
 
 
 async def write_salary(
-        base: float,
-        earned_hours,
-        earned_cold: float,
-        data_: dict,
-        valute_data: dict[str, tuple[int, float]]
+    data: dict,
+    user_id: int,
+    date: datetime,
+    valute_data: dict[str, tuple[int, float]]
 ) -> None:
     """
     Save or update the user's settings.
@@ -61,20 +60,13 @@ async def write_salary(
     :param valute_data: Information about the ruble exchange rate.
     """
     client: MongoDB = MongoDB()
-    period: int = 1 if int(data_["date"][-2:]) <= 15 else 2
-    parse_date = datetime.strptime(data_["date"], "%Y-%m-%d")
-    user_id = data_["user_id"]
-    earned = earned_hours + earned_cold
-    earned_in_valute = await calc_valute(earned, valute_data)
-    data: dict = {
-        "base_hours": float(base),
-        "earned": float(earned),
-        "earned_hours": earned_hours,
-        "earned_cold": earned_cold,
-        "period": period,
-        "valute": earned_in_valute,
-        "date_write": datetime.now(UTC)
-    }
+    period: int = 1 if date.day <= 15 else 2
+    earned_in_valute = await calc_valute(data.get("earned"), valute_data)
+    data.update(
+        period=period,
+        valute=earned_in_valute,
+        date_write=datetime.now(UTC)
+    )
     collection = client.get_collection("salaries")
 
     collection.create_index(
@@ -85,7 +77,7 @@ async def write_salary(
     
     try:
         collection.update_one(
-            {"user_id": user_id, "date": parse_date},
+            {"user_id": user_id, "date": date},
             {"$set": data},
             upsert=True
         )
@@ -102,14 +94,17 @@ async def delete_record(date: str, user_id) -> None:
     :param date: The date of the record being deleted.
     :param user_id: The user's ID.
     """
-    client: MongoDB = MongoDB()
-    parse_date = datetime.strptime(date, "%Y-%m-%d")
-    collection = client.get_collection("salaries")
-    collection.delete_one({
-        "user_id": user_id,
-        "date": parse_date
-    })
-    client.close()
+    try:
+        client: MongoDB = MongoDB()
+        parse_date = datetime.strptime(date, "%Y-%m-%d")
+        collection = client.get_collection("salaries")
+        collection.delete_one({
+            "user_id": user_id,
+            "date": parse_date
+        })
+        client.close()
+    finally:
+        client.close()
 
 
 async def remove_other_income_expese(collections: str, id_: str) -> None:
@@ -119,9 +114,11 @@ async def remove_other_income_expese(collections: str, id_: str) -> None:
     :param collections: Type of collection (other income or expenses).
     :param id_: The ID of the record.
     """
-    client: MongoDB = MongoDB()
-    collection = client.get_collection(collections)
-    collection.delete_one({
-        "_id": id_
-    })
-    client.close()
+    try:
+        client: MongoDB = MongoDB()
+        collection = client.get_collection(collections)
+        collection.delete_one({
+            "_id": id_
+        })
+    finally:
+        client.close()

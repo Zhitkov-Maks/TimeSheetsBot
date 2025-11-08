@@ -8,12 +8,14 @@ async def create_settings(data: dict, user_id: int) -> None:
     :param data: A dictionary with the entered data.
     :param user_id: The user's ID.
     """
-    client = MongoDB()
-    collection = client.get_collection("users_settings")
-    collection.update_one(
-        {"user_id": user_id}, {"$set": data}, upsert=True
-    )
-    client.close()
+    try:
+        client = MongoDB()
+        collection = client.get_collection("users_settings")
+        collection.update_one(
+            {"user_id": user_id}, {"$set": data}, upsert=True
+        )
+    finally:
+        client.close()
 
 
 async def get_settings_user_by_id(user_id: int) -> dict:
@@ -22,13 +24,16 @@ async def get_settings_user_by_id(user_id: int) -> dict:
     
     :param user_id: The telegram ID.
     """
-    client: MongoDB = MongoDB()
-    collection = client.get_collection("users_settings")
-    data: dict | None = collection.find_one({"user_id": user_id})
-    client.close()
-    if data is not None:
-        return data
-    return {}
+    try:
+        client: MongoDB = MongoDB()
+        collection = client.get_collection("users_settings")
+        data: dict | None = collection.find_one({"user_id": user_id})
+
+        if data is not None:
+            return data
+        return {}
+    finally:
+        client.close()    
 
 
 async def delete_settings(user_id) -> None:
@@ -37,7 +42,9 @@ async def delete_settings(user_id) -> None:
 
     :param user_id: The telegram ID.
     """
-    client: MongoDB = MongoDB()
-    collection = client.get_collection("users_settings")
-    collection.delete_one({"user_id": user_id})
-    client.close()
+    try:
+        client: MongoDB = MongoDB()
+        collection = client.get_collection("users_settings")
+        collection.delete_one({"user_id": user_id})
+    finally:
+        client.close()
