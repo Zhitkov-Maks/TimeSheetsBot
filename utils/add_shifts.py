@@ -2,7 +2,7 @@ from datetime import datetime as dt, timedelta, datetime, date, UTC
 from typing import Tuple, List
 
 from crud.add_shift import add_many_shifts
-from utils.current_day import earned_salary
+from utils.current_day import earned_per_shift
 from utils.valute import get_valute_info
 from utils.calculate import calc_valute
 
@@ -34,15 +34,16 @@ async def create_data_by_add_shifts(
     :return: None.
     """
     # Вычисление базовой зарплаты и общей заработанной суммы.
-    base, earned_hours, earned_cold = await earned_salary(time, user_id)
+    #base, earned_hours, earned_cold = await earned_salary(time, user_id)
 
     # Создание списка объектов Salary на основе вычисленных данных и дат
-    salary_lis = await create_list_salary(
-        user_id, base, earned_hours, earned_cold, list_dates
-    )
+    #salary_lis = await create_list_salary(
+    #    user_id, base, earned_hours, earned_cold, list_dates
+    #)
 
     # Запись созданных объектов Salary в базу данных
-    await add_many_shifts(salary_lis)
+    #await add_many_shifts(salary_lis)
+    ...
 
 
 async def create_list_salary(

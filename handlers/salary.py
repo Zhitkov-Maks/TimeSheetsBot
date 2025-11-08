@@ -8,7 +8,7 @@ from keyboards.keyboard import back, back_to_information
 from crud.create import write_other, remove_other_income_expese
 from crud.statistics import get_other_incomes_expenses
 from states.salary import SalaryState
-from utils.month.month import get_date
+from utils.month import get_date
 from utils.common import parse_income_expense
 
 salary: Router = Router()

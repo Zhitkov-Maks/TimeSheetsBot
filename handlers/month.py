@@ -14,8 +14,8 @@ from keyboards.month import create_calendar, get_month_menu
 from loader import CURRENCY_SYMBOL, date_pattern
 from states.month import MonthState
 from utils.current_day import gen_message_for_choice_day
-from utils.month.month import get_date, generate_str
-from utils.month.period import (
+from utils.month import get_date, generate_str
+from utils.month import (
     get_amount_and_hours_for_month,
     get_message_for_period
 )

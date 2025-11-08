@@ -1,13 +1,80 @@
 """Auxiliary module for calculating salaries for a selected day."""
-
+from datetime import datetime, UTC
+from crud.create import write_salary
 from loader import MONTH_DATA, money
 from crud.settings import get_settings_user_by_id
-from crud.get_data import get_salary_for_day, update_salary
+from crud.get_data import get_hours_for_month, get_salary_for_day, update_salary
 from utils.valute import get_valute_info
 from utils.calculate import calc_valute
 
 
-async def earned_per_shift(base: float, user_id: int) -> tuple[float, float]:
+async def get_settings(user_id: int) -> tuple[float]:
+    """
+    Return the basic user settings.
+    
+    :param user_id: The user's ID.
+    """
+    settings: dict = await get_settings_user_by_id(user_id)
+    if not settings:
+        raise KeyError("Нет настроек для рассчета.")
+
+    price: float = float(settings.get("price_time", 0))
+    cold: float = float(settings.get("price_cold", 0))
+    overtime: float = float(settings.get("price_overtime", 0))
+    award: float = float(settings.get("price_award", 0))
+    return price, cold, overtime, award
+
+
+async def calculation_overtime(
+    settings: tuple,
+    time: float,
+    norm: int,
+    total_hours: float
+) -> tuple:
+    price, cold, overtime, _ = settings
+    time_over = (time + total_hours) - norm
+    earned = round(
+        min(time_over, time) * (price + overtime) + \
+        max((time - time_over), 0) * price, 2
+    )
+    return earned, min(time_over, time), overtime * min(time_over, time)
+
+
+async def earned_calculation(
+    settings: tuple,
+    time: float,
+    user_id: int,
+    date,
+):
+    configuration = dict()
+    year, month = date.year, date.month
+    total_hours = await get_hours_for_month(user_id, year, month)
+    norm_hours = 180 if month == 2 else 190
+    
+    earned_time = time * settings[0]
+    earned_cold = time * settings[1]
+    if settings[2] > 0 and (time + total_hours) > norm_hours:
+        earned_time, hours_overtime, earned_overtime = await calculation_overtime(
+            settings, time, norm_hours, total_hours
+        )
+        configuration.update(
+            hours_overtime=hours_overtime,
+            earned_overtime=earned_overtime
+        )
+    configuration.update(
+        base_hours=time,
+        earned=(earned_time + earned_cold),
+        earned_hours=earned_time,
+        earned_cold=earned_cold
+    )
+    return configuration
+
+
+async def earned_per_shift(
+    time: float,
+    user_id: int,
+    data: dict
+) -> tuple[float, float]:
     """
     Generate the amount earned per shift..
 
@@ -16,28 +83,14 @@ async def earned_per_shift(base: float, user_id: int) -> tuple[float, float]:
     :param user_id: The user's ID.
     :return: The earned amount for the month.
     """
-    settings: dict = await get_settings_user_by_id(user_id)
-    if not settings:
-        raise KeyError("Нет настроек для рассчета.")
+    settings = await get_settings(user_id)
+    date = datetime.strptime(data["date"], "%Y-%m-%d")
 
-    price: float = settings.get("price_time", 0)
-    cold: float = settings.get("price_cold", 0)
-
-    earned_hours: float = round(base * float(price), 2)
-    earned_cold: float = round(base * float(cold), 2)
-    return earned_hours, earned_cold
-
-
-async def earned_salary(time: float, user_id: int) -> tuple:
-    """
-    Return the data for display to the user.
+    salary = await earned_calculation(settings, time, user_id, date)
     
-    :param time: Time worked.
-    :param user_id: The user's ID.
-    :return: A tuple with time, processing, and earnings.
-    """
-    earned_hours, earned_cold = await earned_per_shift(time, user_id)
-    return time, earned_hours, earned_cold
+    valute_data: dict[str, tuple[int, float]] = await get_valute_info()
+    await write_salary(salary, user_id, date, valute_data)
+    return salary.get("earned")
 
 
 async def gen_message_for_choice_day(salary: dict, choice_date: str) -> str:

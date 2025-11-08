@@ -19,11 +19,11 @@ from loader import (
 
 async def get_dates(salary) -> Dict[str, int]:
     """
-    Функция для формирования словаря, где ключ дата,
-    а значение количество отработанных часов за выбранную дату.
+    Create a dictionary where the key is the date and the 
+    value is the number of hours worked for the selected date.
 
-    :param salary: Результат запроса к бд.
-    :return Dict: Словарь с датами и отработанными часами.
+    :param salary: The result of the database query.
+    :return Dict: A dictionary with dates and hours worked.
     """
     return {
         sal.get("date").strftime("%Y-%m-%d"): sal.get("base_hours")
@@ -32,18 +32,20 @@ async def get_dates(salary) -> Dict[str, int]:
 
 
 async def create_list_with_calendar_days(
-        day_week: int,
-        days_in_month: int,
-        days: int
+    day_week: int,
+    days_in_month: int,
+    days: int
 ) -> List[str]:
     """
-    Функция формирует список с днями календаря плюс пустые ячейки
-    перед первым числом, плюс пустые ячейки после последнего дня месяца.
+    Create a list with calendar days, 
+    plus empty cells before the first day, 
+    plus empty cells after the last day of the month.
 
-    :param day_week: Номер дня недели - первого числа месяца.
-    :param days_in_month: Всего дней в месяце.
-    :param days: Размер поля календаря.
-    :return List: Список с полем календаря.
+    :param day_week: The number of the day of the 
+                        week is the first of the month.
+    :param days_in_month: There are only days in a month.
+    :param days: The size of the calendar field.
+    :return List: A list with a calendar field.
     """
     return (
             [" "] * day_week
@@ -53,33 +55,32 @@ async def create_list_with_calendar_days(
 
 
 async def generate_base_calendar(
-        field_size: int,
-        numbers_list: List[str],
-        dates: Dict[str, int],
-        month_keyword: list,
-        year: int,
-        month: int
+    field_size: int,
+    numbers_list: List[str],
+    dates: Dict[str, int],
+    month_keyword: list,
+    year: int,
+    month: int
 ) -> None:
     """
-    Функция генерации основной части календаря. 
-    Заполняет календарь кнопками.
+    Generate a calendar displaying work shifts.
 
-    :param field_size: Размер поля календаря.
-    :param numbers_list: Поле календаря.
-    :param dates: Словарь с датами и заработком.
-    :param month_keyword: Непосредственно клавиатура в виде календаря.
-    :param year: Нужен для формирования даты.
-    :param month: Нужен для формирования даты.
-    :return List: Инлайн клавиатуру.
+    :param field_size: The size of the calendar field.
+    :param numbers_list: The calendar field.
+    :param dates: A dictionary with dates and earnings.
+    :param month_keyword: The keyboard itself is in the form of a calendar.
+    :param year: Year for generate the date.
+    :param month: A month for forming the date.
+    :return List: The inline keyboard.
     """
     current_date = str(dt.now().date())
-    for i in range(7):  # Для каждого дня недели (7 дней)
+    for i in range(7):  # For each day of the week (7 days)
         row: List[InlineKeyboardButton] = [
             InlineKeyboardButton(text=DAYS_LIST[i], callback_data=DAYS_LIST[i])
         ]
         day = i
 
-        # Для каждой строки в поле (в зависимости от размера)
+        # For each row in the field (depending on the size)
         for _ in range(field_size):
             create_date: str = f"{year}-{month:02}-{numbers_list[day]}"
 
@@ -210,6 +211,10 @@ async def get_month_range(
 
 
 async def get_month_menu() -> InlineKeyboardMarkup:
+    """
+    Turn back the keyboard to select actions when 
+    displaying information for the month.
+    """
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
@@ -226,8 +231,8 @@ async def get_month_menu() -> InlineKeyboardMarkup:
                     callback_data="list_expenses"
                 ),
                 InlineKeyboardButton(
-                    text=MENU,
-                    callback_data="main"
+                    text="📆",
+                    callback_data="current"
                 )
             ],
             [

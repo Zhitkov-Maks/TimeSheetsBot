@@ -1,34 +1,62 @@
 from datetime import date, timedelta, datetime, UTC
 from typing import Tuple, Dict
-import asyncio
 
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup
 
 from keyboards.month import create_calendar
 from states.month import MonthState
-from crud.statistics import (
-    get_information_for_month,
-    aggregate_data,
-    get_other_sum
-)
-from crud.settings import get_settings_user_by_id
-from .calc import data_calculation
-
+from crud.statistics import get_information_for_month
 from loader import money, MONTH_DATA
+from utils.calculate import data_calculation, generate_data
+from utils.settings import get_settings
+from utils.statistic import get_data_from_db
 
 
-async def get_settings(user_id: int) -> float:
+async def get_message_for_period(data: tuple, name: str) -> str:
     """
-    Return the user's settings.
+    Create a message to send to the user.
     
-    :param user_id: The user's ID.
+    :param data: A tuple with the necessary data.
+    :param name: The name of the command.
     """
-    settings: dict = await get_settings_user_by_id(user_id)
-    return (
-        float(settings.get("price_overtime", 0)),
-        float(settings.get("price_cold", 0))
+    number = f"{name[-1]} период" if name[-1].isdigit() else "месяц!"
+    message = f"Информация за {number}.\n"
+    message += f"Итого - {data[0]:,}{money}.\n"
+    message += f"Часы - {(data[0]-data[2]):,}{money}.\n"
+    message += f"Отработано часов - {data[1]}ч.\n"
+
+    if data[2]:
+        message += f"Премия - {data[2]:,}{money}({data[3]}).\n"
+    return message
+
+
+async def get_amount_and_hours_for_month(
+    year: int,
+    month: int,
+    user_id: int,
+    state: FSMContext
+) -> tuple[tuple]:
+    """
+    Return the most necessary data for display.
+    
+    :param year: A year to collect information.
+    :param month: A month to collect information.
+    :param user_id: User ID.
+    """
+    total_data: tuple = await get_data_from_db(year, month, user_id)
+    data: list = await data_calculation(total_data)
+    
+    period1: tuple[float] = (data[0][0], data[0][1])
+    period2: tuple[float] = (data[1][0], data[1][1])
+
+    await state.update_data(
+        period1=data[0],
+        period2=data[1],
+        for_month=await generate_data(data)
     )
+
+    return period1, period2, (data[6], data[7])
 
 
 async def create_message(
@@ -46,11 +74,17 @@ async def create_message(
     month: int = int(_date[5:7])
     await state.clear()
     await state.set_state(MonthState.choice)
+    
+    data: tuple[tuple] = (
+        await get_amount_and_hours_for_month(
+            year, month, user_id, state
+        )
+    )
 
     result = await get_information_for_month(user_id, year, month)
     await state.update_data(year=year, month=month, result=result)
 
-    return await create_calendar(result, year, month)
+    return await create_calendar(result, year, month, data)
 
 
 async def create_message_for_period(data: tuple, period: str) -> str:
@@ -78,26 +112,6 @@ async def create_message_for_period(data: tuple, period: str) -> str:
         f"Итого заработано: {data[0]:,}{money}.\n"
         f"Из них оплата часов: {data[5]:,}{money}.\n"
         f"{money_}\n"
-    )
-
-
-async def get_data_from_db(year: int, month: int, user_id: int) -> tuple:
-    """
-    Get the calculation data from the database.
-    
-    :param year: The year for the request.
-    :param month: The month for the request.
-    :param user_id: The user's ID.
-    :return tuple: A tuple with data.
-    """
-    return (
-        await asyncio.gather(
-            aggregate_data(year, month, user_id, period=1),
-            aggregate_data(year, month, user_id, period=2),
-            get_other_sum(year, month, user_id, "income"),
-            get_other_sum(year, month, user_id, "expence"),
-            return_exceptions=False
-        )
     )
 
 

@@ -34,7 +34,8 @@ async def on_date_today(callback: CallbackQuery, state: FSMContext) -> None:
     await state.update_data(action=callback.data, callback=callback.id)
     await state.set_state(CreateState.check_data)
     await callback.message.edit_text(
-        text=add_record_text, reply_markup=cancel_button
+        text=add_record_text,
+        reply_markup=cancel_button
     )
 
 

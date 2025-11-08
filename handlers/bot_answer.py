@@ -8,10 +8,8 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup
 
 from loader import success_text
-from utils.current_day import earned_salary
-from utils.month.month import create_message
-from utils.valute import get_valute_info
-from crud.create import write_salary
+from utils.current_day import earned_per_shift
+from utils.month import create_message
 from config import bot
 from keyboards.keyboard import back
 
@@ -131,15 +129,13 @@ async def processing_data(
     :param data: A dictionary containing additional data.
     :return: None
     """
-    base, earned_hours, earned_cold = await earned_salary(time, user_id)
+    salary_for_shifts = await earned_per_shift(time, user_id, data)
     callback: str = data.get("callback")
     await bot.answer_callback_query(
         callback_query_id=callback,
-        text=success_text.format(data["date"], earned_hours + earned_cold),
+        text=success_text.format(data["date"], salary_for_shifts),
         show_alert=True
     )
-    valute_data: dict[str, tuple[int, float]] = await get_valute_info()
-    await write_salary(base, earned_hours, earned_cold, data, valute_data)
     await send_calendar_and_message(user_id, data, state)
 
 

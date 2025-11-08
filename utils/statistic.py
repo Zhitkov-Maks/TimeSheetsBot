@@ -1,4 +1,27 @@
+import asyncio
 import calendar
+
+from crud.statistics import aggregate_data, get_other_sum
+
+
+async def get_data_from_db(year: int, month: int, user_id: int) -> tuple:
+    """
+    Get the calculation data from the database.
+    
+    :param year: The year for the request.
+    :param month: The month for the request.
+    :param user_id: The user's ID.
+    :return tuple: A tuple with data.
+    """
+    return (
+        await asyncio.gather(
+            aggregate_data(year, month, user_id, period=1),
+            aggregate_data(year, month, user_id, period=2),
+            get_other_sum(year, month, user_id, "income"),
+            get_other_sum(year, month, user_id, "expence"),
+            return_exceptions=False
+        )
+    )
 
 
 async def return_data(data: dict) -> tuple:

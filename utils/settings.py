@@ -1,5 +1,6 @@
 import re
 
+from crud.settings import get_settings_user_by_id
 from keyboards.settings import SETTINGS
 from database.db_conf import MongoDB
 from loader import money
@@ -49,3 +50,16 @@ async def validate_data(action: str, text: str) -> bool | None:
     """
     if action in SETTINGS:
         return bool(re.match(number_pattern, text))
+
+
+async def get_settings(user_id: int) -> float:
+    """
+    Return the user's settings.
+    
+    :param user_id: The user's ID.
+    """
+    settings: dict = await get_settings_user_by_id(user_id)
+    return (
+        float(settings.get("price_overtime", 0)),
+        float(settings.get("price_cold", 0))
+    )
