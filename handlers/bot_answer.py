@@ -114,10 +114,10 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
 
 
 async def processing_data(
-        user_id: int,
-        time: float,
-        state: FSMContext,
-        data: Dict[str, str | int]
+    user_id: int,
+    time: float,
+    state: FSMContext,
+    data: Dict[str, str | int]
 ) -> None:
     """
     Collect all the necessary data, send it to the database for saving, 
