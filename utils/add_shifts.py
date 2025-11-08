@@ -69,7 +69,7 @@ async def save_shifts_with_progress_bar(
         
         for i, d in enumerate(sorted_dates, 1):
             date = datetime.strftime(d, "%Y-%m-%d")
-            await earned_per_shift(time, user_id, date)
+            await earned_per_shift(time, user_id, date, {})
 
             progress_text = create_progress_text(
                 i, total, f"Сохранение смены {i}/{total}"
