@@ -22,7 +22,7 @@ async def handler_message_unknown(
 @unknown_rout.callback_query(F.data)
 @decorator_errors
 async def handler_callback_unknown(
-        callback: types.CallbackQuery, state: FSMContext
+    callback: types.CallbackQuery, state: FSMContext
 ) -> None:
     """Show the user that it is impossible to process his command."""
     await callback.answer(text=unfamiliar_command, show_alert=True)

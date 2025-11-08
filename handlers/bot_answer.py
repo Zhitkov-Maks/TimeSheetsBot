@@ -129,7 +129,8 @@ async def processing_data(
     :param data: A dictionary containing additional data.
     :return: None
     """
-    salary_for_shifts = await earned_per_shift(time, user_id, data)
+    date = data.get("date")
+    salary_for_shifts = await earned_per_shift(time, user_id, date, data)
     callback: str = data.get("callback")
     await bot.answer_callback_query(
         callback_query_id=callback,
@@ -140,9 +141,9 @@ async def processing_data(
 
 
 async def send_calendar_and_message(
-        user: int,
-        data: Dict[str, str],
-        state: FSMContext
+    user: int,
+    data: Dict[str, str],
+    state: FSMContext
 ) -> None:
     """
     Send a message to the user.
@@ -163,3 +164,4 @@ async def send_calendar_and_message(
         parse_mode="HTML",
         reply_markup=calendar,
     )
+

@@ -1,85 +1,122 @@
 from datetime import datetime as dt, timedelta, datetime, date, UTC
 from typing import Tuple, List
 
+import asyncio
+from aiogram.types import CallbackQuery
+
 from crud.add_shift import add_many_shifts
 from utils.current_day import earned_per_shift
 from utils.valute import get_valute_info
 from utils.calculate import calc_valute
+from keyboards.keyboard import back
 
 
 async def get_date(action: str) -> Tuple[int, int]:
     """
-    Функция для получения месяца и года для дальнейшей работы с ними.
+    Return the month and year for further work with them.
 
-    :param action: Строка, определяющая действие.
-    :return: Кортеж из двух целых чисел: (год, месяц).
+    :param action: The string defining the action.
+    :return: A tuple of two integers: (year, month).
     """
     year, month = int(action.split("-")[0]), int(action.split("-")[1])
     return year, month
 
 
 async def create_data_by_add_shifts(
-        user_id: int,
-        time: float,
-        list_dates: List[str]
+    user_id: int,
+    time: float,
+    list_dates: List[str],
+    callback: CallbackQuery
 ) -> None:
     """
-    Создает записи о сменах для пользователя на основе предоставленных данных.
+    Create shift records for the user based on the provided data.
 
-    :param user_id: Идентификатор пользователя (чата), для которого создаются
-        записи о сменах.
-    :param time: Общее количество отработанных часов.
-    :param list_dates: Список строковых дат в формате "YYYY-MM-DD", для которых
-        необходимо создать записи о сменах.
+    :param user_id: The user's ID.
+    :param time: The total number of hours worked.
+    :param list_dates: A list of string dates in the "YYYY-MM-DD" 
+                        format for which You need to create shift records.
     :return: None.
     """
-    # Вычисление базовой зарплаты и общей заработанной суммы.
-    #base, earned_hours, earned_cold = await earned_salary(time, user_id)
-
-    # Создание списка объектов Salary на основе вычисленных данных и дат
-    #salary_lis = await create_list_salary(
-    #    user_id, base, earned_hours, earned_cold, list_dates
-    #)
-
-    # Запись созданных объектов Salary в базу данных
-    #await add_many_shifts(salary_lis)
-    ...
+    date_objects = [datetime.strptime(d, "%Y-%m-%d") for d in list_dates]
+    sorted_dates = sorted(date_objects)
+    
+    await callback.answer(text="✅ Начинаем сохранение смен...")
+    asyncio.create_task(
+        save_shifts_with_progress_bar(user_id, time, sorted_dates, callback)
+    )
 
 
-async def create_list_salary(
-        user_id: int,
-        base: float,
-        earned_hours: float,
-        earned_cold: float,
-        list_dates: List[str]
-) -> list[dict]:
+async def save_shifts_with_progress_bar(
+    user_id: int,
+    time: float,
+    sorted_dates: list,
+    callback: CallbackQuery
+) -> None:
     """
-    Создает список объектов Salary на основе предоставленных данных.
-    Нужна для добавления в бд зразу списка смен.
+    Saves with a progress bar.
+    
+    :param user_id: The user's ID.
+    :param time: The number of hours.
+    :param sorted_dates: A sorted list of dates.
+    :param callback: A callback for displaying a message to the user.
     """
-    salary_list = []
-    valute_data: dict[str, tuple[int, float]] = await get_valute_info()
+    total = len(sorted_dates)
+    try:
+        progress_text = create_progress_text(
+            0, total, "Начинаем сохранение..."
+        )
+        await callback.message.edit_text(progress_text)
+        
+        for i, d in enumerate(sorted_dates, 1):
+            date = datetime.strftime(d, "%Y-%m-%d")
+            await earned_per_shift(time, user_id, date)
 
-    for d in list_dates:
-        # Определение периода (1 - первая половина месяца, 2 - вторая половина)
-        period: int = 1 if int(str(d)[-2:]) <= 15 else 2
+            progress_text = create_progress_text(
+                i, total, f"Сохранение смены {i}/{total}"
+            )
+            await callback.message.edit_text(progress_text)
+            await asyncio.sleep(0.1)
 
-        # Преобразование строки даты в объект datetime
-        parse_date: date = datetime.strptime(d, "%Y-%m-%d")
-        earned: float = earned_hours + earned_cold
-        earned_in_valute = await calc_valute(earned, valute_data)
+        success_text = create_progress_text(
+            total, total, "✅ Все смены сохранены!"
+        )
+        await callback.message.edit_text(
+            text=success_text,
+            reply_markup=back
+        )
 
-        data: dict = {
-            "user_id": user_id,
-            "date": parse_date,
-            "base_hours": float(base),
-            "earned": float(earned),
-            "earned_hours": earned_hours,
-            "earned_cold": earned_cold,
-            "period": period,
-            "valute": earned_in_valute,
-            "date_write": dt.now(UTC)
-        }
-        salary_list.append(data)
+    except Exception as e:
+        error_text = f"❌ Ошибка при сохранении:\n{str(e)}"
+        await callback.message.edit_text(error_text)
 
-    return salary_list
+
+def create_progress_text(
+    current: int,
+    total: int,
+    status: str
+) -> str:
+    """
+    Create a beautiful progress bar.
+    
+    :param current: Current progress.
+    :param total: Total shifts.
+    :param status: Total shifts.
+    """
+    progress = current / total
+    
+    if total <= 15:
+        bar_length = total
+    else:
+        bar_length = 15
+    
+    filled_blocks = int(progress * bar_length)
+    empty_blocks = bar_length - filled_blocks
+    
+    progress_bar = "🟩" * filled_blocks + "⬜" * empty_blocks
+    percentage = int(progress * 100)
+    
+    return (
+        f"{status}\n"
+        f"{progress_bar} {percentage}%\n"
+        f"🎯 {current}/{total} смен сохранено."
+    )

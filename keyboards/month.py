@@ -91,7 +91,7 @@ async def generate_base_calendar(
                 text = f"{numbers_list[day]} {UNICODE_DATA[dates[create_date]]}"
 
             else:
-                text = f"{{ {numbers_list[day]} }}"
+                text = f"({numbers_list[day]})"
 
             row.append(
                 InlineKeyboardButton(text=text, callback_data=create_date)
@@ -219,9 +219,10 @@ async def get_month_menu() -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text=BACK,
-                    callback_data="current"
+                    text="+",
+                    callback_data="other_income"
                 ),
+
                 InlineKeyboardButton(
                     text="📈",
                     callback_data="list_incomes"
@@ -233,7 +234,11 @@ async def get_month_menu() -> InlineKeyboardMarkup:
                 InlineKeyboardButton(
                     text="📆",
                     callback_data="current"
-                )
+                ),
+                InlineKeyboardButton(
+                    text="-",
+                    callback_data="expences"
+                ),
             ],
             [
                 InlineKeyboardButton(
@@ -245,24 +250,16 @@ async def get_month_menu() -> InlineKeyboardMarkup:
                     callback_data="euro_m"
                 ),
                 InlineKeyboardButton(
+                    text=BACK,
+                    callback_data="current"
+                ),
+                InlineKeyboardButton(
                     text=YENA,
                     callback_data="yena_m"
                 ),
                 InlineKeyboardButton(
                     text=SOM,
                     callback_data="som_m"
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text="Добавить прочий доход",
-                    callback_data="other_income"
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text="Списание в счет ЗП",
-                    callback_data="expences"
                 )
             ]
         ]

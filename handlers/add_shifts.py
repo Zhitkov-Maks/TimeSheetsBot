@@ -17,13 +17,12 @@ from utils.add_shifts import get_date, create_data_by_add_shifts
 from utils.current_day import valid_time
 
 shifts_router: Router = Router()
-bot: Bot = Bot(token=BOT_TOKEN)
 
 
-@shifts_router.callback_query(F.data == "many_add")
+@shifts_router.message(F.text == "/add")
 @decorator_errors
 async def shifts_calendar(
-    callback: CallbackQuery,
+    message: Message,
     state: FSMContext
 ) -> None:
     """
@@ -31,12 +30,12 @@ async def shifts_calendar(
     the days for adding shifts in a group.
     """
     await state.set_state(ShiftsState.hours)
-    user_exists = days_choices.get(callback.from_user.dict)
+    user_exists = days_choices.get(message.from_user.id)
 
     if user_exists:
-        days_choices.get(callback.from_user.id).clear()
-        
-    await callback.message.edit_text(
+        days_choices.get(message.from_user.id).clear()
+
+    await message.answer(
         text=hbold("Выберите месяц: "),
         reply_markup=await prediction_button(),
         parse_mode="HTML"
@@ -126,17 +125,13 @@ async def finish_add_shifts(callback: CallbackQuery, state: FSMContext) -> None:
         time = data["time"]
 
         await create_data_by_add_shifts(
-            user_id, time, days_choices[user_id]
-        )
-        await callback.answer(
-            "Записи были успешно добавлены!", show_alert=True
+            user_id, time, days_choices[user_id], callback
         )
         days_choices[user_id].clear()
-        await send_calendar_and_message(user_id, data, state)
 
     else:
         await state.clear()
         await callback.message.edit_text(
-            text="Вы ничего не выбрали, открываю вам календарь!",
+            text="Вы ничего не выбрали. Нажмине кнопку чтобы открыть календарь.",
             reply_markup=back
         )

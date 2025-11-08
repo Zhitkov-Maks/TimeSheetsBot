@@ -36,7 +36,7 @@ dp.include_router(unknown_rout)
 async def handler_start(message: types.Message, state: FSMContext) -> None:
     """The handler for the start command."""
     await state.clear()
-    await message.answer(text=start_text, reply_markup=menu)
+    await message.answer(text=start_text)
 
 
 @dp.message(F.text == "/dev")
@@ -68,8 +68,6 @@ async def process_email_button(
     await state.clear()
     await callback_query.message.answer(
         text="[m-zhitkov@inbox.ru](mailto:m-zhitkov@inbox.ru)",
-        parse_mode="Markdown",
-        reply_markup=menu
     )
 
 
@@ -81,8 +79,7 @@ async def guide_information(message: types.Message, state: FSMContext) -> None:
     for mess in GUIDE:
         await message.answer(text=mess)
     await message.answer(
-        text="Меню",
-        reply_markup=menu
+        text="Меню.\n/main - чтобы открыть меню."
     )
 
 

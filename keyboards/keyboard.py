@@ -34,6 +34,17 @@ back: InlineKeyboardMarkup = InlineKeyboardMarkup(
     ]
 )
 
+back_calendar = InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text="🔙",
+                        callback_data="calendar"
+                    )
+                ]
+            ]
+        )
+
 
 async def back_to_information(next: bool, prev: bool) -> InlineKeyboardMarkup:
     buttons: list[list[InlineKeyboardButton]] = [

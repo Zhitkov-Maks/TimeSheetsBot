@@ -33,16 +33,20 @@ async def calculation_by_part(data: dict) -> tuple[float]:
     award: float = data.get("total_award", 0)
     count_operations: float = data.get("total_operations", 0)
     earned_cold: float = data.get("total_earned_cold", 0)
+    overtime_money: float = data.get("total_overitme", 0)
+    overtime_hours: float = data.get("total_hours_overitme", 0)
     return (
         earned,
         hours,
         award,
         count_operations,
         earned_cold,
-        earned_hours
+        earned_hours,
+        overtime_money,
+        overtime_hours
     )
-    
-    
+
+
 async def data_calculation(
     data: tuple
 ) -> list[tuple | float]:
@@ -75,10 +79,27 @@ async def data_calculation(
     ]
 
 
-async def generate_data(data: list) -> tuple:
+async def generate_data(
+    data: list,
+    p1: tuple,
+    p2: tuple
+) -> tuple:
     """Form the tuple in the correct order for the 
     subsequent generation of the message to the user.
     
     :param data: A list with data.
+    :param p1: Information for the first period.
+    :param p2: Information for the second period.
     """
-    return data[6], data[7], data[4], data[5]
+    overtime_total = p1[6] + p2[6]
+    overtime_hours = p2[7] + p1[7]
+    return (
+        data[6],
+        data[7],
+        data[4],
+        data[5],
+        0, # По факту не нужен,
+        0, # но нужно чтобы кортежи имели один размер.
+        overtime_total,
+        overtime_hours
+    )

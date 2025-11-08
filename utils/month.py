@@ -20,14 +20,19 @@ async def get_message_for_period(data: tuple, name: str) -> str:
     :param data: A tuple with the necessary data.
     :param name: The name of the command.
     """
-    number = f"{name[-1]} период" if name[-1].isdigit() else "месяц!"
-    message = f"Информация за {number}.\n"
-    message += f"Итого - {data[0]:,}{money}.\n"
-    message += f"Часы - {(data[0]-data[2]):,}{money}.\n"
-    message += f"Отработано часов - {data[1]}ч.\n"
+    number = f"{name[-1]} период" if name[-1].isdigit() else "месяц"
+    message = f"Инфо за {number}.\n"
+    message += f"Итого: {data[0]:,}{money}.\n"
+    message += f"Часы: {(data[0]-data[2]):,}{money}.\n"
+    message += f"Часов: {data[1]}ч.\n"
 
     if data[2]:
-        message += f"Премия - {data[2]:,}{money}({data[3]}).\n"
+        message += f"Премия: {data[2]:,}{money}({data[3]}).\n"
+
+    if data[6]:
+        message += f"Переработка: {data[6]}{money}.\n"
+        message += f"Часов пе-ки: {data[7]}ч.\n"
+
     return message
 
 
@@ -53,7 +58,7 @@ async def get_amount_and_hours_for_month(
     await state.update_data(
         period1=data[0],
         period2=data[1],
-        for_month=await generate_data(data)
+        for_month=await generate_data(data, data[0], data[1])
     )
 
     return period1, period2, (data[6], data[7])
@@ -95,24 +100,27 @@ async def create_message_for_period(data: tuple, period: str) -> str:
     :param perion: A string for displaying the period.
     :return str: A message to the user.
     """
-    money_: str = ""
-    if data[4]:
-        money_ += (
-            f"Доплата за холод: {data[4]:,}{money}.\n"
-        )
-    if data[3] is not None:
-        money_ += (
-            f"Премия: {data[2]:,}{money}({data[3]})\n"
-        )
-
-    return (
+    message = (
         f"\nПериод с {period}:\n"
         f"----------------------------------------\n"
         f"Отработано часов: {data[1]}ч.\n"
         f"Итого заработано: {data[0]:,}{money}.\n"
         f"Из них оплата часов: {data[5]:,}{money}.\n"
-        f"{money_}\n"
     )
+    
+    if data[4]:
+        message += (
+            f"Доплата за холод: {data[4]:,}{money}.\n"
+        )
+    if data[3] is not None:
+        message += (
+            f"Премия: {data[2]:,}{money}({data[3]}).\n"
+        )
+    
+    if data[6]:
+        message += f"Доплата за переработку: {data[6]:,}{money}.\n"
+        message += f"Часов переработки: {data[7]}ч.\n"
+    return message
 
 
 async def generate_str(year: int, month: int, user_id: int) -> str:
@@ -132,16 +140,16 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
     hours_ = 190 if month != 2 else 180  # Норма часов в месяц.
 
     award_message = (
-            f"Премия: {data[4]}{money}({data[5]})\n"
+            f"Премия: {data[4]}{money}({data[5]}).\n"
             if data[4] is not None else ''
         )
 
     pay_overtime_str = ""
 
     if data[7] > hours_:
-        data[6] += overtime * (data[7] - hours_)
+        overtime = data[0][6] + data[1][6]
         pay_overtime_str = "Доплата за переработку: " + \
-            f"{overtime * (data[7] - hours_):,}{money}\n"
+            f"{overtime:,}{money}.\n"
 
     message += await create_message_for_period(data[0], "1-15")
     message += await create_message_for_period(data[1], "16-го")
@@ -155,8 +163,8 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
 
     message += pay_overtime_str
     message += award_message
-    message += (f"Прочие доходы: {data[2]:,}{money}\n")
-    message += (f"Списание под зп: {data[3]:,}{money}\n")
+    message += (f"Прочие доходы: {data[2]:,}{money}.\n")
+    message += (f"Списание под зп: {data[3]:,}{money}.\n")
     return message
 
 

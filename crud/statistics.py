@@ -205,7 +205,9 @@ async def aggregate_data(
                     "total_earned_hours": {"$sum": "$earned_hours"},
                     "total_earned_cold": {"$sum": "$earned_cold"},
                     "total_award": {"$sum": "$award_amount"},
-                    "total_operations": {"$sum": "$count_operations"}
+                    "total_operations": {"$sum": "$count_operations"},
+                    "total_overitme": {"$sum": "$earned_overtime"},
+                    "total_hours_overitme": {"$sum": "$hours_overtime"},
                 }
             }
         ]

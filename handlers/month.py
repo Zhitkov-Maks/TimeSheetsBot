@@ -89,7 +89,7 @@ async def show_monthly_data(
     Show the information for the month.
     """
     data: Dict[str, str | int] = await state.get_data()
-    year, month = data.get("year"), data.get("month")
+    year, month = await get_date(data, callback.data)
     message: str = await generate_str(year, month, callback.from_user.id)
     
     await callback.message.edit_text(

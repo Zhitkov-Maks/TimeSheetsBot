@@ -2,9 +2,10 @@ from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from aiogram.utils.markdown import hbold
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from handlers.bot_answer import decorator_errors
-from keyboards.keyboard import back, back_to_information
+from keyboards.keyboard import back, back_to_information, back_calendar
 from crud.create import write_other, remove_other_income_expese
 from crud.statistics import get_other_incomes_expenses
 from states.salary import SalaryState
@@ -128,7 +129,7 @@ async def create_other_income(
     await state.set_state(SalaryState.amount)
     await callback.message.edit_text(
         text=text,
-        reply_markup=back,
+        reply_markup=back_calendar,
         parse_mode="HTML"
     )
 
@@ -144,14 +145,14 @@ async def create_description_income(
         await state.set_state(SalaryState.description)
         await message.answer(
             text="Добвте небольшое описание:",
-            reply_markup=back,
+            reply_markup=back_calendar,
             parse_mode="HTML"
         )
 
     except ValueError:
         await message.answer(
             text="Необходимо ввести число.",
-            reply_markup=back
+            reply_markup=back_calendar
         )
 
 

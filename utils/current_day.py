@@ -1,6 +1,6 @@
 """Auxiliary module for calculating salaries for a selected day."""
 from datetime import datetime, UTC
-from crud.create import write_salary
+from crud.create import delete_record, write_salary
 from loader import MONTH_DATA, money
 from crud.settings import get_settings_user_by_id
 from crud.get_data import get_hours_for_month, get_salary_for_day, update_salary
@@ -74,13 +74,17 @@ async def earned_calculation(
     earned_cold = time * settings[1]
 
     if settings[2] > 0 and (time + total_hours) > norm_hours:
-        earned_time, hours_overtime, earned_overtime = await calculation_overtime(
-            settings, time, norm_hours, total_hours
-        )
+        (
+            earned_time,
+            hours_overtime,
+            earned_overtime
+        ) = await calculation_overtime(settings, time, norm_hours, total_hours)
+
         configuration.update(
             hours_overtime=hours_overtime,
             earned_overtime=earned_overtime
         )
+
     configuration.update(
         base_hours=time,
         earned=(earned_time + earned_cold),
@@ -93,6 +97,7 @@ async def earned_calculation(
 async def earned_per_shift(
     time: float,
     user_id: int,
+    date: str,
     data: dict
 ) -> tuple[float, float]:
     """
@@ -101,15 +106,24 @@ async def earned_per_shift(
     :param time: Hours worked.
     :param user_id: The user's ID.
     :return: The earned amount for the month.
-    :param data: Dictionary from the state.
+    :param date: The date for recording.
     """
+    action = data.get("action")
     settings: tuple[float] = await get_settings(user_id)
-    date = datetime.strptime(data["date"], "%Y-%m-%d")
+    parse_date = datetime.strptime(date, "%Y-%m-%d")
 
-    salary = await earned_calculation(settings, time, user_id, date)
+    notes: str = ""
+    if action == "change":
+        notes = data.get("current_day").get("notes", {})
+        await delete_record(date, user_id)
+
+    salary = await earned_calculation(settings, time, user_id, parse_date)
     
+    if action == "change" and notes:
+        salary.update(notes=notes)
+
     valute_data: dict[str, tuple[int, float]] = await get_valute_info()
-    await write_salary(salary, user_id, date, valute_data)
+    await write_salary(salary, user_id, parse_date, valute_data)
     return salary.get("earned")
 
 
