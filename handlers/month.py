@@ -143,22 +143,15 @@ async def get_earned_in_valute_for_month(
     """
     data: Dict[str, str | int] = await state.get_data()
     name: str = callback.data.split("_")[0]
-    valute = data.get("valute_data", False)
-    if valute:
-        await callback.answer(
-            text=f"{valute[name]:,}{CURRENCY_SYMBOL[name]}",
-            show_alert=True
-        )
-    else:
-        name: str = callback.data.split("_")[0]
-        year, month = data.get("year"), data.get("month")
-        text: str = await get_valute_for_month(
-            year, month, callback.from_user.id, state, name
-        )
-        await callback.answer(
-            text=text,
-            show_alert=True
-        )
+    year, month = data.get("year"), data.get("month")
+    
+    text: str = await get_valute_for_month(
+        year, month, callback.from_user.id, name
+    )
+    await callback.answer(
+        text=text,
+        show_alert=True
+    )
 
 
 @month_router.callback_query(

@@ -91,15 +91,15 @@ async def generate_data(
     :param p1: Information for the first period.
     :param p2: Information for the second period.
     """
-    overtime_total = p1[6] + p2[6]
-    overtime_hours = p2[7] + p1[7]
     return (
-        data[6],
-        data[7],
-        data[4],
-        data[5],
-        0, # По факту не нужен,
-        0, # но нужно чтобы кортежи имели один размер.
-        overtime_total,
-        overtime_hours
+        data[6], # Всего заработано.
+        data[7], # Часов отработано.
+        data[4], # Премия.
+        data[5], # Кол-во операций.
+        p1[4] + p2[4], # За холод.
+        p1[5] + p2[5], # Заработано за часы.
+        p1[6] + p2[6], # Заработано за переработки.
+        p2[7] + p1[7], # Часов переработки
+        data[2], # Прочие доходы.
+        data[3] # Вычеты.
     )

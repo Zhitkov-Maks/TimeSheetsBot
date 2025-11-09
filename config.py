@@ -11,3 +11,4 @@ BOT_TOKEN = config("TOKEN")
 
 
 bot = Bot(token=BOT_TOKEN)
+cashed_currency = {}

@@ -22,12 +22,17 @@ async def get_message_for_period(data: tuple, name: str) -> str:
     """
     number = f"{name[-1]} период" if name[-1].isdigit() else "месяц"
     message = f"Инфо за {number}.\n"
-    message += f"Итого: {data[0]:,}{money}.\n"
-    message += f"Часы: {(data[0]-data[2]):,}{money}.\n"
-    message += f"Часов: {data[1]}ч.\n"
+    message += (
+        f"Итого: {data[0]:,}{money}.\n"
+        f"Часов: {data[1]}ч.\n"
+        f"Часы: {(data[5]):,}{money}.\n"
+    )
 
-    if data[2]:
+    if data[3]:
         message += f"Премия: {data[2]:,}{money}({data[3]}).\n"
+    
+    if data[4]:
+        message += f"Холод: {data[4]:,}{money}.\n"
 
     if data[6]:
         message += f"Переработка: {data[6]}{money}.\n"
@@ -51,7 +56,7 @@ async def get_amount_and_hours_for_month(
     """
     total_data: tuple = await get_data_from_db(year, month, user_id)
     data: list = await data_calculation(total_data)
-    
+
     period1: tuple[float] = (data[0][0], data[0][1])
     period2: tuple[float] = (data[1][0], data[1][1])
 
@@ -112,7 +117,7 @@ async def create_message_for_period(data: tuple, period: str) -> str:
         message += (
             f"Доплата за холод: {data[4]:,}{money}.\n"
         )
-    if data[3] is not None:
+    if data[3]:
         message += (
             f"Премия: {data[2]:,}{money}({data[3]}).\n"
         )

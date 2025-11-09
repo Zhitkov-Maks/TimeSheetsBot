@@ -232,10 +232,6 @@ async def get_month_menu() -> InlineKeyboardMarkup:
                     callback_data="list_expenses"
                 ),
                 InlineKeyboardButton(
-                    text="📆",
-                    callback_data="current"
-                ),
-                InlineKeyboardButton(
                     text="-",
                     callback_data="expences"
                 ),

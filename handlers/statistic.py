@@ -1,6 +1,6 @@
 from datetime import datetime, UTC
 
-from aiogram.types import CallbackQuery
+from aiogram.types import CallbackQuery, Message
 from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.markdown import hbold
@@ -14,26 +14,26 @@ from utils.statistic import generate_message_statistic
 statistick_router = Router()
 
 
-@statistick_router.callback_query(F.data == "statistics")
+@statistick_router.message(F.text == "/stat")
 async def get_current_year_statistics(
-    callback: CallbackQuery, state: FSMContext
+    message: Message, state: FSMContext
 ) -> None:
     """Show the statistics for the selected year."""
     year: int = datetime.now(UTC).year
 
     result_for_hours: dict = await statistics_for_year(
-        year, callback.from_user.id
+        year, message.from_user.id
     )
     result_for_other: dict = await get_other_incomes_for_year(
-        callback.from_user.id, year
+        message.from_user.id, year
     )
-    message: str = await generate_message_statistic(
+    mess: str = await generate_message_statistic(
         result_for_hours, result_for_other, year
     )
 
     await state.update_data(year=year, valute_data=result_for_hours)
-    await callback.message.answer(
-        text=hbold(message),
+    await message.answer(
+        text=hbold(mess),
         reply_markup=await next_prev_year(year),
         parse_mode="HTML"
     )

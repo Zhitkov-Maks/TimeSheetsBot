@@ -1,9 +1,11 @@
 import json
+from datetime import datetime, UTC
 
 import aiohttp
 from aiogram.fsm.context import FSMContext
 
 from loader import CURRENCY_SYMBOL
+from config import cashed_currency
 from utils import current_day
 from utils.calculate import calc_valute
 from crud.statistics import aggregate_valute
@@ -81,7 +83,6 @@ async def get_valute_for_month(
     year: int,
     month: int,
     user_id: int,
-    state: FSMContext,
     name: str
 ) -> str:
     """
@@ -95,5 +96,4 @@ async def get_valute_for_month(
     :param str: A message to the user.
     """
     data: dict[str: float] = await aggregate_valute(year, month, user_id)
-    await state.update_data(valute_data=data)
-    return f"{data[name]:,}{CURRENCY_SYMBOL[name]}"
+    return f"{data.get(name, 0):,}{CURRENCY_SYMBOL[name]}"

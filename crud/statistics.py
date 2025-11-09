@@ -316,6 +316,7 @@ async def aggregate_valute(
 
         result = collection.aggregate(pipeline).to_list()
         if len(result) != 0:
+            
             return result[0]
         return {}
     finally:
