@@ -88,7 +88,7 @@ async def earned_calculation(
     configuration.update(
         base_hours=time,
         earned=(earned_time + earned_cold),
-        earned_hours=earned_time,
+        earned_hours=earned_time - earned_overtime,
         earned_cold=earned_cold
     )
     return configuration
@@ -118,7 +118,7 @@ async def earned_per_shift(
         await delete_record(date, user_id)
 
     salary = await earned_calculation(settings, time, user_id, parse_date)
-    
+
     if action == "change" and notes:
         salary.update(notes=notes)
 
@@ -139,7 +139,7 @@ async def gen_message_for_choice_day(salary: dict, choice_date: str) -> str:
     day_month: str = f"{MONTH_DATA[month]} {day}"
     if not salary:
         return f"{day_month}, нет данных."
-    
+
     detail_message: str = ""
     if salary.get("earned_cold"):
         detail_message += (

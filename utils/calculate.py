@@ -4,7 +4,7 @@ async def calc_valute(
 ) -> dict[str, float]:
     """
     Calculate the amount of earnings in currencies.
-    
+
     :param earned: Earnings per day.
     :param valute_data: Information about the ruble exchange rate.
     :return dict: Dictionary where the key is the name of the currency, 
@@ -23,7 +23,7 @@ async def calc_valute(
 async def calculation_by_part(data: dict) -> tuple[float]:
     """
     Return the tuple with the necessary data.
-    
+
     :param data: A dictionary with input data.
     :return list: A list with calculation data.
     """
@@ -58,7 +58,7 @@ async def data_calculation(
     """
     period_1: tuple = await calculation_by_part(data[0])
     period_2: tuple = await calculation_by_part(data[1])
-    
+
     hours: float = period_1[1] + period_2[1]
     income: float = data[2].get("total_sum", 0)
     expense: float = data[3].get("total_sum", 0)

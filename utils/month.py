@@ -30,7 +30,7 @@ async def get_message_for_period(data: tuple, name: str) -> str:
 
     if data[3]:
         message += f"Премия: {data[2]:,}{money}({data[3]}).\n"
-    
+
     if data[4]:
         message += f"Холод: {data[4]:,}{money}.\n"
 

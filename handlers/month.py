@@ -144,7 +144,7 @@ async def get_earned_in_valute_for_month(
     data: Dict[str, str | int] = await state.get_data()
     name: str = callback.data.split("_")[0]
     year, month = data.get("year"), data.get("month")
-    
+
     text: str = await get_valute_for_month(
         year, month, callback.from_user.id, name
     )
