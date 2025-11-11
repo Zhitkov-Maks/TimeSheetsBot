@@ -87,7 +87,7 @@ async def get_days_keyboard(
 
     month_keyword.append([
         InlineKeyboardButton(text="🆗", callback_data="shift_finish"),
-        InlineKeyboardButton(text="📅", callback_data="month_current")
+        InlineKeyboardButton(text="📅", callback_data="current")
     ])
     return InlineKeyboardMarkup(inline_keyboard=month_keyword)
 

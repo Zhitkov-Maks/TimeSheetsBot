@@ -30,7 +30,7 @@ async def add_note(
     else:
         current_notes += f"\n\nДобавте еще запись:"
 
-    await callback.message.answer(
+    await callback.message.edit_text(
         text=hbold(current_notes),
         reply_markup=back,
         parse_mode="HTML"
@@ -75,12 +75,12 @@ async def show_notes(
         current_notes = "Вы еще ничего не написали."
         keyboard = back
 
-    await callback.message.answer(
+    await callback.message.edit_text(
         text=hbold(current_notes),
         reply_markup=keyboard,
         parse_mode="HTML"
     )
-    
+
 
 @note_rout.callback_query(F.data == "BACK")
 @decorator_errors

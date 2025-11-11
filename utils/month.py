@@ -113,7 +113,7 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
 
     award_message = (
             f"Премия: {data[4]}{money}({data[5]}).\n"
-            if data[4] is not None else ''
+            if data[5] else ''
         )
 
     pay_overtime_str = ""

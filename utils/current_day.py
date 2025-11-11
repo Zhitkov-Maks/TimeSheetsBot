@@ -84,11 +84,12 @@ async def earned_calculation(
             hours_overtime=hours_overtime,
             earned_overtime=earned_overtime
         )
+        earned_time -= earned_overtime
 
     configuration.update(
         base_hours=time,
         earned=(earned_time + earned_cold),
-        earned_hours=earned_time - earned_overtime,
+        earned_hours=earned_time,
         earned_cold=earned_cold
     )
     return configuration

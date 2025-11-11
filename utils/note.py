@@ -22,7 +22,7 @@ async def answer_after_operation(
             parse_mode="HTML"
         )
     else:
-        await message.message.answer(
+        await message.message.edit_text(
             text=hbold(f"{action} \n {mess}"),
             reply_markup=keyboard,
             parse_mode="HTML"
