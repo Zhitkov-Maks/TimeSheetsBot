@@ -16,6 +16,7 @@ from handlers.salary import salary
 from handlers.unknown import unknown_rout
 from handlers.statistic import statistick_router
 from handlers.note import note_rout
+from handlers.valute import money
 
 from loader import start_text, GUIDE, main_text
 
@@ -26,6 +27,7 @@ dp.include_router(month_router)
 dp.include_router(day_router)
 dp.include_router(shifts_router)
 dp.include_router(salary)
+dp.include_router(money)
 dp.include_router(statistick_router)
 dp.include_router(note_rout)
 dp.include_router(unknown_rout)

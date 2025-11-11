@@ -1,13 +1,10 @@
 import json
-from datetime import datetime, UTC
 import asyncio
 
 import aiohttp
 from aiogram.fsm.context import FSMContext
 
 from loader import CURRENCY_SYMBOL
-from config import cashed_currency
-from utils import current_day
 from utils.calculate import calc_valute
 from crud.statistics import aggregate_valute
 
@@ -126,3 +123,39 @@ async def get_valute_for_month(
     """
     data = await get_all_valute_for_month(year, month, user_id)
     return f"{data.get(name, 0):,.2f}{CURRENCY_SYMBOL[name]}"
+
+
+async def get_valute_show_message() -> str:
+    """
+    Return the line with information about some currencies.
+    """
+    data = json.loads(await request_valute_info())
+    message = "*" * 40 + "\n\n"
+    message += f"Курс рубля на {data["Date"][:10]}.\n\n"
+    message += (
+        f"{data['Valute']['BYN']['Nominal']}Br "
+        f"{data['Valute']['BYN']['Name']}: "
+        f"{data['Valute']['BYN']['Value']:.2f}₽.\n"
+    )
+    message += (
+        f"{data['Valute']['USD']['Nominal']}$ "
+        f"{data["Valute"]["USD"]["Name"]}: "
+        f"{data["Valute"]["USD"]["Value"]:.2f}₽.\n"
+    )
+    message += (
+        f"{data['Valute']['EUR']['Nominal']}€ "
+        f"{data["Valute"]["EUR"]["Name"]}: "
+        f"{data["Valute"]["EUR"]["Value"]:.2f}₽.\n"
+    )
+    message += (
+        f"{data['Valute']['CNY']['Nominal']}¥ "
+        f"{data["Valute"]["CNY"]["Name"]}: "
+        f"{data["Valute"]["CNY"]["Value"]:.2f}₽.\n"
+    )
+    message += (
+        f"{data['Valute']['UZS']['Nominal']:,}Soʻm "
+        f"{data["Valute"]["UZS"]["Name"]}: "
+        f"{data["Valute"]["UZS"]["Value"]:.2f}₽.\n\n"
+    )
+    message += "*" * 40 + "\n"
+    return message
