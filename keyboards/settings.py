@@ -4,7 +4,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from loader import MENU
 
-# Возможные настройки для пользователя.
+# Possible settings for the user.
 SETTINGS: dict[str, str] = {
     "price_time": "Ставка в час",
     "price_overtime": "Доплата за переработку",
@@ -17,14 +17,14 @@ settings_choices: dict[int, dict] = defaultdict(dict)
 
 async def get_actions(user_id: int) -> InlineKeyboardMarkup:
     """
-    Генерация инлайн клавиатуры для выбора настроек.
+    Generate an inline keyboard to select settings.
 
-    :param user_id: Идентификатор пользователя телеграм.
-    :return InlineKeyboardMarkup: Инлайн клавиатуру.
+    :param user_id: The telegram user's ID.
+    :return InlineKeyboardMarkup: The inline keyboard.
     """
     keyboard: list[list[InlineKeyboardButton]] = [[]]
     for action in SETTINGS:
-        # Добавляем кнопку с состоянием
+        # Adding a status button
         button_text = f"{SETTINGS[action]}    [✘] " \
             if action not in settings_choices[user_id] \
             else f"{SETTINGS[action]}    [✔️]"

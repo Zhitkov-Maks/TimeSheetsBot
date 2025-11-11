@@ -10,7 +10,7 @@ from crud.create import write_other, remove_other_income_expese
 from crud.statistics import get_other_incomes_expenses
 from states.salary import SalaryState
 from utils.month import get_date
-from utils.common import parse_income_expense
+from utils.common import calculation_currency, parse_income_expense
 
 salary: Router = Router()
 
@@ -164,7 +164,9 @@ async def write_other_income(
     """Save the transaction."""
     await state.update_data(description=message.text)
     data: dict = await state.get_data()
-    result: bool = await write_other(data, message.from_user.id)
+    valute_data = await calculation_currency(data.get("amount"))
+    result: bool = await write_other(data, message.from_user.id, valute_data)
+
     if result:
         await message.answer(
             text="Запись успешно добавлена.",

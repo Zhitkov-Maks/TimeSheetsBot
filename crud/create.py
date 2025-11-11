@@ -6,7 +6,11 @@ from database.db_conf import MongoDB
 from utils.calculate import calc_valute
 
 
-async def write_other(data: dict, user: int) -> bool:
+async def write_other(
+    data: dict,
+    user: int,
+    valute_data: dict[str, float]
+) -> bool:
     """
     Add a new income record (without updating the existing ones).
 
@@ -18,6 +22,8 @@ async def write_other(data: dict, user: int) -> bool:
     required = {"amount", "description", "month", "year"}
     if not all(field in data for field in required):
         return False
+    
+    parse_date = datetime(data.get("year"), data.get("month"), 1)
 
     client = MongoDB()
     try:
@@ -32,7 +38,8 @@ async def write_other(data: dict, user: int) -> bool:
             "description": data["description"],
             "month": int(data["month"]),
             "year": int(data["year"]),
-            "created_at": datetime.now(UTC)
+            "valute": valute_data,
+            "date": parse_date
         }
 
         result = collection.insert_one(record)
@@ -74,7 +81,7 @@ async def write_salary(
         unique=True,
         name="unique_user_date"
     )
-    
+
     try:
         collection.update_one(
             {"user_id": user_id, "date": date},

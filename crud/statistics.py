@@ -27,7 +27,20 @@ async def get_other_incomes_for_year(
             {
                 "$group": {
                     "_id": None,
-                    "total_other_amount": {"$sum": "$amount"}
+                    "total_other_amount": {"$sum": "$amount"},
+                    "dollar": {"$sum": "$valute.dollar"},
+                    "euro": {"$sum": "$valute.euro"},
+                    "yena": {"$sum": "$valute.yena"},
+                    "som": {"$sum": "$valute.som"}
+                }
+            },
+            {
+                "$project": {
+                    "total_other_amount": {"$round": ["$total_other_amount", 2]},
+                    "dollar": {"$round": ["$dollar", 2]},
+                    "euro": {"$round": ["$euro", 2]},
+                    "yena": {"$round": ["$yena", 2]},
+                    "som": {"$round": ["$som", 2]}
                 }
             }
         ]
@@ -272,7 +285,7 @@ async def get_other_sum(
 
 
 async def aggregate_valute(
-    year: int, month: int, user_id: int
+    year: int, month: int, user_id: int, collection: str
 ) -> dict:
     """
     Calculate the amount of hours worked for the period 
@@ -284,7 +297,7 @@ async def aggregate_valute(
     """
     try:
         client: MongoDB = MongoDB()
-        collection = client.get_collection("salaries")
+        collection = client.get_collection(collection)
         start_date = datetime(year, month, 1)
         end_date = start_date + relativedelta(months=1)
 

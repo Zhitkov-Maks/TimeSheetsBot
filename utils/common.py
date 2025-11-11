@@ -1,5 +1,8 @@
 from datetime import datetime
 
+from utils.calculate import calc_valute
+from utils.valute import get_valute_info
+
 
 async def parse_income_expense(
     data: dict[str, str | int],
@@ -10,7 +13,7 @@ async def parse_income_expense(
     Генерирует сообщение для ответа пользователю.
 
     :param data: Список с транзакциями.
-    param income: Определяем тип транзакции.
+    :param income: Определяем тип транзакции.
     """
     if len(data) == 0:
         return None, 0, 0, ""
@@ -24,19 +27,6 @@ async def parse_income_expense(
     return message, len(data) > page, (page - 1) > 0, data[page-1]["_id"]
 
 
-def is_valid_date(date_) -> bool:
-    """
-    Проверяет валидность даты в различных форматах
-    """
-    try:
-        if "-" in date_:
-            datetime.strptime(date_, "%d-%m-%Y")
-            return True
-        elif "/" in date_:
-            datetime.strptime(date_, "%d/%m/%Y")
-            return True
-        elif "." in date_:
-            datetime.strptime(date_, "%d.%m.%Y")
-            return True
-    except ValueError:
-        return False
+async def calculation_currency(amount: float):
+    currency_info = await get_valute_info()
+    return await calc_valute(amount, currency_info)

@@ -103,7 +103,7 @@ async def next_prev_year(year) -> InlineKeyboardMarkup:
         ]
     ]
     if year < dt.now(UTC).year:
-        buttons[0].append(
+        buttons[1].append(
             InlineKeyboardButton(
                 text=">>",
                 callback_data="next_year"

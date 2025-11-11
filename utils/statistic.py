@@ -14,11 +14,11 @@ async def get_data_from_db(year: int, month: int, user_id: int) -> tuple:
     :return tuple: A tuple with data.
     """
     return (
-        await asyncio.gather(
-            aggregate_data(year, month, user_id, period=1),
-            aggregate_data(year, month, user_id, period=2),
-            get_other_sum(year, month, user_id, "income"),
-            get_other_sum(year, month, user_id, "expence"),
+            await asyncio.gather(
+                aggregate_data(year, month, user_id, period=1),
+                aggregate_data(year, month, user_id, period=2),
+                get_other_sum(year, month, user_id, "income"),
+                get_other_sum(year, month, user_id, "expence"),
             return_exceptions=False
         )
     )
@@ -57,7 +57,7 @@ async def generate_message_statistic(
     message = "*" * 40 + "\n\n"
     message += f"Основная статистика за {year} год.\n\n"
     message += f"Всего отработано часов: {hours}ч.\n"
-    message += f"Вы провели на работе {round(hours / 24, 1)} дней.\n"
+    message += f"Вы провели на работе {round(hours / 24)} суток.\n"
     
     message += f"Что составляет {
         round((hours) / (days * 24) * 100, 1)
@@ -67,3 +67,15 @@ async def generate_message_statistic(
     message += "*" * 40 + "\n\n"
 
     return message
+
+
+async def sum_currency(
+    for_hours: dict[str, float],
+    for_other: dict[str, float]
+) -> None:
+    return {
+        "dollar": for_hours.get("dollar", 0) + for_other.get("dollar", 0),
+        "euro": for_hours.get("euro", 0) + for_other.get("euro", 0),
+        "yena": for_hours.get("yena", 0) + for_other.get("yena", 0),
+        "som": for_hours.get("som", 0) + for_other.get("som", 0)
+    }

@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, UTC
+import asyncio
 
 import aiohttp
 from aiogram.fsm.context import FSMContext
@@ -28,7 +29,7 @@ async def request_valute_info() -> str:
             else:
                 raise aiohttp.ClientResponseError
 
-                
+           
 async def get_valute_info() -> dict[str, tuple[int, float]]:
     """
     Return the dictionary with information 
@@ -79,6 +80,34 @@ async def gen_text(state: dict, name: str) -> str:
     return message
 
 
+async def get_all_valute_for_month(
+    year: int,
+    month: int,
+    user_id: int
+) -> dict:
+    """
+    Get all currency data for the month.
+    
+    :return: Combined valute data from all sources.
+    """
+    data, data_income, data_expence = await asyncio.gather(
+        aggregate_valute(year, month, user_id, "salaries"),
+        aggregate_valute(year, month, user_id, "other_income"), 
+        aggregate_valute(year, month, user_id, "expences")
+    )
+
+    return {
+        "dollar": data.get("dollar", 0) + \
+        data_income.get("dollar", 0) - data_expence.get("dollar", 0),
+        "euro": data.get("euro", 0) + \
+            data_income.get("euro", 0) - data_expence.get("euro", 0),
+        "yena": data.get("yena", 0) + \
+            data_income.get("yena", 0) - data_expence.get("yena", 0),
+        "som": data.get("som", 0) + \
+            data_income.get("som", 0) - data_expence.get("som", 0)
+    }
+
+
 async def get_valute_for_month(
     year: int,
     month: int,
@@ -95,5 +124,5 @@ async def get_valute_for_month(
     :prama name: The name of the currency.
     :param str: A message to the user.
     """
-    data: dict[str: float] = await aggregate_valute(year, month, user_id)
-    return f"{data.get(name, 0):,}{CURRENCY_SYMBOL[name]}"
+    data = await get_all_valute_for_month(year, month, user_id)
+    return f"{data.get(name, 0):,.2f}{CURRENCY_SYMBOL[name]}"
