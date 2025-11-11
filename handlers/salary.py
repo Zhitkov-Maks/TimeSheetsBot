@@ -4,7 +4,7 @@ from aiogram.types import CallbackQuery, Message
 from aiogram.utils.markdown import hbold
 
 from handlers.bot_answer import decorator_errors
-from keyboards.keyboard import back, back_to_information, back_calendar
+from keyboards.keyboard import back, back_calendar, back_to_information
 from crud.create import write_other, remove_other_income_expese
 from crud.statistics import get_other_incomes_expenses
 from states.salary import SalaryState
@@ -96,9 +96,9 @@ async def remove_transaction(
         result, income, page=1
     )
     if message is None:
-        await callback.answer(
+        await callback.message.edit_text(
             text="Записей не найдено!",
-            show_alert=True
+            reply_markup=back_calendar,
         )
     else:
         await state.update_data(
@@ -169,10 +169,10 @@ async def write_other_income(
     if result:
         await message.answer(
             text="Запись успешно добавлена.",
-            reply_markup=back
+            reply_markup=back_calendar
         )
     else:
         await message.answer(
             text="Произошел сбой, попробуйте еще раз",
-            reply_markup=back
+            reply_markup=back_calendar
         )

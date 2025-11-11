@@ -76,7 +76,7 @@ async def get_other_incomes_expenses(
                 "year": year,
                 "month": month
             }
-        )
+        ).sort("_id", -1)
         results = cursor.to_list(length=None)
         return results
     finally:
