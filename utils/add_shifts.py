@@ -4,11 +4,9 @@ from typing import Tuple, List
 import asyncio
 from aiogram.types import CallbackQuery
 
-from crud.add_shift import add_many_shifts
-from utils.current_day import earned_per_shift
-from utils.valute import get_valute_info
-from utils.calculate import calc_valute
+from utils.current_day import earned_per_shift, get_settings
 from keyboards.keyboard import back
+from utils.valute import get_valute_info
 
 
 async def get_date(action: str) -> Tuple[int, int]:
@@ -66,16 +64,24 @@ async def save_shifts_with_progress_bar(
             0, total, "Начинаем сохранение..."
         )
         await callback.message.edit_text(progress_text)
-        
+        valute_data: dict[str, tuple[int, float]] = await get_valute_info()
+        settings: tuple[float] = await get_settings(user_id)
+
         for i, d in enumerate(sorted_dates, 1):
             date = datetime.strftime(d, "%Y-%m-%d")
-            await earned_per_shift(time, user_id, date, {})
+            await earned_per_shift(
+                time, 
+                user_id,
+                date, 
+                {}, 
+                valute_data=valute_data,
+                settings=settings
+            )
 
             progress_text = create_progress_text(
                 i, total, f"Сохранение смены {i}/{total}"
             )
             await callback.message.edit_text(progress_text)
-            await asyncio.sleep(0.1)
 
         success_text = create_progress_text(
             total, total, "✅ Все смены сохранены!"

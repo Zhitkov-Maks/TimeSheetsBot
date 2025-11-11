@@ -66,7 +66,7 @@ async def toggle_action(
 @settings_router.callback_query(F.data == "finish")
 @decorator_errors
 async def finish_selection(
-        call: CallbackQuery, state: FSMContext
+    call: CallbackQuery, state: FSMContext
 ) -> None:
     """Add or remove a check mark from the keyboard."""
     options: list[str] = list(settings_choices[call.from_user.id].keys())[::-1]

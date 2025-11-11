@@ -12,23 +12,23 @@ days_choices = defaultdict(set)
 
 
 async def generate_base_calendar(
-        field_size: int,
-        numbers_list: List[str],
-        month_keyword: list,
-        year: int,
-        month: int,
-        user_chat_id: int
+    field_size: int,
+    numbers_list: List[str],
+    month_keyword: list,
+    year: int,
+    month: int,
+    user_chat_id: int
 ) -> None:
     """
-    Функция генерации основной части календаря. Заполняет календарь кнопками.
+    Fill the calendar with buttons.
     
-    :param field_size: Размер поля календаря.
-    :param numbers_list: Поле календаря.
-    :param month_keyword: Непосредственно клавиатура в виде календаря.
-    :param year: Нужен для формирования даты.
-    :param user_chat_id: Нужен для формирования клавиатуры.
-    :param month: Нужен для формирования даты.
-    :return List: Инлайн клавиатуру.
+    :param field_size: The size of the calendar field.
+    :param numbers_list: The calendar field.
+    :param month_keyword: The keyboard itself is in the form of a calendar.
+    :param year: The selected year.
+    :param user_chat_id: The user's ID.
+    :param month: The selected month.
+    :return List: The inline keyboard.
     """
     for i in range(7):
         row: List[InlineKeyboardButton] = [InlineKeyboardButton(
@@ -55,17 +55,17 @@ async def generate_base_calendar(
 
 
 async def get_days_keyboard(
-        year: int,
-        month: int,
-        user_chat_id: int
+    year: int,
+    month: int,
+    user_chat_id: int
 ) -> InlineKeyboardMarkup:
     """
-    Функция для генерации календаря для выбора смен, при групповой
-    простановке смен.
-    :param year: Год для календаря.
-    :param month: Месяц для календаря.
-    :param user_chat_id: Идентификатор пользователя чата.
-    :return InlineKeyboardMarkup: Инлайн клавиатура в виде календаря.
+    Add the main buttons to the calendar.
+    
+    :param year: The year for the calendar.
+    :param month: The month for the calendar.
+    :param user_chat_id: The ID of the chat user.
+    :return InlineKeyboardMarkup: An inline keyboard in the form of a calendar.
     """
     days_in_month: int = monthrange(year, month)[1]
     day_week: int = date(year, month, 1).weekday()
@@ -93,6 +93,13 @@ async def get_days_keyboard(
 
 
 async def next_month_date(days, year, month) -> str:
+    """
+    Get the next month.
+    
+    :param days: The number of days to add.
+    :param year: The transmitted year.
+    :param month: The transmitted month.
+    """
     return (
         f"{(date(year, month, 1) + timedelta(days=days)).year}-"
         f"{(date(year, month, 1) + timedelta(days=days)).month}"
@@ -101,9 +108,9 @@ async def next_month_date(days, year, month) -> str:
 
 async def prediction_button() -> InlineKeyboardMarkup:
     """
-    Генерирует инлайн-кнопки для выбора текущего и следующего месяца.
+    Generate inline buttons to select the current and next month.
 
-    :return: Инлайн клавиатуру.
+    :return: The inline keyboard.
     """
     year, month = dt.now().year, dt.now().month
     return InlineKeyboardMarkup(inline_keyboard=[

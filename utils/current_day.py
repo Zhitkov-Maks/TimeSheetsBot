@@ -72,6 +72,12 @@ async def earned_calculation(
     
     earned_time = time * settings[0]
     earned_cold = time * settings[1]
+    configuration.update(
+        base_hours=time,
+        earned_cold=earned_cold,
+        earned=(earned_time + earned_cold),
+        earned_hours=earned_time
+    )
 
     if settings[2] > 0 and (time + total_hours) > norm_hours:
         (
@@ -82,16 +88,10 @@ async def earned_calculation(
 
         configuration.update(
             hours_overtime=hours_overtime,
-            earned_overtime=earned_overtime
+            earned_overtime=earned_overtime,
+            earned=(earned_time + earned_cold),
+            earned_hours=earned_time - earned_overtime,
         )
-        earned_time -= earned_overtime
-
-    configuration.update(
-        base_hours=time,
-        earned=(earned_time + earned_cold),
-        earned_hours=earned_time,
-        earned_cold=earned_cold
-    )
     return configuration
 
 
@@ -99,7 +99,9 @@ async def earned_per_shift(
     time: float,
     user_id: int,
     date: str,
-    data: dict
+    data: dict,
+    valute_data: dict,
+    settings: tuple
 ) -> tuple[float, float]:
     """
     Generate the amount earned per shift..
@@ -110,7 +112,6 @@ async def earned_per_shift(
     :param date: The date for recording.
     """
     action = data.get("action")
-    settings: tuple[float] = await get_settings(user_id)
     parse_date = datetime.strptime(date, "%Y-%m-%d")
 
     notes: str = ""
@@ -123,7 +124,6 @@ async def earned_per_shift(
     if action == "change" and notes:
         salary.update(notes=notes)
 
-    valute_data: dict[str, tuple[int, float]] = await get_valute_info()
     await write_salary(salary, user_id, parse_date, valute_data)
     return salary.get("earned")
 
@@ -138,6 +138,7 @@ async def gen_message_for_choice_day(salary: dict, choice_date: str) -> str:
     """
     month, day = int(choice_date[5:7]), choice_date[8:]
     day_month: str = f"{MONTH_DATA[month]} {day}"
+
     if not salary:
         return f"{day_month}, нет данных."
 
@@ -146,10 +147,17 @@ async def gen_message_for_choice_day(salary: dict, choice_date: str) -> str:
         detail_message += (
             f"Доплата за холод: {salary.get("earned_cold")}{money}.\n"
         )
+
     if salary.get("award_amount") is not None:
         count: int = int(salary.get("count_operations", 0))
         detail_message += (
             f"Премия: {salary.get("award_amount")}{money}({count})\n"
+        )
+    
+    if salary.get("earned_overtime") is not None:
+        detail_message += (
+            f"Доплата за переработку: {salary.get("earned_overtime")}{money}.\n"
+            f"Часов переработки: {salary.get("hours_overtime")}ч.\n"
         )
 
     return (

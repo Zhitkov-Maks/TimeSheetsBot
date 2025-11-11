@@ -8,10 +8,11 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup
 
 from loader import success_text
-from utils.current_day import earned_per_shift
+from utils.current_day import earned_per_shift, get_settings
 from utils.month import create_message
 from config import bot
 from keyboards.keyboard import back
+from utils.valute import get_valute_info
 
 
 logger = logging.getLogger(__name__)
@@ -130,7 +131,18 @@ async def processing_data(
     :return: None
     """
     date = data.get("date")
-    salary_for_shifts = await earned_per_shift(time, user_id, date, data)
+    valute_data: dict[str, tuple[int, float]] = await get_valute_info()
+    settings: tuple[float] = await get_settings(user_id)
+
+    salary_for_shifts = await earned_per_shift(
+        time,
+        user_id,
+        date,
+        data,
+        valute_data=valute_data,
+        settings=settings
+    )
+
     callback: str = data.get("callback")
     await bot.answer_callback_query(
         callback_query_id=callback,
