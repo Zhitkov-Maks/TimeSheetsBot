@@ -246,10 +246,6 @@ async def get_month_menu() -> InlineKeyboardMarkup:
                     callback_data="euro_m"
                 ),
                 InlineKeyboardButton(
-                    text=BACK,
-                    callback_data="current"
-                ),
-                InlineKeyboardButton(
                     text=YENA,
                     callback_data="yena_m"
                 ),
@@ -257,6 +253,12 @@ async def get_month_menu() -> InlineKeyboardMarkup:
                     text=SOM,
                     callback_data="som_m"
                 )
+            ],
+            [
+            InlineKeyboardButton(
+                    text=BACK,
+                    callback_data="current"
+                ),
             ]
         ]
     )

@@ -97,37 +97,6 @@ async def create_message(
     return await create_calendar(result, year, month, data)
 
 
-async def create_message_for_period(data: tuple, period: str) -> str:
-    """
-    Create a line about the information for the period.
-    
-    :param data: A tuple with information for the period.
-    :param perion: A string for displaying the period.
-    :return str: A message to the user.
-    """
-    message = (
-        f"\nПериод с {period}:\n"
-        f"----------------------------------------\n"
-        f"Отработано часов: {data[1]}ч.\n"
-        f"Итого заработано: {data[0]:,}{money}.\n"
-        f"Из них оплата часов: {data[5]:,}{money}.\n"
-    )
-    
-    if data[4]:
-        message += (
-            f"Доплата за холод: {data[4]:,}{money}.\n"
-        )
-    if data[3]:
-        message += (
-            f"Премия: {data[2]:,}{money}({data[3]}).\n"
-        )
-    
-    if data[6]:
-        message += f"Доплата за переработку: {data[6]:,}{money}.\n"
-        message += f"Часов переработки: {data[7]}ч.\n"
-    return message
-
-
 async def generate_str(year: int, month: int, user_id: int) -> str:
     """
     Generate a message with detailed information for the month.
@@ -137,8 +106,6 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
     :param user_id: User ID.
     :return: A line to show to the user.
     """
-    overtime, _ = await get_settings(user_id)
-    message: str = f"Данные за {month}/{year}\n\n"
     total_data: tuple = await get_data_from_db(year, month, user_id)
     data: list = await data_calculation(total_data)
 
@@ -153,23 +120,36 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
 
     if data[7] > hours_:
         overtime = data[0][6] + data[1][6]
-        pay_overtime_str = "Доплата за переработку: " + \
-            f"{overtime:,}{money}.\n"
+        pay_overtime_str = (
+                f"Переработка: {overtime:,}{money}.\n"
+                f"Часов пере-ки: {data[0][7] + data[1][7]}ч.\n"
+            )
 
-    message += await create_message_for_period(data[0], "1-15")
-    message += await create_message_for_period(data[1], "16-го")
-
-    message += (
-        f"\nЗа {MONTH_DATA[month]} {year}:\n"
+    message = (
+        f"\n{MONTH_DATA[month]} {year}:\n"
         f"----------------------------------------\n"
         f"Отработано часов: {data[7]:,}ч.\n"
-        f"Заработано денег: {data[6]:,}{money}.\n"
     )
+    
+    if data[8] > 0:
+        message += f"Доплата за холод: {data[8]:,}{money}\n"
+    
 
     message += pay_overtime_str
     message += award_message
-    message += (f"Прочие доходы: {data[2]:,}{money}.\n")
-    message += (f"Списание под зп: {data[3]:,}{money}.\n")
+    message += (
+        f"Прочие доходы: {data[2]:,}{money}.\n" if data[2] else ""
+    )
+    message += (
+        f"Списание под зп: {data[3]:,}{money}.\n" if data[3] else ""
+    )
+    
+    message += (
+        f"----------------------------------------\n"
+        f"Итого: {data[6]:,}{money}\n"
+        f"----------------------------------------\n"
+    )
+
     return message
 
 

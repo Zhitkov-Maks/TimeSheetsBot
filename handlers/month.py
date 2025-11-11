@@ -4,6 +4,7 @@ from typing import Dict
 
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
+from aiogram.exceptions import TelegramBadRequest
 from aiogram import Router
 from aiogram import F
 from aiogram.utils.markdown import hbold
@@ -121,12 +122,18 @@ async def next_and_prev_month(
             year, month, callback.from_user.id, state
         )
     )
-    
-    await callback.message.edit_text(
-        text=hbold("Ваши смены на календаре!"),
-        reply_markup=await create_calendar(result, year, month, data),
-        parse_mode="HTML"
-    )
+    try:
+        await callback.message.edit_text(
+            text=hbold("Ваши смены на календаре!"),
+            reply_markup=await create_calendar(result, year, month, data),
+            parse_mode="HTML"
+        )
+    except TelegramBadRequest:
+        await callback.message.answer(
+            text=hbold("Ваши смены на календаре!"),
+            reply_markup=await create_calendar(result, year, month, data),
+            parse_mode="HTML"
+        )
 
 
 @month_router.callback_query(

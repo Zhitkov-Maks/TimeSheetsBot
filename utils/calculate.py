@@ -63,6 +63,7 @@ async def data_calculation(
     income: float = data[2].get("total_sum", 0)
     expense: float = data[3].get("total_sum", 0)
     award: float = period_1[2] + period_2[2]
+    earned_cold = period_1[4] + period_2[4]
     operations: float = period_1[3] + period_2[3]
     total_earned: float = (
         period_1[0] + period_2[0] + income - expense
@@ -75,7 +76,8 @@ async def data_calculation(
         award,
         operations,
         total_earned,
-        hours
+        hours,
+        earned_cold
     ]
 
 
