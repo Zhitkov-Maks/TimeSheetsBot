@@ -9,7 +9,6 @@ from states.month import MonthState
 from crud.statistics import get_information_for_month
 from loader import money, MONTH_DATA
 from utils.calculate import data_calculation, generate_data
-from utils.settings import get_settings
 from utils.statistic import get_data_from_db
 
 
@@ -129,6 +128,7 @@ async def generate_str(year: int, month: int, user_id: int) -> str:
         f"\n{MONTH_DATA[month]} {year}:\n"
         f"----------------------------------------\n"
         f"Отработано часов: {data[7]:,}ч.\n"
+        f"Оплата часов: {data[0][5] + data[1][5]}{money}.\n"
     )
     
     if data[8] > 0:
@@ -176,3 +176,21 @@ async def get_date(data: Dict[str, str], action: str) -> Tuple[int, int]:
     else:
         find_date = parse_date
     return find_date.year, find_date.month
+
+
+async def get_data_for_calendar(
+    user_id: int, 
+    year: int,
+    month: int,
+    state: FSMContext
+) -> tuple[dict, tuple]:
+    result = await get_information_for_month(user_id, year, month)
+    
+    data: tuple[tuple] = (
+        await get_amount_and_hours_for_month(
+            year, month, user_id, state
+        )
+    )
+    await state.set_state(MonthState.choice)
+    await state.update_data(year=year, month=month, result=result)
+    return result, data

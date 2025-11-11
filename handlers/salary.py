@@ -2,7 +2,6 @@ from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from aiogram.utils.markdown import hbold
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 from handlers.bot_answer import decorator_errors
 from keyboards.keyboard import back, back_to_information, back_calendar

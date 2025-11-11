@@ -2,16 +2,19 @@ from functools import wraps
 from logging.handlers import RotatingFileHandler
 from typing import Dict, Callable, ParamSpec, TypeVar
 import logging
+from datetime import datetime
 
 from aiogram.exceptions import TelegramNetworkError, TelegramBadRequest
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup
+from aiogram.utils.markdown import hbold
 
+from keyboards.month import create_calendar
 from loader import success_text
+from utils.month import get_data_for_calendar
 from utils.current_day import earned_per_shift, get_settings
 from utils.month import create_message
 from config import bot
-from keyboards.keyboard import back
 from utils.valute import get_valute_info
 
 
@@ -47,70 +50,71 @@ def decorator_errors(func: Callable[P, T]) -> Callable[P, T]:
         Handle possible errors when using the bot. 
         And write them to a file.
         """
+        success = False
+        error_type = None
+        error_message = None
+
         try:
             logger.info(
-                f"\nExecuting function: {func.__name__}\n"
-                f"State: {await state.get_data()}"
+                f"\nSTART: {func.__name__}\n"
                 f"User ID: {arg.from_user.id}\n"
-                f"User: {arg.from_user.full_name} - (@{arg.from_user.username})\n\n"
+                f"State: {await state.get_data()}\n"
             )
             await func(arg, state)
+            success = True
 
         except (KeyError, ValueError) as err:
-            logger.error(
-                "\nKeyError occurred\n"
-                f"Function: {func.__name__}\n"
-                f"User ID: {arg.from_user.id}\n"
-                f"User: {arg.from_user.full_name} (@{arg.from_user.username}\n",
-                exc_info=True,
-            )
+            error_type = "KeyError/ValueError"
+            error_message = str(err)
             await state.clear()
-            mess: str = str(err)
-            await bot.send_message(arg.from_user.id, mess, reply_markup=back)
 
-        except TelegramNetworkError:
-            logger.error(
-                "\nTelegramNetworkError\n"
-                f"Function: {func.__name__}\n"
-                f"User ID: {arg.from_user.id}\n"
-                f"User: {arg.from_user.full_name} (@{arg.from_user.username}\n",
-                exc_info=True,
-            )
+        except TelegramNetworkError as err:
+            error_type = "TelegramNetworkError"
+            error_message = str(err)
             await state.clear()
-            mess: str = (
-                "У нас проблемы с интернетом, попробуйте зайти чуть позже."
-            )
-            await bot.send_message(arg.from_user.id, mess, reply_markup=back)
 
-        except TelegramBadRequest:
-            logger.error(
-                "\nTelegramBadRequest\n"
-                f"Function: {func.__name__}\n"
-                f"User ID: {arg.from_user.id}\n"
-                f"User: {arg.from_user.full_name} (@{arg.from_user.username}\n",
-                exc_info=True,
-            )
+        except TelegramBadRequest as err:
+            error_type = "TelegramBadRequest"
+            error_message = str(err)
             await state.clear()
-            mess: str = (
-                "Сбой работы приложения. Попробуйте еще раз."
-            )
-            await bot.send_message(arg.from_user.id, mess, reply_markup=back)
 
-        # If something unexpected has happened.
-        except Exception as e:
-            logger.error(
-                f"\n{e}\n"
-                f"Function: {func.__name__}\n"
-                f"User ID: {arg.from_user.id}\n"
-                f"User: {arg.from_user.full_name} (@{arg.from_user.username}\n",
-                exc_info=True,
-            )
+        except Exception as err:
+            error_type = "UnexpectedError"
+            error_message = str(err)
             await state.clear()
-            mess: str = (
-                "Сбой. Попробуйте еще раз."
-            )
-            await bot.send_message(arg.from_user.id, mess, reply_markup=back)
 
+        finally:
+            if success:
+                logger.info(
+                    f"\nSUCCESS: {func.__name__}\n"
+                    f"User ID: {arg.from_user.id}\n"
+                )
+            else:
+                logger.error(
+                    f"\nFAILED: {func.__name__}\n"
+                    f"User ID: {arg.from_user.id}\n"
+                    f"Error Type: {error_type}\n"
+                    f"Error: {error_message}\n",
+                    exc_info=not isinstance(
+                        error_message, (KeyError, ValueError)
+                    )  # exc_info только для неожиданных ошибок
+                )
+
+                year: int = datetime.now().year
+                month: int = datetime.now().month
+
+                result, data = await get_data_for_calendar(
+                    arg.from_user.id, year, month, state
+                )
+
+                await bot.send_message(
+                    arg.from_user.id,
+                    text=hbold("Ошибка обработки данных. Попробуйте еще раз."), 
+                    reply_markup=await create_calendar(
+                        result, year, month, data
+                    ),
+                    parse_mode="HTML"
+                )
     return wrapper
 
 
@@ -176,4 +180,3 @@ async def send_calendar_and_message(
         parse_mode="HTML",
         reply_markup=calendar,
     )
-

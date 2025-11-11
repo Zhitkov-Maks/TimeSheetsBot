@@ -20,7 +20,7 @@ async def parse_income_expense(
 
     message = f"Ваши {'доходы:' if income else 'расхлды:'}.\n"
     message += "*" * 40 + '\n'
-    message += f"Дата: {str(data[page-1].get("created_at"))[:10]}.\n"
+    message += f"Дата: {str(data[page-1].get("date"))[:10]}.\n"
     message += f"Сумма: {'+' if income else '-'}{data[page-1]["amount"]:,}₽.\n"
     message += f"Описание: {data[page-1].get("description")}.\n"
     message += "*" * 40 + '\n\n'
