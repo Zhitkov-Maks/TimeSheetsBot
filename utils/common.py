@@ -10,10 +10,10 @@ async def parse_income_expense(
     page: int
 ) -> tuple[str, bool, bool, str]:
     """
-    Генерирует сообщение для ответа пользователю.
+    Generate a message to reply to the user.
 
-    :param data: Список с транзакциями.
-    :param income: Определяем тип транзакции.
+    :param data: A list with transactions.
+    :param income: Defining the transaction type.
     """
     if len(data) == 0:
         return None, 0, 0, ""

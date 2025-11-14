@@ -6,7 +6,7 @@ from collections import defaultdict
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from keyboards.month import get_month_range, create_list_with_calendar_days
-from loader import MONTH_DATA, DAYS_LIST, MENU
+from loader import MONTH_DATA, DAYS_LIST
 
 days_choices = defaultdict(set)
 

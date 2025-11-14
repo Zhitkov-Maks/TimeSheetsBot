@@ -6,24 +6,24 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from loader import BACK, BAX, YENA, EURO, SOM
 
 
-cancel: List[List[InlineKeyboardButton]] = [
-    [InlineKeyboardButton(text="Отмена", callback_data="current")]
-]
-
-confirm: List[List[InlineKeyboardButton]] = [
-    [
-        InlineKeyboardButton(text="Отмена", callback_data="current"),
-        InlineKeyboardButton(text="Продолжить", callback_data="continue"),
-    ]
-]
-
+# The keyboard is used to cancel an action.
 cancel_button: InlineKeyboardMarkup = InlineKeyboardMarkup(
-    inline_keyboard=cancel
-)
-confirm_menu: InlineKeyboardMarkup = InlineKeyboardMarkup(
-    inline_keyboard=confirm
+    inline_keyboard=[
+        [InlineKeyboardButton(text="Отмена", callback_data="current")]
+    ]
 )
 
+# Keyboard to confirm the deletion.
+confirm_menu: InlineKeyboardMarkup = InlineKeyboardMarkup(
+    inline_keyboard=[
+        [
+            InlineKeyboardButton(text="Отмена", callback_data="current"),
+            InlineKeyboardButton(text="Продолжить", callback_data="continue"),
+        ]
+    ]
+)
+
+# The back button to return to the calendar information.
 back: InlineKeyboardMarkup = InlineKeyboardMarkup(
     inline_keyboard=[
         [
@@ -34,6 +34,7 @@ back: InlineKeyboardMarkup = InlineKeyboardMarkup(
     ]
 )
 
+# The back button to return to the information for the month.
 back_calendar = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
@@ -46,7 +47,16 @@ back_calendar = InlineKeyboardMarkup(
         )
 
 
-async def back_to_information(next: bool, prev: bool) -> InlineKeyboardMarkup:
+async def back_to_information(
+    next_: bool,
+    prev: bool
+) -> InlineKeyboardMarkup:
+    """
+    The back button to return to the information for the month.
+    
+    :param next_: Is there another transaction.
+    :param prev: Whether there are any previous entries.
+    """
     buttons: list[list[InlineKeyboardButton]] = [
         [
             InlineKeyboardButton(text=BACK, callback_data="calendar"),
@@ -59,7 +69,7 @@ async def back_to_information(next: bool, prev: bool) -> InlineKeyboardMarkup:
             )
         ]
     ]
-    if next:
+    if next_:
         buttons[0].append(
             InlineKeyboardButton(text=">>", callback_data="next_tr")
         )
@@ -72,6 +82,11 @@ async def back_to_information(next: bool, prev: bool) -> InlineKeyboardMarkup:
 
 
 async def next_prev_year(year) -> InlineKeyboardMarkup:
+    """
+    Generate a keyboard for working with statistics for the year.
+    
+    :param year: A year for statistics.
+    """
     buttons: list[list[InlineKeyboardButton]] = [
         [
             InlineKeyboardButton(

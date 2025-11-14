@@ -8,7 +8,6 @@ from loader import (
     UNICODE_DATA,
     MONTH_DATA,
     DAYS_LIST,
-    MENU,
     BACK,
     BAX,
     EURO,
@@ -102,46 +101,46 @@ async def generate_base_calendar(
 
 
 async def create_calendar(
-        salary,
-        year: int,
-        month: int,
-        data: tuple[tuple]
+    salary,
+    year: int,
+    month: int,
+    data: tuple[tuple]
 ) -> InlineKeyboardMarkup:
     """
-    Генерирует календарь за указанный месяц.
+    Assemble a calendar in the form of a keyboard 
+    for the specified year and month.
 
-    :param salary: Результат запроса в БД за переданный месяц.
-    :param year: Год для отображения в календаре.
-    :param month: Месяц для отображения в календаре.
-
-    :return: Инлайн клавиатура с днями месяца и соответствующими
-        данными о зарплате.
+    :param salary: The result of the query in the database 
+                    for the transferred month.
+    :param year: The year to display in the calendar.
+    :param month: The month to display in the calendar.
     """
 
-    # Создание словаря с датами и количеством отработанных часов
+    # Creating a dictionary with dates and number of hours worked
     dates: Dict[str, int] = await get_dates(salary)
     
-    # Получение дня недели 1 числа месяца и количества дней в месяце.
+    # Getting the day of the week on the 1st of the 
+    # month and the number of days in the month.
     day_week: int = date(year, month, 1).weekday()
     days_in_month: int = monthrange(year, month)[1]
 
-    # Инициализация списка для инлайн-клавиатуры
+    # Initializing the list for the inline keyboard
     month_keyword: List[List[InlineKeyboardButton]] = []
 
-    # Определение размера поля и количества дней для отображения
+    # Determining the field size and the number of days to display
     field_size, days = await get_month_range(day_week, days_in_month)
 
-    # Формирование списка номеров дней с учетом пустых ячеек
+    # Creating a list of day numbers based on empty cells
     numbers_list: List[str] = await create_list_with_calendar_days(
         day_week, days_in_month, days
     )
 
-    # Формирование строк с днями недели и их значениями
+    # Forming strings with days of the week and their values
     await generate_base_calendar(
         field_size, numbers_list, dates, month_keyword, year, month
     )
     
-    # Добавление информации о зп за периоды.
+    # Adding salary information for periods.
     month_keyword.append(
         [
             InlineKeyboardButton(
@@ -155,7 +154,7 @@ async def create_calendar(
         ]
     )
 
-    # Добавление кнопок навигации внизу календаря
+    #  Monthly salary information.
     month_keyword.append(
         [
             InlineKeyboardButton(
@@ -164,8 +163,9 @@ async def create_calendar(
             )
         ]
     )
-    
-    # Добавление заголовка месяца в клавиатуру
+
+    # Adding the month title to the keyboard
+    # Adding navigation buttons at the bottom of the calendar
     month_keyword.append(
         [   InlineKeyboardButton(text="<<", callback_data="prev"),
             InlineKeyboardButton(
@@ -183,26 +183,29 @@ async def get_month_range(
         day_week: int, days_in_month: int
 ) -> Tuple[int, int]:
     """
-    Определяет размер поля и количество дней для отображения в календаре
-    на основе дня недели и количества дней в месяце.
+    Defines the size of the field and the number of days to display 
+    in the calendar based on the day of the week 
+    and the number of days in the month.
 
-    :param day_week: Целое число, представляющее день недели (0 - понедельник,
-                        6 - воскресенье).
-    :param days_in_month: Общее количество дней в месяце.
+    :param day_week: An integer representing the day of the week 
+                        (0 is Monday, 6 is Sunday).
+    :param days_in_month: The total number of days in a month.
 
-    :return: Кортеж из двух целых чисел:
-             - field_size: Размер поля для отображения (4, 5 или 6).
-             - days: Общее количество дней для отображения (28, 35 или 42).
+    :return: A tuple of two integers:
+             - field_size: The size of the field to display (4, 5, or 6).
+             - days: The total number of days to display (28, 35, or 42).
     """
     field_size: int = 5
     days: int = 35
 
-    # Проверка, если общее количество дней в месяце и день недели превышает 35
+    # Check if the total number of days in the month 
+    # and the day of the week exceeds 35.
     if day_week + days_in_month > 35:
         field_size = 6
         days = 42
 
-    # Проверка, если общее количество дней в месяце и день недели меньше 29
+    # Checking if the total number of days in the month and the 
+    # day of the week is less than 29.
     elif days_in_month + day_week < 29:
         field_size = 4
         days = 28

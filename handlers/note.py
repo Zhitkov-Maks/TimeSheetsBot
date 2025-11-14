@@ -24,7 +24,7 @@ async def add_note(
     data = await state.get_data()
     current_notes: str | None = data.get("current_day", {}).get("notes")
     await state.set_state(NoteState.description)
-    
+
     if current_notes is None:
         current_notes = notes_empty
     else:
@@ -106,6 +106,6 @@ async def remove_note(
     current_day["notes"] = None
     day_id: str = current_day.get("_id")
     await update_salary(day_id=day_id, data=current_day)
-    
+
     action = "Заметки за выбранный день удалены.\n"
     await answer_after_operation(callback, current_day, action)

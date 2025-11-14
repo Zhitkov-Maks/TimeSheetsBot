@@ -1,13 +1,12 @@
 from datetime import date
 from typing import Dict
 
-from aiogram import Router, F, Bot
+from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from aiogram.utils.markdown import hbold
 
-from config import BOT_TOKEN
-from handlers.bot_answer import send_calendar_and_message, decorator_errors
+from handlers.bot_answer import decorator_errors
 from keyboards.add_shifts import get_days_keyboard, days_choices
 from keyboards.keyboard import cancel_button, back
 from keyboards.add_shifts import prediction_button
