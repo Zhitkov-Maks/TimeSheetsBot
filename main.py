@@ -19,7 +19,8 @@ from handlers.statistic import statistick_router
 from handlers.note import note_rout
 from handlers.valute import money
 
-from loader import start_text, GUIDE, main_text
+from loader import start_text, GUIDE
+from config import EMAIL
 
 
 dp = Dispatcher(bot=bot)
@@ -70,8 +71,10 @@ async def process_email_button(
     """Show the user the email."""
     await state.clear()
     await callback_query.message.answer(
-        text="[m-zhitkov@inbox.ru](mailto:m-zhitkov@inbox.ru)",
+        f"<code>{EMAIL}</code>",
+        parse_mode="HTML"
     )
+    await callback_query.answer()
 
 
 @dp.message(F.text == "/info")
