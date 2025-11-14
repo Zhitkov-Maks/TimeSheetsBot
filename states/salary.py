@@ -3,7 +3,7 @@ from aiogram.fsm.state import StatesGroup, State
 
 class SalaryState(StatesGroup):
     """
-    Класс для определения состояний, связанный с добавлением прочего дохода.
+    A class for defining states related to the addition of other income.
     """
     amount: State = State()  # Сумма прочего дохода
     description: State = State()  # Описание

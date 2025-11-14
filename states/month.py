@@ -3,7 +3,8 @@ from aiogram.fsm.state import StatesGroup, State
 
 class MonthState(StatesGroup):
     """
-    Класс для определения состояний, связанных с выбором месяца.
-    Используется для управления состоянием выбора месяца пользователем.
+    A class for determining the conditions associated 
+    with the choice of the month.
+    It is used to manage the status of the user's month selection.
     """
     choice: State = State()  # Состояние для выбора месяца
