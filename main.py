@@ -5,6 +5,7 @@ from aiogram import Dispatcher, types, F
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils.markdown import hbold
 
 from config import bot
 from handlers.bot_answer import decorator_errors
@@ -38,7 +39,7 @@ dp.include_router(unknown_rout)
 async def handler_start(message: types.Message, state: FSMContext) -> None:
     """The handler for the start command."""
     await state.clear()
-    await message.answer(text=start_text)
+    await message.answer(text=start_text, parse_mode="HTML")
 
 
 @dp.message(F.text == "/dev")
@@ -78,8 +79,7 @@ async def process_email_button(
 async def guide_information(message: types.Message, state: FSMContext) -> None:
     """The handler for the info command."""
     await state.clear()
-    for mess in GUIDE:
-        await message.answer(text=mess)
+    await message.answer(text=GUIDE, parse_mode="HTML")
     await message.answer(
         text="Меню.\n/main - чтобы открыть меню."
     )
