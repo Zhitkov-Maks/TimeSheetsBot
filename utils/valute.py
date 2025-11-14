@@ -1,10 +1,11 @@
 import json
 import asyncio
+from datetime import datetime
 
 import aiohttp
-from aiogram.fsm.context import FSMContext
 
 from loader import CURRENCY_SYMBOL
+from config import cashed_currency
 from utils.calculate import calc_valute
 from crud.statistics import aggregate_valute
 
@@ -16,23 +17,33 @@ async def request_valute_info() -> str:
     """
     Request information about the ruble exchange rate.
     """
+    date = datetime.now()
+    current_date: tuple[int] = (date.year, date.month, date.day)
+    
+    if current_date in cashed_currency:
+        return cashed_currency[current_date]
+    
     async with aiohttp.ClientSession(
             timeout=aiohttp.ClientTimeout(60)) as client:
         async with client.get(
                 url=URL, headers={'Accept': 'application/json'}
         ) as response:
             if response.status == 200:
-                return await response.text()
+                currency: dict = json.loads(await response.text())
+                cashed_currency.clear()
+                cashed_currency[current_date] = currency 
+                return currency
+
             else:
                 raise aiohttp.ClientResponseError
 
-           
+
 async def get_valute_info() -> dict[str, tuple[int, float]]:
     """
     Return the dictionary with information 
     about the value of currencies.
     """
-    data = json.loads(await request_valute_info())
+    data = await request_valute_info()
     return {
         "dollar": (
             int(data['Valute']['USD']['Nominal']),
