@@ -3,11 +3,10 @@ from aiogram.types import CallbackQuery, Message
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.markdown import hbold
 
-from handlers.bot_answer import decorator_errors
 from keyboards.note import note_action, back
 from states.note import NoteState
 from crud.get_data import update_salary
-from utils.current_day import gen_message_for_choice_day
+from utils.decorate import errors_logger
 from utils.note import answer_after_operation
 from loader import notes_empty
 
@@ -15,7 +14,7 @@ from loader import notes_empty
 note_rout = Router()
 
 @note_rout.callback_query(F.data == "add_note")
-@decorator_errors
+@errors_logger
 async def add_note(
     callback: CallbackQuery,
     state: FSMContext
@@ -38,7 +37,7 @@ async def add_note(
 
 
 @note_rout.message(NoteState.description)
-@decorator_errors
+@errors_logger
 async def save_description(
     message: Message,
     state: FSMContext
@@ -62,7 +61,7 @@ async def save_description(
 
 
 @note_rout.callback_query(F.data == "show_note")
-@decorator_errors
+@errors_logger
 async def show_notes(
     callback: CallbackQuery, state: FSMContext
 ) -> None:
@@ -83,7 +82,7 @@ async def show_notes(
 
 
 @note_rout.callback_query(F.data == "BACK")
-@decorator_errors
+@errors_logger
 async def back_by_current_day(
     callback: CallbackQuery,
     state: FSMContext
@@ -95,7 +94,7 @@ async def back_by_current_day(
 
 
 @note_rout.callback_query(F.data == "remove_note")
-@decorator_errors
+@errors_logger
 async def remove_note(
     callback: CallbackQuery,
     state: FSMContext

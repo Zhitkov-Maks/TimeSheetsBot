@@ -6,7 +6,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from aiogram.utils.markdown import hbold
 
-from handlers.bot_answer import decorator_errors
 from keyboards.add_shifts import get_days_keyboard, days_choices
 from keyboards.keyboard import cancel_button, back
 from keyboards.add_shifts import prediction_button
@@ -14,12 +13,13 @@ from loader import MONTH_DATA
 from states.add_shifts import ShiftsState
 from utils.add_shifts import get_date, create_data_by_add_shifts
 from utils.current_day import valid_time
+from utils.decorate import errors_logger
 
 shifts_router: Router = Router()
 
 
 @shifts_router.message(F.text == "/add")
-@decorator_errors
+@errors_logger
 async def shifts_calendar(
     message: Message,
     state: FSMContext
@@ -42,7 +42,7 @@ async def shifts_calendar(
 
 
 @shifts_router.callback_query(ShiftsState.hours)
-@decorator_errors
+@errors_logger
 async def input_selection_hours(
         callback: CallbackQuery,
         state: FSMContext
@@ -65,7 +65,7 @@ async def input_selection_hours(
 
 
 @shifts_router.message(ShiftsState.month)
-@decorator_errors
+@errors_logger
 async def work_with_calendar(message: Message, state: FSMContext) -> None:
     """Show the user a calendar for choosing shifts."""
     data: Dict[str, str | float | list] = await state.get_data()
@@ -88,7 +88,7 @@ async def work_with_calendar(message: Message, state: FSMContext) -> None:
 
 
 @shifts_router.callback_query(lambda c: c.data.startswith("toggle2_"))
-@decorator_errors
+@errors_logger
 async def toggle_day(callback: CallbackQuery, state: FSMContext) -> None:
     """
     Add or remove a shift from the collection.
@@ -112,7 +112,7 @@ async def toggle_day(callback: CallbackQuery, state: FSMContext) -> None:
 
 
 @shifts_router.callback_query(F.data == "shift_finish")
-@decorator_errors
+@errors_logger
 async def finish_add_shifts(callback: CallbackQuery, state: FSMContext) -> None:
     """
     Save the marked days in the database.

@@ -3,11 +3,11 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from aiogram.utils.markdown import hbold
 
-from handlers.bot_answer import decorator_errors
-from keyboards.keyboard import back, back_calendar, back_to_information
+from keyboards.keyboard import back_calendar, back_to_information
 from crud.create import write_other, remove_other_income_expese
 from crud.statistics import get_other_incomes_expenses
 from states.salary import SalaryState
+from utils.decorate import errors_logger
 from utils.month import get_date
 from utils.common import calculation_currency, parse_income_expense
 
@@ -15,7 +15,7 @@ salary: Router = Router()
 
 
 @salary.callback_query(F.data.in_(["list_incomes", "list_expenses"]))
-@decorator_errors
+@errors_logger
 async def get_list_transaction(
     callback: CallbackQuery,
     state: FSMContext
@@ -50,7 +50,7 @@ async def get_list_transaction(
 
 
 @salary.callback_query(F.data.in_(["next_tr", "prev_tr"]))
-@decorator_errors
+@errors_logger
 async def next_page_transaction(
     callback: CallbackQuery, state: FSMContext
 ) -> None:
@@ -75,6 +75,7 @@ async def next_page_transaction(
 
 
 @salary.callback_query(F.data == "remove_transaction")
+@errors_logger
 async def remove_transaction(
     callback: CallbackQuery, state: FSMContext
 ) -> None:
@@ -112,7 +113,7 @@ async def remove_transaction(
 
 
 @salary.callback_query(F.data.in_(["other_income", "expences"]))
-@decorator_errors
+@errors_logger
 async def create_other_income(
     callback: CallbackQuery,
     state: FSMContext
@@ -134,6 +135,7 @@ async def create_other_income(
 
 
 @salary.message(SalaryState.amount)
+@errors_logger
 async def create_description_income(
     message: Message,
     state: FSMContext
@@ -156,6 +158,7 @@ async def create_description_income(
 
 
 @salary.message(SalaryState.description)
+@errors_logger
 async def write_other_income(
     message: Message,
     state: FSMContext

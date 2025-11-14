@@ -8,7 +8,6 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils.markdown import hbold
 
 from config import bot
-from handlers.bot_answer import decorator_errors
 from handlers.settings import settings_router
 from handlers.month import month_router
 from handlers.current_day import day_router
@@ -21,6 +20,7 @@ from handlers.valute import money
 
 from loader import start_text, GUIDE
 from config import EMAIL
+from utils.decorate import errors_logger
 
 
 dp = Dispatcher(bot=bot)
@@ -36,7 +36,7 @@ dp.include_router(unknown_rout)
 
 
 @dp.message(CommandStart())
-@decorator_errors
+@errors_logger
 async def handler_start(message: types.Message, state: FSMContext) -> None:
     """The handler for the start command."""
     await state.clear()
@@ -44,7 +44,7 @@ async def handler_start(message: types.Message, state: FSMContext) -> None:
 
 
 @dp.message(F.text == "/dev")
-@decorator_errors
+@errors_logger
 async def handler_dev(message: types.Message, state: FSMContext) -> None:
     """The handler for the dev command."""
     await state.clear()
@@ -63,7 +63,7 @@ async def handler_dev(message: types.Message, state: FSMContext) -> None:
 
 
 @dp.callback_query(F.data == "send_email")
-@decorator_errors
+@errors_logger
 async def process_email_button(
         callback_query: types.CallbackQuery,
         state: FSMContext
@@ -78,7 +78,7 @@ async def process_email_button(
 
 
 @dp.message(F.text == "/info")
-@decorator_errors
+@errors_logger
 async def guide_information(message: types.Message, state: FSMContext) -> None:
     """The handler for the info command."""
     await state.clear()

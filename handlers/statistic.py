@@ -8,6 +8,7 @@ from aiogram.utils.markdown import hbold
 from crud.statistics import statistics_for_year, get_other_incomes_for_year
 from keyboards.keyboard import next_prev_year
 from loader import CURRENCY_SYMBOL
+from utils.decorate import errors_logger
 from utils.statistic import generate_message_statistic, sum_currency
 
 
@@ -15,6 +16,7 @@ statistick_router = Router()
 
 
 @statistick_router.message(F.text == "/stat")
+@errors_logger
 async def get_current_year_statistics(
     message: Message, state: FSMContext
 ) -> None:
@@ -41,6 +43,7 @@ async def get_current_year_statistics(
 
 
 @statistick_router.callback_query(F.data.in_(["prev_year", "next_year"]))
+@errors_logger
 async def get_prev_next_year_statistics(
     callback: CallbackQuery, state: FSMContext
 ) -> None:
@@ -77,6 +80,7 @@ async def get_prev_next_year_statistics(
 @statistick_router.callback_query(
     F.data.in_(["dollar_y", "euro_y", "yena_y", "som_y"])
 )
+@errors_logger
 async def get_earned_in_valute_for_month(
     callback: CallbackQuery, 
     state: FSMContext

@@ -4,10 +4,10 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 from aiogram.utils.markdown import hbold
 
-from handlers.bot_answer import decorator_errors
 from keyboards.keyboard import back, cancel_button
 from keyboards.settings import get_actions, settings_choices, SETTINGS
 from states.settings import SettingsState
+from utils.decorate import errors_logger
 from utils.settings import (
     actions_dict,
     validate_data,
@@ -19,7 +19,7 @@ settings_router: Router = Router()
 
 
 @settings_router.message(F.text == "/settings")
-@decorator_errors
+@errors_logger
 async def choice_options_settings(
     message: Message,
     state: FSMContext
@@ -39,7 +39,7 @@ async def choice_options_settings(
 
 
 @settings_router.callback_query(lambda c: c.data.startswith("toggle-"))
-@decorator_errors
+@errors_logger
 async def toggle_action(
     callback_query: CallbackQuery,
     state: FSMContext
@@ -64,7 +64,7 @@ async def toggle_action(
 
 
 @settings_router.callback_query(F.data == "finish")
-@decorator_errors
+@errors_logger
 async def finish_selection(
     call: CallbackQuery, state: FSMContext
 ) -> None:
@@ -88,7 +88,7 @@ async def finish_selection(
 
 
 @settings_router.message(SettingsState.action)
-@decorator_errors
+@errors_logger
 async def save_account_name(mess: Message, state: FSMContext) -> None:
     """Ask the user for input while there are still raw fields.."""
     data: dict = await state.get_data()
@@ -126,7 +126,7 @@ async def save_account_name(mess: Message, state: FSMContext) -> None:
 
 
 @settings_router.callback_query(F.data == "remove_settings")
-@decorator_errors
+@errors_logger
 async def remove_user_settings(
         callback: CallbackQuery, state: FSMContext
 ) -> None:

@@ -8,16 +8,13 @@ from aiogram.utils.markdown import hbold
 
 from config import BOT_TOKEN
 from crud.create import delete_record
-from handlers.bot_answer import (
-    send_calendar_and_message,
-    processing_data,
-    decorator_errors
-)
+from handlers.bot_answer import send_calendar_and_message, processing_data
 from keyboards.keyboard import cancel_button, back
-from loader import add_record_text, CURRENCY_SYMBOL
+from loader import add_record_text
 from states.current_day import CreateState
 from utils.current_day import valid_time, earned_for_award
 from utils.current_day import gen_message_for_choice_day
+from utils.decorate import errors_logger
 from utils.valute import gen_text
 from keyboards.current_day import get_data_choices_day
 
@@ -26,7 +23,7 @@ bot = Bot(token=BOT_TOKEN)
 
 
 @day_router.callback_query(F.data.in_(["change", "add"]))
-@decorator_errors
+@errors_logger
 async def on_date_today(callback: CallbackQuery, state: FSMContext) -> None:
     """
     Ask the user for the number of hours worked.
@@ -40,7 +37,7 @@ async def on_date_today(callback: CallbackQuery, state: FSMContext) -> None:
 
 
 @day_router.message(CreateState.check_data)
-@decorator_errors
+@errors_logger
 async def check_data(message: Message, state: FSMContext) -> None:
     """
     Save the data entered by the user if the data is correct.
@@ -69,7 +66,7 @@ async def check_data(message: Message, state: FSMContext) -> None:
 
 
 @day_router.callback_query(F.data == "del")
-@decorator_errors
+@errors_logger
 async def del_record(callback: CallbackQuery, state: FSMContext) -> None:
     """Delete the entries for the selected day."""
     await state.update_data(user_id=callback.from_user.id)
@@ -81,7 +78,7 @@ async def del_record(callback: CallbackQuery, state: FSMContext) -> None:
 
 
 @day_router.callback_query(F.data == "award")
-@decorator_errors
+@errors_logger
 async def add_award(callback: CallbackQuery, state: FSMContext) -> None:
     """Delete the entries for the selected day."""
     await state.set_state(CreateState.award)
@@ -93,7 +90,7 @@ async def add_award(callback: CallbackQuery, state: FSMContext) -> None:
 
 
 @day_router.message(CreateState.award)
-@decorator_errors
+@errors_logger
 async def create_award(message: Message, state: FSMContext) -> None:
     """Save the data if the data is correct."""
     try:
@@ -126,6 +123,7 @@ async def create_award(message: Message, state: FSMContext) -> None:
 
 
 @day_router.callback_query(F.data.in_(["dollar", "euro", "yena", "som"]))
+@errors_logger
 async def get_earned_in_valute(
     callback: CallbackQuery, 
     state: FSMContext
