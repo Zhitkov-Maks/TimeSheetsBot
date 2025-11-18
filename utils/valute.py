@@ -140,7 +140,7 @@ async def get_valute_show_message() -> str:
     """
     Return the line with information about some currencies.
     """
-    data = json.loads(await request_valute_info())
+    data = await request_valute_info()
     message = "*" * 40 + "\n\n"
     message += f"Курс рубля на {data["Date"][:10]}.\n\n"
     message += (
