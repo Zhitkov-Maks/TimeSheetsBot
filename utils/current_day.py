@@ -1,6 +1,9 @@
 """Auxiliary module for calculating salaries for a selected day."""
-from datetime import datetime, UTC
+from datetime import datetime
+import asyncio
+
 from crud.create import delete_record, write_salary
+from crud.statistics import get_information_for_month
 from loader import MONTH_DATA, money
 from crud.settings import get_settings_user_by_id
 from crud.get_data import get_hours_for_month, get_salary_for_day, update_salary
@@ -55,6 +58,7 @@ async def earned_calculation(
     time: float,
     user_id: int,
     date,
+    total_hours=None
 ) -> dict[str, float]:
     """
     Create a dictionary for future storage in the database.
@@ -67,9 +71,12 @@ async def earned_calculation(
     """
     configuration: dict[str, float] = dict()
     year, month = date.year, date.month
-    total_hours: tuple[float] = await get_hours_for_month(user_id, year, month)
+    if total_hours is None:
+        total_hours: tuple[float] = await get_hours_for_month(
+            user_id, year, month
+        )
     norm_hours = 180 if month == 2 else 190
-    
+
     earned_time = time * settings[0]
     earned_cold = time * settings[1]
     configuration.update(
@@ -99,9 +106,10 @@ async def earned_per_shift(
     time: float,
     user_id: int,
     date: str,
-    data: dict,
+    notes: str | None,
     valute_data: dict,
-    settings: tuple
+    settings: tuple,
+    data: dict
 ) -> tuple[float, float]:
     """
     Generate the amount earned per shift..
@@ -111,21 +119,15 @@ async def earned_per_shift(
     :return: The earned amount for the month.
     :param date: The date for recording.
     """
-    action = data.get("action")
     parse_date = datetime.strptime(date, "%Y-%m-%d")
-
-    notes: str = ""
-    if action == "change":
-        notes = data.get("current_day").get("notes", {})
-        await delete_record(date, user_id)
-
     salary = await earned_calculation(settings, time, user_id, parse_date)
 
-    if action == "change" and notes:
+    if notes:
         salary.update(notes=notes)
 
     await write_salary(salary, user_id, parse_date, valute_data)
-    return salary.get("earned")
+    if data.get("many_add") is None:
+        await normalization_salary_for_month(user_id, settings, data)
 
 
 async def gen_message_for_choice_day(salary: dict, choice_date: str) -> str:
@@ -224,3 +226,69 @@ async def earned_for_award(
     )
     await update_salary(day_id, current_day)
     return current_day
+
+
+async def normalization_salary_for_month(
+    user_id: int,
+    settings: dict,
+    data: dict
+) -> None:
+    """
+    Recalculation of monthly salary as the hours may be 
+    changed and the calculation may be incorrect.
+    
+    :param user_id: The user's ID.
+    :param settings: User settings.
+    :param data: User settings.
+    """
+    year, month = data.get("year"), data.get("month")
+    result = await get_information_for_month(user_id, year, month)
+    sorted_result = sorted(result, key=lambda x: x["date"])
+    valute_data: dict[str, tuple[int, float]] = await get_valute_info()
+
+    total_hours =  0
+    for item in sorted_result:
+        notes = item.get("notes")
+        time = item.get("base_hours")
+        date = item.get("date")
+
+        await delete_record(datetime.strftime(date, "%Y-%m-%d"), user_id)
+        await recalculation_salary(
+            time=time,
+            user_id=user_id,
+            date=date,
+            notes=notes,
+            valute_data=valute_data,
+            settings=settings,
+            total_hours=total_hours
+        )
+        total_hours += float(time)
+
+
+async def recalculation_salary(
+    time: float,
+    user_id: int,
+    date: str,
+    notes: str | None,
+    valute_data: dict,
+    settings: tuple,
+    total_hours
+) -> tuple[float, float]:
+    """
+    Recalculate the salary so that there are no errors in the calculations.
+
+    :param time: Hours worked.
+    :param user_id: The user's ID.
+    :param date: The date for recording.
+    :param notes: Note if it exists.
+    :param valute_data: Currency information.
+    :param settings: User settings for the calculation.
+    :param total_hours: The number of hours worked per month.
+    """
+    salary = await earned_calculation(
+        settings, time, user_id, date, total_hours
+    )
+    if notes:
+        salary.update(notes=notes)
+
+    await write_salary(salary, user_id, date, valute_data)

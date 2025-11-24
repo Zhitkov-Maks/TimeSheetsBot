@@ -2,7 +2,6 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup
 from typing import Dict
 
-from loader import success_text
 from utils.current_day import earned_per_shift, get_settings
 from utils.month import create_message
 from config import bot
@@ -28,20 +27,22 @@ async def processing_data(
     date = data.get("date")
     valute_data: dict[str, tuple[int, float]] = await get_valute_info()
     settings: tuple[float] = await get_settings(user_id)
+    notes = data.get("current_day").get("notes")
 
-    salary_for_shifts = await earned_per_shift(
+    await earned_per_shift(
         time,
         user_id,
         date,
-        data,
+        notes,
         valute_data=valute_data,
-        settings=settings
+        settings=settings,
+        data=data
     )
 
     callback: str = data.get("callback")
     await bot.answer_callback_query(
         callback_query_id=callback,
-        text=success_text.format(data["date"], salary_for_shifts),
+        text="Запись добавлена.",
         show_alert=True
     )
     await send_calendar_and_message(user_id, data, state)
