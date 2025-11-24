@@ -126,7 +126,7 @@ async def get_info_by_date(user_id: int, date: str) -> dict:
         data: dict = collection.find_one(
             {"user_id": user_id, "date": parse_date}
         )
-        return data
+        return data or {}
     finally:
         client.close()
 

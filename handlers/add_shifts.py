@@ -114,7 +114,7 @@ async def toggle_day(callback: CallbackQuery, state: FSMContext) -> None:
 
 
 @shifts_router.callback_query(F.data == "shift_finish")
-#@errors_logger
+@errors_logger
 async def finish_add_shifts(callback: CallbackQuery, state: FSMContext) -> None:
     """
     Save the marked days in the database.

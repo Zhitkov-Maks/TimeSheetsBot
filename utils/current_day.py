@@ -1,6 +1,5 @@
 """Auxiliary module for calculating salaries for a selected day."""
 from datetime import datetime
-import asyncio
 
 from crud.create import delete_record, write_salary
 from crud.statistics import get_information_for_month
@@ -9,6 +8,7 @@ from crud.settings import get_settings_user_by_id
 from crud.get_data import get_hours_for_month, get_salary_for_day, update_salary
 from utils.valute import get_valute_info
 from utils.calculate import calc_valute
+from config import bot
 
 
 async def get_settings(user_id: int) -> tuple[float]:
@@ -241,13 +241,16 @@ async def normalization_salary_for_month(
     :param settings: User settings.
     :param data: User settings.
     """
+    await bot.send_chat_action(user_id, "typing")
     year, month = data.get("year"), data.get("month")
     result = await get_information_for_month(user_id, year, month)
     sorted_result = sorted(result, key=lambda x: x["date"])
     valute_data: dict[str, tuple[int, float]] = await get_valute_info()
 
     total_hours =  0
-    for item in sorted_result:
+    for i, item in enumerate(sorted_result):
+        if i % 3 == 0:
+            await bot.send_chat_action(user_id, "typing")
         notes = item.get("notes")
         time = item.get("base_hours")
         date = item.get("date")

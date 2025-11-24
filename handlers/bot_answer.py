@@ -27,8 +27,9 @@ async def processing_data(
     date = data.get("date")
     valute_data: dict[str, tuple[int, float]] = await get_valute_info()
     settings: tuple[float] = await get_settings(user_id)
-    notes = data.get("current_day").get("notes")
-
+    day = data.get("current_day")
+    notes = data.get("current_day", {}).get("notes")
+    
     await earned_per_shift(
         time,
         user_id,
@@ -40,11 +41,6 @@ async def processing_data(
     )
 
     callback: str = data.get("callback")
-    await bot.answer_callback_query(
-        callback_query_id=callback,
-        text="Запись добавлена.",
-        show_alert=True
-    )
     await send_calendar_and_message(user_id, data, state)
 
 
