@@ -1,4 +1,5 @@
 from datetime import date
+import stat
 from typing import Dict
 
 from aiogram import Router, F
@@ -29,6 +30,7 @@ async def shifts_calendar(
     the days for adding shifts in a group.
     """
     await state.set_state(ShiftsState.hours)
+    await state.update_data(many_add=True)
     user_exists = days_choices.get(message.from_user.id)
 
     if user_exists:
@@ -112,19 +114,20 @@ async def toggle_day(callback: CallbackQuery, state: FSMContext) -> None:
 
 
 @shifts_router.callback_query(F.data == "shift_finish")
-@errors_logger
+#@errors_logger
 async def finish_add_shifts(callback: CallbackQuery, state: FSMContext) -> None:
     """
     Save the marked days in the database.
     """
     user_id: int = callback.from_user.id
+    data = await state.get_data()
     if len(days_choices.get(user_id)) > 0:
         await state.update_data(user_id=user_id)
         data: Dict[str, str | float] = await state.get_data()
         time = data["time"]
 
         await create_data_by_add_shifts(
-            user_id, time, days_choices[user_id], callback
+            user_id, time, days_choices[user_id], callback, data
         )
         days_choices[user_id].clear()
 

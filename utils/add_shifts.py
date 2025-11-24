@@ -4,7 +4,7 @@ from typing import Tuple, List
 import asyncio
 from aiogram.types import CallbackQuery
 
-from utils.current_day import earned_per_shift, get_settings
+from utils.current_day import earned_per_shift, get_settings, normalization_salary_for_month
 from keyboards.keyboard import back
 from utils.valute import get_valute_info
 
@@ -24,7 +24,8 @@ async def create_data_by_add_shifts(
     user_id: int,
     time: float,
     list_dates: List[str],
-    callback: CallbackQuery
+    callback: CallbackQuery,
+    data: dict
 ) -> None:
     """
     Create shift records for the user based on the provided data.
@@ -33,6 +34,7 @@ async def create_data_by_add_shifts(
     :param time: The total number of hours worked.
     :param list_dates: A list of string dates in the "YYYY-MM-DD" 
                         format for which You need to create shift records.
+    :param data: Dictionary from the State.
     :return: None.
     """
     date_objects = [datetime.strptime(d, "%Y-%m-%d") for d in list_dates]
@@ -40,7 +42,9 @@ async def create_data_by_add_shifts(
     
     await callback.answer(text="✅ Начинаем сохранение смен...")
     asyncio.create_task(
-        save_shifts_with_progress_bar(user_id, time, sorted_dates, callback)
+        save_shifts_with_progress_bar(
+            user_id, time, sorted_dates, callback, data
+        )
     )
 
 
@@ -48,7 +52,8 @@ async def save_shifts_with_progress_bar(
     user_id: int,
     time: float,
     sorted_dates: list,
-    callback: CallbackQuery
+    callback: CallbackQuery,
+    data: dict
 ) -> None:
     """
     Saves with a progress bar.
@@ -57,6 +62,7 @@ async def save_shifts_with_progress_bar(
     :param time: The number of hours.
     :param sorted_dates: A sorted list of dates.
     :param callback: A callback for displaying a message to the user.
+    :param data: Dictionary from the State.
     """
     total = len(sorted_dates)
     try:
@@ -73,9 +79,10 @@ async def save_shifts_with_progress_bar(
                 time, 
                 user_id,
                 date, 
-                {}, 
+                notes=None, 
                 valute_data=valute_data,
-                settings=settings
+                settings=settings,
+                data=data
             )
 
             progress_text = create_progress_text(
@@ -83,6 +90,7 @@ async def save_shifts_with_progress_bar(
             )
             await callback.message.edit_text(progress_text)
 
+        await normalization_salary_for_month(user_id, settings, data)
         success_text = create_progress_text(
             total, total, "✅ Все смены сохранены!"
         )
@@ -93,6 +101,7 @@ async def save_shifts_with_progress_bar(
 
     except Exception as e:
         error_text = f"❌ Ошибка при сохранении:\n{str(e)}"
+        raise
         await callback.message.edit_text(error_text)
 
 
