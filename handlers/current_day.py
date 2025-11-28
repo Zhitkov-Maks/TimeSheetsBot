@@ -8,7 +8,7 @@ from aiogram.utils.markdown import hbold
 
 from config import BOT_TOKEN
 from crud.create import delete_record
-from handlers.bot_answer import send_calendar_and_message, processing_data
+from handlers.bot_answer import send_calendar_and_message, processing_data, send_message_after_delete
 from keyboards.keyboard import cancel_button, back
 from loader import add_record_text
 from states.current_day import CreateState
@@ -74,7 +74,7 @@ async def del_record(callback: CallbackQuery, state: FSMContext) -> None:
 
     await delete_record(data.get("date"), callback.from_user.id)
     await callback.answer("Запись удалена!!!")
-    await send_calendar_and_message(callback.from_user.id, data, state)
+    await send_message_after_delete(callback.from_user.id, data, state)
 
 
 @day_router.callback_query(F.data == "award")

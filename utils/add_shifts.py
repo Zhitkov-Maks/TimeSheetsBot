@@ -4,7 +4,12 @@ from typing import Tuple, List
 import asyncio
 from aiogram.types import CallbackQuery
 
-from utils.current_day import earned_per_shift, get_settings, normalization_salary_for_month
+from crud.add_shift import add_many_shifts
+from utils.current_day import (
+    get_settings,
+    normalization_salary_for_month,
+    recalculation_salary
+)
 from keyboards.keyboard import back
 from utils.valute import get_valute_info
 
@@ -73,23 +78,27 @@ async def save_shifts_with_progress_bar(
         valute_data: dict[str, tuple[int, float]] = await get_valute_info()
         settings: tuple[float] = await get_settings(user_id)
 
+        total_hours = 0
+        salaries = []
         for i, d in enumerate(sorted_dates, 1):
-            date = datetime.strftime(d, "%Y-%m-%d")
-            await earned_per_shift(
-                time, 
-                user_id,
-                date, 
-                notes=None, 
+            salary = await recalculation_salary(
+                time=time,
+                user_id=user_id,
+                date=d,
+                notes=None,
                 valute_data=valute_data,
                 settings=settings,
-                data=data
+                total_hours=total_hours
             )
+            total_hours += float(time)
+            salaries.append(salary)
 
             progress_text = create_progress_text(
                 i, total, f"Сохранение смены {i}/{total}"
             )
             await callback.message.edit_text(progress_text)
 
+        await add_many_shifts(salaries)
         await normalization_salary_for_month(user_id, settings, data)
         success_text = create_progress_text(
             total, total, "✅ Все смены сохранены!"
@@ -101,8 +110,10 @@ async def save_shifts_with_progress_bar(
 
     except Exception as e:
         error_text = f"❌ Ошибка при сохранении:\n{str(e)}"
-        raise
-        await callback.message.edit_text(error_text)
+        await callback.message.edit_text(
+            error_text,
+            reply_markup=back
+        )
 
 
 def create_progress_text(

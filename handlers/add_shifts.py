@@ -30,7 +30,6 @@ async def shifts_calendar(
     the days for adding shifts in a group.
     """
     await state.set_state(ShiftsState.hours)
-    await state.update_data(many_add=True)
     user_exists = days_choices.get(message.from_user.id)
 
     if user_exists:

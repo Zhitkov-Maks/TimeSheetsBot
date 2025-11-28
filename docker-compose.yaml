@@ -8,6 +8,8 @@ services:
     environment:
       - "MONGO_INITDB_ROOT_USERNAME=${DB_NAME}"
       - "MONGO_INITDB_ROOT_PASSWORD=${DB_PASS}"
+    volumes:
+      - ./mongodb_data:/data/db
 
   telegram_bot:
       container_name: SalaryBot

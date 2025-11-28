@@ -163,3 +163,4 @@ cython_debug/
 logs
 .vscode
 .idea
+mongodb_data/

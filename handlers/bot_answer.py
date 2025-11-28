@@ -2,7 +2,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import InlineKeyboardMarkup
 from typing import Dict
 
-from utils.current_day import earned_per_shift, get_settings
+from utils.current_day import earned_per_shift, get_settings, normalization_salary_for_month
 from utils.month import create_message
 from config import bot
 from utils.valute import get_valute_info
@@ -40,7 +40,16 @@ async def processing_data(
         data=data
     )
 
-    callback: str = data.get("callback")
+    await send_calendar_and_message(user_id, data, state)
+    
+    
+async def send_message_after_delete(
+    user_id: int,
+    data: dict,
+    state: FSMContext
+) -> None:
+    settings: tuple[float] = await get_settings(user_id)
+    await normalization_salary_for_month(user_id, settings, data)
     await send_calendar_and_message(user_id, data, state)
 
 

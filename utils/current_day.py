@@ -1,11 +1,14 @@
 """Auxiliary module for calculating salaries for a selected day."""
-from datetime import datetime
+from datetime import datetime, date as d
+from dateutil.relativedelta import relativedelta
 
+from crud.add_shift import add_many_shifts
 from crud.create import delete_record, write_salary
 from crud.statistics import get_information_for_month
 from loader import MONTH_DATA, money
 from crud.settings import get_settings_user_by_id
 from crud.get_data import get_hours_for_month, get_salary_for_day, update_salary
+from states import salary
 from utils.valute import get_valute_info
 from utils.calculate import calc_valute
 from config import bot
@@ -44,7 +47,7 @@ async def calculation_overtime(
     :param total_hours: How many hours have been worked already this month.
     :return dict: A tuple with data to save.
     """
-    price, cold, overtime, _ = settings
+    price, _, overtime, _ = settings
     time_over = (time + total_hours) - norm
     earned = round(
         min(time_over, time) * (price + overtime) + \
@@ -126,8 +129,7 @@ async def earned_per_shift(
         salary.update(notes=notes)
 
     await write_salary(salary, user_id, parse_date, valute_data)
-    if data.get("many_add") is None:
-        await normalization_salary_for_month(user_id, settings, data)
+    await normalization_salary_for_month(user_id, settings, data)
 
 
 async def gen_message_for_choice_day(salary: dict, choice_date: str) -> str:
@@ -248,15 +250,14 @@ async def normalization_salary_for_month(
     valute_data: dict[str, tuple[int, float]] = await get_valute_info()
 
     total_hours =  0
-    for i, item in enumerate(sorted_result):
-        if i % 3 == 0:
-            await bot.send_chat_action(user_id, "typing")
+    salaries: list[dict] = []
+
+    for item in sorted_result:
         notes = item.get("notes")
         time = item.get("base_hours")
         date = item.get("date")
-
         await delete_record(datetime.strftime(date, "%Y-%m-%d"), user_id)
-        await recalculation_salary(
+        salary = await recalculation_salary(
             time=time,
             user_id=user_id,
             date=date,
@@ -266,6 +267,9 @@ async def normalization_salary_for_month(
             total_hours=total_hours
         )
         total_hours += float(time)
+        salaries.append(salary)
+
+    await add_many_shifts(salaries)
 
 
 async def recalculation_salary(
@@ -273,7 +277,7 @@ async def recalculation_salary(
     user_id: int,
     date: str,
     notes: str | None,
-    valute_data: dict,
+    valute_data,
     settings: tuple,
     total_hours
 ) -> tuple[float, float]:
@@ -284,14 +288,20 @@ async def recalculation_salary(
     :param user_id: The user's ID.
     :param date: The date for recording.
     :param notes: Note if it exists.
-    :param valute_data: Currency information.
     :param settings: User settings for the calculation.
     :param total_hours: The number of hours worked per month.
     """
     salary = await earned_calculation(
         settings, time, user_id, date, total_hours
     )
+    salary.update(
+        user_id=user_id,
+        date=date,
+        period=1 if date.day <= 15 else 2,
+        valute=await calc_valute(salary.get("earned"), valute_data),
+        date_write=datetime.now()
+    )
+
     if notes:
         salary.update(notes=notes)
-
-    await write_salary(salary, user_id, date, valute_data)
+    return salary
