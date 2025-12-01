@@ -90,7 +90,7 @@ async def generate_base_calendar(
                 text = f"{numbers_list[day]} {UNICODE_DATA[dates[create_date]]}"
 
             else:
-                text = f"({numbers_list[day]})"
+                text = f"❪ {numbers_list[day]} ❫"
 
             row.append(
                 InlineKeyboardButton(text=text, callback_data=create_date)
