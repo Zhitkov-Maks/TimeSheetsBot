@@ -8,7 +8,7 @@ from aiogram.utils.markdown import hbold
 
 from config import BOT_TOKEN
 from crud.create import delete_record
-from handlers.bot_answer import send_calendar_and_message, processing_data, send_message_after_delete
+from handlers.bot_answer import processing_data, send_message_after_delete
 from keyboards.keyboard import cancel_button, back
 from loader import add_record_text
 from states.current_day import CreateState
@@ -82,8 +82,8 @@ async def del_record(callback: CallbackQuery, state: FSMContext) -> None:
 async def add_award(callback: CallbackQuery, state: FSMContext) -> None:
     """Delete the entries for the selected day."""
     await state.set_state(CreateState.award)
-    await callback.message.answer(
-        text=hbold("Введите количество выполненных операций за смену: "),
+    await callback.message.edit_text(
+        text=hbold("Количество операций: "),
         reply_markup=cancel_button,
         parse_mode="HTML"
     )

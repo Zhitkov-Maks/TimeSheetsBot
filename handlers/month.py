@@ -11,7 +11,7 @@ from aiogram.utils.markdown import hbold
 from crud.statistics import get_information_for_month, get_info_by_date
 from keyboards.current_day import get_data_choices_day
 from keyboards.month import create_calendar, get_month_menu
-from loader import CURRENCY_SYMBOL, date_pattern
+from loader import CURRENCY_SYMBOL, MONTH_DATA, date_pattern
 from states.month import MonthState
 from utils.current_day import gen_message_for_choice_day
 from utils.decorate import errors_logger
@@ -37,7 +37,7 @@ async def handle_info_current_month(
     result = await get_information_for_month(
         message.from_user.id, year, month
     )
-    
+
     data: tuple[tuple] = (
         await get_amount_and_hours_for_month(
             year, month, message.from_user.id, state
@@ -47,7 +47,7 @@ async def handle_info_current_month(
     await state.set_state(MonthState.choice)
     await state.update_data(year=year, month=month, result=result)
     await message.answer(
-        text=hbold("Ваши смены на календаре."),
+        text=hbold(f"{MONTH_DATA[month]} {year}г"),
         reply_markup=await create_calendar(result, year, month, data),
         parse_mode="HTML"
     )
@@ -122,15 +122,16 @@ async def next_and_prev_month(
             year, month, callback.from_user.id, state
         )
     )
+    text = text=hbold(f"{MONTH_DATA[month]} {year}г")
     try:
         await callback.message.edit_text(
-            text=hbold("Ваши смены на календаре!"),
+            text=text,
             reply_markup=await create_calendar(result, year, month, data),
             parse_mode="HTML"
         )
     except TelegramBadRequest:
         await callback.message.answer(
-            text=hbold("Ваши смены на календаре!"),
+            text=text,
             reply_markup=await create_calendar(result, year, month, data),
             parse_mode="HTML"
         )

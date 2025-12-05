@@ -90,7 +90,7 @@ async def generate_base_calendar(
                 text = f"{numbers_list[day]} {UNICODE_DATA[dates[create_date]]}"
 
             else:
-                text = f"❪ {numbers_list[day]} ❫"
+                text = f"❪{numbers_list[day]}❫"
 
             row.append(
                 InlineKeyboardButton(text=text, callback_data=create_date)
@@ -164,12 +164,12 @@ async def create_calendar(
         ]
     )
 
-    # Adding the month title to the keyboard
     # Adding navigation buttons at the bottom of the calendar
     month_keyword.append(
-        [   InlineKeyboardButton(text="<<", callback_data="prev"),
+        [   
+            InlineKeyboardButton(text="<<", callback_data="prev"),
             InlineKeyboardButton(
-                text=f"{MONTH_DATA[month]} {year}г",
+                text=f"{MONTH_DATA[month]}",
                 callback_data="calendar"
             ),
             InlineKeyboardButton(text=">>", callback_data="next"),

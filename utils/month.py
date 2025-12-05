@@ -20,22 +20,29 @@ async def get_message_for_period(data: tuple, name: str) -> str:
     :param name: The name of the command.
     """
     number = f"{name[-1]} период" if name[-1].isdigit() else "месяц"
-    message = f"Инфо за {number}.\n"
+    message = f"Инфо за {number}.\n\n"
+    earned = float(data[0])
     message += (
-        f"Итого: {data[0]:,}{money}.\n"
         f"Часов: {data[1]}ч.\n"
         f"Часы: {(data[5]):,}{money}.\n"
     )
-
-    if data[3]:
-        message += f"Премия: {data[2]:,}{money}({data[3]}).\n"
-
+    
     if data[4]:
         message += f"Холод: {data[4]:,}{money}.\n"
 
+    if data[3]:
+        if "total" in name:
+            message += f"Премия: {data[2]:,}{money}({data[3]}).\n"
+        else:
+            earned -= float(data[2])
+
     if data[6]:
-        message += f"Переработка: {data[6]}{money}.\n"
-        message += f"Часов пе-ки: {data[7]}ч.\n"
+        if "total" in name:
+            message += f"Переработка: {data[6]}{money}.\n"
+            message += f"Часов пе-ки: {data[7]}ч.\n"
+        else:
+            earned -= float(data[6])
+    message += f"\nИтого: {earned:,.2f}{money}"
 
     return message
 
@@ -56,8 +63,15 @@ async def get_amount_and_hours_for_month(
     total_data: tuple = await get_data_from_db(year, month, user_id)
     data: list = await data_calculation(total_data)
 
-    period1: tuple[float] = (data[0][0], data[0][1])
-    period2: tuple[float] = (data[1][0], data[1][1])
+    period1: tuple[float] = (
+        data[0][0] - data[0][2] - data[0][6],
+        data[0][1]
+    )
+
+    period2: tuple[float] = (
+        data[1][0] - data[1][2] - data[1][6],
+        data[1][1]
+    )
 
     await state.update_data(
         period1=data[0],

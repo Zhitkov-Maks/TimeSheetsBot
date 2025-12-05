@@ -1,5 +1,7 @@
 from typing import Dict
 
+from aiogram.utils.markdown import hbold
+
 
 UNICODE_DATA: Dict[int, str] = {
     1: "₁",
@@ -70,11 +72,11 @@ start_text: str = (
 )
 
 
-add_record_text: str = "Введите количество отработанных часов."
+add_record_text: str = "Сколько ⏳?"
 
 success_text: str = "{}\nВы заработали: {}₽"
 date_pattern: str = r"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
-unfamiliar_command: str = "Не могу обработать ваш запрос."
+unfamiliar_command: str = hbold("Не могу обработать ваш запрос.")
 
 
 GUIDE: str = (
@@ -106,9 +108,7 @@ GUIDE: str = (
     "Основной функционал мы рассмотрели. Надеюсь вам все понравиться!"
 )
     
-notes_empty = (
-    "Добавьте запись о том что вы считаете важным сохранить на всякий случай."
-)
+notes_empty = "Напишите что сохранить: "
 
 BAX = "$"
 EURO = "€"

@@ -35,7 +35,7 @@ async def get_list_transaction(
     )
     if message is None:
         await callback.answer(
-            text="Записей не найдено!",
+            text="❌ Записей не найдено!",
             show_alert=True
         )
     else:
@@ -98,7 +98,7 @@ async def remove_transaction(
     )
     if message is None:
         await callback.message.edit_text(
-            text="Записей не найдено!",
+            text=hbold("❌ Записей не найдено!"),
             reply_markup=back_calendar,
         )
     else:
@@ -121,14 +121,14 @@ async def create_other_income(
     """Add other income or expense."""
     if callback.data == "other_income":
         await state.update_data(type_="income")
-        text = "Введите сумму прочего дохода"
+        text = "Введите сумму дохода 💴."
     else:
         await state.update_data(type_="expence")
-        text = "Введите сумму расхода"
+        text = "Введите сумму расхода 💴."
 
     await state.set_state(SalaryState.amount)
     await callback.message.edit_text(
-        text=text,
+        text=hbold(text),
         reply_markup=back_calendar,
         parse_mode="HTML"
     )
@@ -145,7 +145,7 @@ async def create_description_income(
         await state.update_data(amount=float(message.text))
         await state.set_state(SalaryState.description)
         await message.answer(
-            text="Добвте небольшое описание:",
+            text=hbold("Добвте описание 💬."),
             reply_markup=back_calendar,
             parse_mode="HTML"
         )
@@ -171,11 +171,13 @@ async def write_other_income(
 
     if result:
         await message.answer(
-            text="Запись успешно добавлена.",
-            reply_markup=back_calendar
+            text=hbold("✅ Done."),
+            reply_markup=back_calendar,
+            parse_mode="HTML"
         )
     else:
         await message.answer(
-            text="Произошел сбой, попробуйте еще раз",
-            reply_markup=back_calendar
+            text=hbold("🪲 Данных не найдено."),
+            reply_markup=back_calendar,
+            parse_mode="HTML"
         )

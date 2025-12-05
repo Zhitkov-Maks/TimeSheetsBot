@@ -16,7 +16,11 @@ async def handler_message_unknown(
 ) -> None:
     """Show the user that it is impossible to process his command."""
     await state.clear()
-    await message.answer(text=unfamiliar_command, reply_markup=back)
+    await message.answer(
+        text=unfamiliar_command,
+        reply_markup=back,
+        parse_mode="HTML"
+    )
 
 
 @unknown_rout.callback_query(F.data)
@@ -25,4 +29,7 @@ async def handler_callback_unknown(
     callback: types.CallbackQuery, state: FSMContext
 ) -> None:
     """Show the user that it is impossible to process his command."""
-    await callback.answer(text=unfamiliar_command, show_alert=True)
+    await callback.answer(
+        text=unfamiliar_command,
+        show_alert=True,
+    )

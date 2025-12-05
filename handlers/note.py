@@ -56,7 +56,7 @@ async def save_description(
     current_day.update(notes=new_notes)
     await update_salary(day_id=day_id, data=current_day)
     
-    action = "Запись была успешно сохранена.\n"
+    action = "✅ Done.\n"
     await answer_after_operation(message, current_day, action)
 
 
@@ -71,7 +71,7 @@ async def show_notes(
     keyboard = note_action
     
     if current_notes is None:
-        current_notes = "Вы еще ничего не написали."
+        current_notes = "❌ Пусто пока что."
         keyboard = back
 
     await callback.message.edit_text(
